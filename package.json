@@ -1,0 +1,26 @@
+{
+  "name": "@ops-dss/starter-local-astro",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^5.16.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OPS-DSS/starter-local-astro.git"
+  },
+  "bugs": {
+    "url": "https://github.com/OPS-DSS/starter-local-astro/issues"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
