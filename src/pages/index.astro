@@ -1,14 +1,19 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { SampleLineChart } from '../components/SampleLineChart';
-import { RegionSelector } from '../components/RegionSelector';
+import Layout from '../layouts/Layout.astro'
+import { SampleLineChart } from '../components/SampleLineChart'
+import { RegionSelector } from '../components/RegionSelector'
 ---
 
 <Layout>
-	<div style="padding: 40px 20px;">
-		<RegionSelector client:load />
-	</div>
-	<div style="padding: 40px 20px;">
-		<SampleLineChart client:load />
-	</div>
+  <h1>Huila</h1>
+  <h3 style="text-align: center; margin-top: 40px;">
+    Unidad de Promoción de la Salud y Determinantes Sociales de la Salud - OPS /
+    PAHO
+  </h3>
+  <div style="padding: 40px 20px;">
+    <RegionSelector client:load />
+  </div>
+  <div style="padding: 40px 20px;">
+    <SampleLineChart client:load />
+  </div>
 </Layout>
