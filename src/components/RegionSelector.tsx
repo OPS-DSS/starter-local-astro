@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { Select } from '@ops-dss/ui/select'
 
