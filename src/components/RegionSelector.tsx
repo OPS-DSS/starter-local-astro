@@ -1,13 +1,8 @@
 import { useState } from 'react'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from './ui/select'
+import { Select } from '@ops-dss/ui/select'
+import type { SelectOption, SelectProps } from '@ops-dss/ui/select'
 
-const regions = [
+const regions: SelectOption[] = [
   { value: 'north-america', label: 'North America' },
   { value: 'central-america', label: 'Central America' },
   { value: 'south-america', label: 'South America' },
@@ -25,22 +20,13 @@ export const RegionSelector = () => {
       </h3>
 
       <Select
-        label="Select Region"
         options={regions}
+        triggerClassName="border rounded px-3 py-2"
+        popupClassName="bg-white shadow-lg rounded"
+        itemClassName="px-3 py-2 hover:bg-gray-100"
         value={selectedRegion}
         onValueChange={setSelectedRegion}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select option" />
-        </SelectTrigger>
-        <SelectContent>
-          {regions.map((region) => (
-            <SelectItem key={region.value} value={region.value}>
-              {region.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      />
 
       {selectedRegion && (
         <p
