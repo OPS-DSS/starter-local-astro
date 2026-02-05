@@ -1,7 +1,7 @@
 'use client'
 
-import { Button as ButtonPrimitive } from '@ops-dss/ui/react/button'
-import type { ButtonProps } from '@ops-dss/ui/react/button'
+import { Button as ButtonPrimitive } from '@ops-dss/ui/button'
+import type { ButtonProps } from '@ops-dss/ui/button'
 import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils'

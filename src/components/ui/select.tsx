@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { SelectPrimitive } from '@ops-dss/ui/react/select'
+import { SelectPrimitive } from '@ops-dss/ui/select'
 
 import { cn } from '@/lib/utils'
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from 'lucide-react'
