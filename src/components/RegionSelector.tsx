@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { Select } from '@ops-dss/ui/select'
-import type { SelectOption, SelectProps } from '@ops-dss/ui/select'
 
-const regions: SelectOption[] = [
+const regions = [
   { value: 'north-america', label: 'North America' },
   { value: 'central-america', label: 'Central America' },
   { value: 'south-america', label: 'South America' },
