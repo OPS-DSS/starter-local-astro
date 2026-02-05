@@ -2,10 +2,15 @@
 import Layout from '../layouts/Layout.astro'
 import { SampleLineChart } from '../components/SampleLineChart'
 import { RegionSelector } from '../components/RegionSelector'
+import UpdateCard from '../components/UpdateCard'
+import '../styles/global.css'
 ---
 
 <Layout>
   <h1>Huila</h1>
+  <div>
+    <UpdateCard client:load />
+  </div>
   <div style="padding: 40px 20px;">
     <RegionSelector client:load />
   </div>
