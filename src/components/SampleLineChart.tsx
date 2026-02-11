@@ -43,16 +43,6 @@ const sampleData = [
 export const SampleLineChart = () => {
   return (
     <div style={{ width: '100%', maxWidth: '900px', margin: '0 auto' }}>
-      <h2
-        style={{
-          textAlign: 'center',
-          marginBottom: '10px',
-          fontSize: '1.5rem',
-          fontWeight: '600',
-        }}
-      >
-        DSS Trends
-      </h2>
       <p
         style={{
           textAlign: 'center',

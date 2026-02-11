@@ -1,0 +1,47 @@
+---
+import MultidimensionalPoverty from '@/components/MultidimensionalPoverty.astro'
+import Layout from '../layouts/Layout.astro'
+import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
+import Welcome from '@/components/Welcome.astro'
+export function getStaticPaths() {
+  const pages = [
+    {
+      slug: undefined,
+      title: 'Observatorio de Salud del Suaza',
+      text: 'Bienvenidos al Observatorio de Salud de Suaza, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud en el municipio de Suaza. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
+    },
+    {
+      slug: 'indicador',
+      title: 'Catálogo de Indicadores',
+      text: 'Lista de los indicadores de salud disponibles en el observatorio, con sus respectivas descripciones y visualizaciones.',
+    },
+    {
+      slug: 'indicador/pobreza-multidimensional',
+      title: 'Pobreza Multidimensional',
+      text: 'El indicador de pobreza multidimensional mide la privación en múltiples dimensiones, como educación, salud y nivel de vida, para identificar a las personas que viven en condiciones de pobreza más allá de los ingresos económicos.',
+    },
+    {
+      slug: 'indicador/consumo-de-alcohol',
+      title: 'Consumo de Alcohol',
+      text: 'El consumo de alcohol es un indicador que representa la cantidad y frecuencia con la que la población consume bebidas alcohólicas, lo cual puede tener implicaciones en la salud pública y el bienestar social.',
+    },
+  ]
+
+  return pages.map(({ slug, title, text }) => {
+    return {
+      params: { slug },
+      props: { title, text, pages, slug },
+    }
+  })
+}
+
+const { title, text, pages, slug } = Astro.props
+---
+
+<Layout title={title} pages={pages}>
+  <h1>{title}</h1>
+  <p>{text}</p>
+  {slug === undefined && <Welcome />}
+  {slug === 'indicador/pobreza-multidimensional' && <MultidimensionalPoverty />}
+  {slug === 'indicador/consumo-de-alcohol' && <AlcoholConsumption />}
+</Layout>

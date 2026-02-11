@@ -23,10 +23,6 @@ export const RegionSelector = () => {
 
   return (
     <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
-      <h3 className="text-red-600 text-2xl font-semibold mb-4 text-center">
-        Health Indicators Region Filter
-      </h3>
-
       <Select onValueChange={setSelectedRegion}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="Theme" />

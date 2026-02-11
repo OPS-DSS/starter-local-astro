@@ -1,0 +1,30 @@
+---
+interface MenuItem {
+  slug: string | undefined
+  title: string
+}
+
+interface Props {
+  pages: MenuItem[]
+}
+
+const { pages } = Astro.props
+
+export function getBasePath() {
+  return import.meta.env.BASE_URL + '/' || '/'
+}
+---
+
+<nav>
+  <ul>
+    {
+      pages.map(({ slug, title }) => (
+        <li>
+          <a href={slug == undefined ? getBasePath() : getBasePath() + slug}>
+            {title}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
