@@ -1,5 +1,19 @@
-<h2>Cite este trabajo</h2>
-<p>Si desea citar este trabajo, utilice el siguiente formato:</p>
-<pre>
-Apellido, Nombre. "Título del gráfico". Nombre del sitio web, fecha de publicación, URL.
+---
+import { format } from 'date-fns'
+const { title, date, currentPage } = Astro.props
+
+export function getBasePath() {
+  return import.meta.env.SITE + import.meta.env.BASE_URL + '/' || '/'
+}
+---
+
+<div class="mt-8 py-6 border-t border-gray-200">
+  <h2 class="font-semibold uppercase text-slate-400">Cite este trabajo</h2>
+  <p class="text-slate-600 pb-2">
+    Si desea citar este trabajo, utilice el siguiente formato:
+  </p>
+  <pre
+    class="bg-gray-100 p-6 rounded-md text-sm text-gray-700 overflow-x-auto">
+"{title}". Observatorio de Salud de Suaza, {format(date, 'dd/MM/yyyy')}, {currentPage == undefined ? getBasePath() : getBasePath() + currentPage}
 </pre>
+</div>

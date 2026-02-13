@@ -3,45 +3,58 @@ import MultidimensionalPoverty from '@/components/MultidimensionalPoverty.astro'
 import Layout from '../layouts/Layout.astro'
 import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
 import Welcome from '@/components/Welcome.astro'
+import Catalog from '@/components/Catalog.astro'
+
 export function getStaticPaths() {
   const pages = [
     {
       slug: undefined,
-      title: 'Observatorio de Salud del Suaza',
+      title: 'Inicio',
       text: 'Bienvenidos al Observatorio de Salud de Suaza, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud en el municipio de Suaza. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
+      date: '2026-01-01',
     },
     {
       slug: 'indicador',
       title: 'Catálogo de Indicadores',
       text: 'Lista de los indicadores de salud disponibles en el observatorio, con sus respectivas descripciones y visualizaciones.',
+      date: '2026-01-01',
     },
     {
       slug: 'indicador/pobreza-multidimensional',
       title: 'Pobreza Multidimensional',
       text: 'El indicador de pobreza multidimensional mide la privación en múltiples dimensiones, como educación, salud y nivel de vida, para identificar a las personas que viven en condiciones de pobreza más allá de los ingresos económicos.',
+      date: '2026-01-01',
     },
     {
       slug: 'indicador/consumo-de-alcohol',
       title: 'Consumo de Alcohol',
       text: 'El consumo de alcohol es un indicador que representa la cantidad y frecuencia con la que la población consume bebidas alcohólicas, lo cual puede tener implicaciones en la salud pública y el bienestar social.',
+      date: '2026-01-01',
     },
   ]
 
-  return pages.map(({ slug, title, text }) => {
+  return pages.map(({ slug, title, text, date }) => {
     return {
       params: { slug },
-      props: { title, text, pages, slug },
+      props: { title, text, pages, slug, date: new Date(date) },
     }
   })
 }
 
-const { title, text, pages, slug } = Astro.props
+const { title, text, pages, slug, date } = Astro.props
 ---
 
-<Layout title={title} pages={pages}>
-  <h1>{title}</h1>
-  <p>{text}</p>
-  {slug === undefined && <Welcome />}
-  {slug === 'indicador/pobreza-multidimensional' && <MultidimensionalPoverty />}
-  {slug === 'indicador/consumo-de-alcohol' && <AlcoholConsumption />}
+<Layout title={title} text={text} date={date} pages={pages} currentPage={slug}>
+  {slug === undefined && <Welcome text={text} />}
+  {slug === 'indicador' && <Catalog title={title} text={text} />}
+  {
+    slug === 'indicador/pobreza-multidimensional' && (
+      <MultidimensionalPoverty title={title} text={text} />
+    )
+  }
+  {
+    slug === 'indicador/consumo-de-alcohol' && (
+      <AlcoholConsumption title={title} text={text} />
+    )
+  }
 </Layout>

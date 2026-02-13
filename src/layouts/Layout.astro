@@ -1,7 +1,8 @@
 ---
-import IndicatorsMenu from '@/components/IndicatorsMenu.astro'
+import NavBarMenu from '@/components/NavBarMenu.astro'
+import CiteThis from '@/components/CiteThis.astro'
 import '../styles/global.css'
-const { title, pages } = Astro.props
+const { title, text, date, pages, currentPage } = Astro.props
 ---
 
 <!doctype html>
@@ -14,7 +15,10 @@ const { title, pages } = Astro.props
     <title>{title}</title>
   </head>
   <body>
-    <IndicatorsMenu pages={pages} />
-    <slot />
+    <NavBarMenu pages={pages} />
+    <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
+      <slot />
+      <CiteThis title={title} date={date} currentPage={currentPage} />
+    </div>
   </body>
 </html>

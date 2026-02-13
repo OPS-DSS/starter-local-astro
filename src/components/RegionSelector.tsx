@@ -11,21 +11,21 @@ import {
 } from '../components/ui/select'
 
 const regions = [
-  { value: 'north-america', label: 'North America' },
-  { value: 'central-america', label: 'Central America' },
-  { value: 'south-america', label: 'South America' },
-  { value: 'caribbean', label: 'Caribbean' },
-  { value: 'all-regions', label: 'All Regions' },
+  { value: 'estrat1', label: 'Estratificador 1' },
+  { value: 'estrat2', label: 'Estratificador 2' },
+  { value: 'estrat3', label: 'Estratificador 3' },
+  { value: 'estrat4', label: 'Estratificador 4' },
+  { value: 'all-estrats', label: 'Todos los estratificadores' },
 ]
 
 export const RegionSelector = () => {
   const [selectedRegion, setSelectedRegion] = useState('')
 
   return (
-    <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
+    <div className="p-4">
       <Select onValueChange={setSelectedRegion}>
-        <SelectTrigger className="w-[180px]">
-          <SelectValue placeholder="Theme" />
+        <SelectTrigger className="w-45">
+          <SelectValue placeholder="Estratificador" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -37,26 +37,10 @@ export const RegionSelector = () => {
           </SelectGroup>
         </SelectContent>
       </Select>
-      {/* <Select
-        options={regions}
-        triggerClassName="border rounded px-3 py-2"
-        popupClassName="bg-white shadow-lg rounded"
-        itemClassName="px-3 py-2 hover:bg-gray-100"
-        value={selectedRegion}
-        onValueChange={setSelectedRegion}
-      /> */}
 
       {selectedRegion && (
-        <p
-          style={{
-            marginTop: '1rem',
-            padding: '1rem',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '0.375rem',
-            textAlign: 'center',
-          }}
-        >
-          Selected:{' '}
+        <p className="mt-4">
+          Estratificador:{' '}
           <strong>
             {regions.find((r) => r.value === selectedRegion)?.label}
           </strong>
