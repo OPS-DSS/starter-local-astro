@@ -24,7 +24,7 @@ export const RegionSelector = () => {
   return (
     <div className="p-4">
       <Select onValueChange={setSelectedRegion}>
-        <SelectTrigger className="w-45">
+        <SelectTrigger>
           <SelectValue placeholder="Estratificador" />
         </SelectTrigger>
         <SelectContent>
