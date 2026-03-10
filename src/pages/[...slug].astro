@@ -6,6 +6,7 @@ import SuicideMortality from '@/components/SuicideMortality.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
 import { readParquet, dataPath, pivotBySexo } from '../lib/parquet'
+import { indicators } from '../data/indicators'
 
 import type { ChartPoint, SuicideRow } from '../lib/parquet'
 
@@ -33,25 +34,13 @@ export async function getStaticPaths() {
       text: 'Lista de los indicadores de salud disponibles en el observatorio, con sus respectivas descripciones y visualizaciones.',
       date: '2026-01-01',
     },
-    {
-      slug: 'indicador/pobreza-multidimensional',
-      title: 'Pobreza Multidimensional',
-      text: 'El indicador de pobreza multidimensional mide la privación en múltiples dimensiones, como educación, salud y nivel de vida, para identificar a las personas que viven en condiciones de pobreza más allá de los ingresos económicos.',
-      date: '2026-01-01',
-    },
-    {
-      slug: 'indicador/consumo-de-alcohol',
-      title: 'Consumo de Alcohol',
-      text: 'El consumo de alcohol es un indicador que representa la cantidad y frecuencia con la que la población consume bebidas alcohólicas, lo cual puede tener implicaciones en la salud pública y el bienestar social.',
-      date: '2026-01-01',
-    },
-    {
-      slug: 'indicador/mortalidad-suicidio',
-      title: 'Mortalidad por Suicidio',
-      text: 'Tasa de mortalidad por suicidio por cada 100.000 habitantes en el departamento del Huila. El indicador se desagrega por sexo (masculino y femenino) para identificar brechas de género y apoyar intervenciones diferenciadas en salud mental.',
-      date: '2026-01-01',
-      data: suicideData,
-    },
+    ...indicators.map((ind) => ({
+      slug: ind.slug,
+      title: ind.title,
+      text: ind.text,
+      date: ind.date,
+      ...(ind.slug === 'indicador/mortalidad-suicidio' ? { data: suicideData } : {}),
+    })),
   ]
 
   return pages.map(({ slug, title, text, date, ...rest }) => ({

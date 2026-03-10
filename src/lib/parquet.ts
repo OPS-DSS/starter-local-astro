@@ -1,13 +1,7 @@
 import { asyncBufferFromFile, parquetRead, parquetMetadata } from 'hyparquet'
-import { fileURLToPath } from 'node:url'
-import { resolve, dirname, isAbsolute } from 'node:path'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
+import { resolve, isAbsolute } from 'node:path'
 
 export function dataPath(filename: string) {
-  // console.log('Resolving path for', filename)
-  // console.log('Current directory:', __dirname)
-  // console.log('Resolved path:', resolve(__dirname, '../data', filename))
   return resolve(process.cwd(), 'src/data', filename)
 }
 

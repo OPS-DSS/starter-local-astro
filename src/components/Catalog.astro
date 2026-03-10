@@ -1,26 +1,11 @@
 ---
+import { indicators } from '@/data/indicators'
+
 const { title, text } = Astro.props
 
-const indicators = [
-  {
-    slug: 'indicador/pobreza-multidimensional',
-    title: 'Pobreza Multidimensional',
-    description: 'Privación en múltiples dimensiones: educación, salud y nivel de vida.',
-    category: 'Condiciones de Vida',
-  },
-  {
-    slug: 'indicador/consumo-de-alcohol',
-    title: 'Consumo de Alcohol',
-    description: 'Cantidad y frecuencia de consumo de bebidas alcohólicas en la población.',
-    category: 'Salud',
-  },
-  {
-    slug: 'indicador/mortalidad-suicidio',
-    title: 'Mortalidad por Suicidio',
-    description: 'Tasa de mortalidad por suicidio (por 100.000 hab.) desagregada por sexo — Huila.',
-    category: 'Salud Mental',
-  },
-]
+const base = import.meta.env.BASE_URL.endsWith('/')
+  ? import.meta.env.BASE_URL
+  : import.meta.env.BASE_URL + '/'
 ---
 
 <div class="flex flex-col gap-2">
@@ -30,7 +15,7 @@ const indicators = [
     {indicators.map(ind => (
       <li>
         <a
-          href={`/${ind.slug}`}
+          href={`${base}${ind.slug}`}
           class="block rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
         >
           <span class="text-xs font-medium text-blue-600 uppercase tracking-wide">
