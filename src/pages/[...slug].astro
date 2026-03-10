@@ -2,10 +2,24 @@
 import MultidimensionalPoverty from '@/components/MultidimensionalPoverty.astro'
 import Layout from '../layouts/Layout.astro'
 import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
+import SuicideMortality from '@/components/SuicideMortality.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
+import { readParquet, dataPath, pivotBySexo } from '../lib/parquet'
 
-export function getStaticPaths() {
+import type { ChartPoint, SuicideRow } from '../lib/parquet'
+
+export async function getStaticPaths() {
+  let suicideData: ChartPoint[] = []
+  try {
+    const rows = await readParquet<SuicideRow>(
+      dataPath('suicide_huila.parquet'),
+    )
+    suicideData = pivotBySexo(rows)
+  } catch (e) {
+    console.error(e)
+  }
+
   const pages = [
     {
       slug: undefined,
@@ -31,17 +45,22 @@ export function getStaticPaths() {
       text: 'El consumo de alcohol es un indicador que representa la cantidad y frecuencia con la que la población consume bebidas alcohólicas, lo cual puede tener implicaciones en la salud pública y el bienestar social.',
       date: '2026-01-01',
     },
+    {
+      slug: 'indicador/mortalidad-suicidio',
+      title: 'Mortalidad por Suicidio',
+      text: 'Tasa de mortalidad por suicidio por cada 100.000 habitantes en el departamento del Huila. El indicador se desagrega por sexo (masculino y femenino) para identificar brechas de género y apoyar intervenciones diferenciadas en salud mental.',
+      date: '2026-01-01',
+      data: suicideData,
+    },
   ]
 
-  return pages.map(({ slug, title, text, date }) => {
-    return {
-      params: { slug },
-      props: { title, text, pages, slug, date: new Date(date) },
-    }
-  })
+  return pages.map(({ slug, title, text, date, ...rest }) => ({
+    params: { slug },
+    props: { title, text, pages, slug, date: new Date(date), ...rest },
+  }))
 }
 
-const { title, text, pages, slug, date } = Astro.props
+const { title, text, pages, slug, date, data } = Astro.props
 ---
 
 <Layout title={title} text={text} date={date} pages={pages} currentPage={slug}>
@@ -55,6 +74,11 @@ const { title, text, pages, slug, date } = Astro.props
   {
     slug === 'indicador/consumo-de-alcohol' && (
       <AlcoholConsumption title={title} text={text} />
+    )
+  }
+  {
+    slug === 'indicador/mortalidad-suicidio' && (
+      <SuicideMortality title={title} text={text} data={data} />
     )
   }
 </Layout>
