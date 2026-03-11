@@ -67,7 +67,7 @@ const { title, text, pages, slug, date, data } = Astro.props
   }
   {
     slug === 'indicador/mortalidad-suicidio' && (
-      <SuicideMortality title={title} text={text} data={data} />
+      <SuicideMortality title={title} text={text} data={data} csvPath={`${import.meta.env.BASE_URL}data/suicide_huila.csv`} />
     )
   }
 </Layout>
