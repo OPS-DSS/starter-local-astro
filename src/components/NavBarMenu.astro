@@ -22,25 +22,25 @@ export function getBasePath() {
   <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
     <div class="relative flex h-16 items-center justify-between">
       <!-- Mobile dropdown -->
-      <div class="relative inline-block md:hidden group">
+      <div class="relative inline-block md:hidden">
         <button
+          id="mobile-menu-button"
           type="button"
           class="inline-flex items-center justify-center h-10 w-10 rounded-md border border-gray-200 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 transition-colors"
           aria-haspopup="true"
           aria-expanded="false"
         >
-          <span class="sr-only">Open main menu</span>
+          <span id="mobile-menu-sr-text" class="sr-only">Open main menu</span>
           <Icon name="mdi:menu" size={24} />
         </button>
 
         <div
+          id="mobile-menu-dropdown"
           class="absolute left-0 top-full mt-2 min-w-55
             rounded-md border border-gray-200 bg-white p-1 shadow-md z-50
             opacity-0 scale-95 -translate-y-1
             pointer-events-none
-            transition duration-150 ease-out
-            group-hover:opacity-100 group-hover:scale-100 group-hover:translate-y-0 group-hover:pointer-events-auto
-            group-focus-within:opacity-100 group-focus-within:scale-100 group-focus-within:translate-y-0 group-focus-within:pointer-events-auto"
+            transition duration-150 ease-out"
         >
           {
             pages.map(({ slug, title }) => (
@@ -82,3 +82,41 @@ export function getBasePath() {
     </div>
   </div>
 </nav>
+
+<script>
+  const button = document.getElementById('mobile-menu-button') as HTMLButtonElement
+  const dropdown = document.getElementById('mobile-menu-dropdown') as HTMLElement
+  const srText = document.getElementById('mobile-menu-sr-text') as HTMLElement
+
+  function openMenu() {
+    dropdown.classList.remove('opacity-0', 'scale-95', '-translate-y-1', 'pointer-events-none')
+    dropdown.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto')
+    button.setAttribute('aria-expanded', 'true')
+    srText.textContent = 'Close main menu'
+  }
+
+  function closeMenu() {
+    dropdown.classList.add('opacity-0', 'scale-95', '-translate-y-1', 'pointer-events-none')
+    dropdown.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto')
+    button.setAttribute('aria-expanded', 'false')
+    srText.textContent = 'Open main menu'
+  }
+
+  button.addEventListener('click', (e) => {
+    e.stopPropagation()
+    button.getAttribute('aria-expanded') === 'true' ? closeMenu() : openMenu()
+  })
+
+  document.addEventListener('click', (e) => {
+    if (!button.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+      closeMenu()
+    }
+  })
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') {
+      closeMenu()
+      button.focus()
+    }
+  })
+</script>
