@@ -131,7 +131,7 @@ export function pivotBySexo(rows: SuicideRow[]): ChartPoint[] {
     const sex = String(row[5])
     const value = Number(row[6])
     if (!byYear.has(year)) byYear.set(year, { anio: year })
-    byYear.get(year)![sex] = value
+    if (value !== 0) byYear.get(year)![sex] = value
   }
   return Array.from(byYear.values()).sort(
     (a, b) => (a.anio as number) - (b.anio as number),
