@@ -1,6 +1,8 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
+import { defineConfig } from 'astro/config'
+import react from '@astrojs/react'
+import icon from 'astro-icon'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://astro.build/config
 export default defineConfig({
@@ -8,7 +10,10 @@ export default defineConfig({
   base: process.env.BASE_PATH || '/starter-local-astro',
   output: 'static',
   build: {
-    assets: '_astro'
+    assets: '_astro',
   },
-  integrations: [react()]
-});
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  integrations: [react(), icon()],
+})

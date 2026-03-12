@@ -1,35 +1,51 @@
-import { useState } from 'react';
-import { Select } from '@ops-dss/ui/select';
+import { useState } from 'react'
+// import { Select } from '@ops-dss/ui/select'
+// import type { SelectOption } from '@ops-dss/ui/select'
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+  SelectGroup,
+} from '../components/ui/select'
 
 const regions = [
-  { value: 'north-america', label: 'North America' },
-  { value: 'central-america', label: 'Central America' },
-  { value: 'south-america', label: 'South America' },
-  { value: 'caribbean', label: 'Caribbean' },
-  { value: 'all-regions', label: 'All Regions' },
-];
+  { value: 'estrat1', label: 'Estratificador 1' },
+  { value: 'estrat2', label: 'Estratificador 2' },
+  { value: 'estrat3', label: 'Estratificador 3' },
+  { value: 'estrat4', label: 'Estratificador 4' },
+  { value: 'all-estrats', label: 'Todos los estratificadores' },
+]
 
 export const RegionSelector = () => {
-  const [selectedRegion, setSelectedRegion] = useState('');
+  const [selectedRegion, setSelectedRegion] = useState('')
 
   return (
-    <div style={{ width: '100%', maxWidth: '400px', margin: '0 auto' }}>
-      <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem', textAlign: 'center' }}>
-        Health Indicators Region Filter
-      </h3>
-      <Select
-        label="Select Region"
-        options={regions}
-        value={selectedRegion}
-        onChange={setSelectedRegion}
-        placeholder="Choose a region to view data"
-        id="region-select"
-      />
+    <div className="p-4">
+      <Select onValueChange={setSelectedRegion}>
+        <SelectTrigger>
+          <SelectValue placeholder="Estratificador" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {regions.map((region) => (
+              <SelectItem key={region.value} value={region.value}>
+                {region.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+
       {selectedRegion && (
-        <p style={{ marginTop: '1rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '0.375rem', textAlign: 'center' }}>
-          Selected: <strong>{regions.find(r => r.value === selectedRegion)?.label}</strong>
+        <p className="mt-4">
+          Estratificador:{' '}
+          <strong>
+            {regions.find((r) => r.value === selectedRegion)?.label}
+          </strong>
         </p>
       )}
     </div>
-  );
-};
+  )
+}
