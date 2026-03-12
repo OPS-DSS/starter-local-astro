@@ -1,6 +1,4 @@
 import { useState } from 'react'
-// import { Select } from '@ops-dss/ui/select'
-// import type { SelectOption } from '@ops-dss/ui/select'
 import {
   Select,
   SelectTrigger,
@@ -11,18 +9,15 @@ import {
 } from '../components/ui/select'
 
 const regions = [
-  { value: 'estrat1', label: 'Estratificador 1' },
-  { value: 'estrat2', label: 'Estratificador 2' },
-  { value: 'estrat3', label: 'Estratificador 3' },
-  { value: 'estrat4', label: 'Estratificador 4' },
-  { value: 'all-estrats', label: 'Todos los estratificadores' },
+  { value: 'total', label: 'Total' },
+  { value: 'sexo', label: 'Sexo' },
 ]
 
 export const RegionSelector = () => {
   const [selectedRegion, setSelectedRegion] = useState('')
 
   return (
-    <div className="p-4">
+    <div>
       <Select onValueChange={setSelectedRegion}>
         <SelectTrigger>
           <SelectValue placeholder="Estratificador" />
