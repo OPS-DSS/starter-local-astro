@@ -1,4 +1,4 @@
-import { asyncBufferFromFile, parquetRead, parquetMetadata } from 'hyparquet'
+import { asyncBufferFromFile, parquetRead } from 'hyparquet'
 import { resolve, isAbsolute } from 'node:path'
 
 export function dataPath(filename: string) {
@@ -94,20 +94,6 @@ export async function readParquetAsObjects<T = Record<string, unknown>>(
         },
         columns: undefined, // read all columns
       })
-
-      // Try to read metadata separately for column names
-      parquetMetadata(file)
-        .then((metadata) => {
-          if (metadata?.schema) {
-            // schema[0] is the root, children are columns
-            columnNames = metadata.schema
-              .slice(1)
-              .map((s: { name: string }) => s.name)
-          }
-        })
-        .catch(() => {
-          // Ignore metadata errors, fallback names will be used
-        })
     } catch (err) {
       reject(err)
     }
@@ -125,8 +111,6 @@ export type ChartPoint = { anio: number; [key: string]: number | string }
 export function pivotBySexo(rows: SuicideRow[]): ChartPoint[] {
   const byYear = new Map<number, ChartPoint>()
   for (const row of rows) {
-    // console.log('Processing row:', row)
-    // console.log('valores:', row.valor, 'anio:', row.anio, 'sexo:', row.sexo)
     const year = Number(row[4])
     const sex = String(row[5])
     const value = Number(row[6])
