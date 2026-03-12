@@ -6,38 +6,38 @@ import {
   SelectContent,
   SelectItem,
   SelectGroup,
-} from '../components/ui/select'
+} from './ui/select'
 
-const regions = [
+const stratifiers = [
   { value: 'total', label: 'Total' },
   { value: 'sexo', label: 'Sexo' },
 ]
 
-export const RegionSelector = () => {
-  const [selectedRegion, setSelectedRegion] = useState('')
+export const StratifierSelector = () => {
+  const [selectedStratifier, setSelectedStratifier] = useState('')
 
   return (
     <div>
-      <Select onValueChange={setSelectedRegion}>
+      <Select onValueChange={setSelectedStratifier}>
         <SelectTrigger>
           <SelectValue placeholder="Estratificador" />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {regions.map((region) => (
-              <SelectItem key={region.value} value={region.value}>
-                {region.label}
+            {stratifiers.map((stratifier) => (
+              <SelectItem key={stratifier.value} value={stratifier.value}>
+                {stratifier.label}
               </SelectItem>
             ))}
           </SelectGroup>
         </SelectContent>
       </Select>
 
-      {selectedRegion && (
+      {selectedStratifier && (
         <p className="mt-4">
           Estratificador:{' '}
           <strong>
-            {regions.find((r) => r.value === selectedRegion)?.label}
+            {stratifiers.find((r) => r.value === selectedStratifier)?.label}
           </strong>
         </p>
       )}
