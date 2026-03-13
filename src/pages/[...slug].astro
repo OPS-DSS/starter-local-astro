@@ -5,10 +5,20 @@ import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
 import SuicideMortality from '@/components/SuicideMortality.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
-import { readParquet, dataPath, filterSuicideRows, pivotGaps } from '../lib/parquet'
+import {
+  readParquet,
+  dataPath,
+  filterSuicideRows,
+  pivotGaps,
+} from '../lib/parquet'
 import { indicators } from '../data/indicators'
 
-import type { SuicideRow, SuicideDataRow, GapsRow, GapsChartPoint } from '../lib/parquet'
+import type {
+  SuicideRow,
+  SuicideDataRow,
+  GapsRow,
+  GapsChartPoint,
+} from '../lib/parquet'
 
 export async function getStaticPaths() {
   let suicideData: SuicideDataRow[] = []
@@ -40,7 +50,7 @@ export async function getStaticPaths() {
     },
     {
       slug: 'indicador',
-      title: 'Catálogo de Indicadores',
+      title: 'Indicadores',
       text: 'Lista de los indicadores de salud disponibles en el observatorio, con sus respectivas descripciones y visualizaciones.',
       date: '2026-01-01',
     },
@@ -68,13 +78,8 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props
   {slug === undefined && <Welcome text={text} />}
   {slug === 'indicador' && <Catalog title={title} text={text} />}
   {
-    slug === 'indicador/pobreza-multidimensional' && (
+    slug === 'indicador/educacion' && (
       <MultidimensionalPoverty title={title} text={text} />
-    )
-  }
-  {
-    slug === 'indicador/consumo-de-alcohol' && (
-      <AlcoholConsumption title={title} text={text} />
     )
   }
   {
