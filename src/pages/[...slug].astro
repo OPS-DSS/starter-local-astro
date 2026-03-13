@@ -1,8 +1,8 @@
 ---
 import Education from '@/components/Education.astro'
 import Layout from '../layouts/Layout.astro'
-import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
 import SuicideMortality from '@/components/SuicideMortality.astro'
+import Analytics from '@/components/Analytics.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
 import {
@@ -90,4 +90,5 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props
       />
     )
   }
+  {slug === 'indicador/analitica' && <Analytics title={title} text={text} />}
 </Layout>
