@@ -17,31 +17,61 @@ interface SuicideGapsChartProps {
   csvPath?: string
 }
 
-const columns = [
-  { dataKey: 'brechaHuila', label: 'Brecha absoluta Huila' },
-  { dataKey: 'brechaNacional', label: 'Brecha absoluta Nacional' },
-  { dataKey: 'brechaSuaza', label: 'Brecha absoluta Suaza' },
+const brechaColumns = [
+  { dataKey: 'brechaHuila', label: 'Huila' },
+  { dataKey: 'brechaNacional', label: 'Nacional' },
+  { dataKey: 'brechaSuaza', label: 'Suaza' },
 ] as const
 
-const lines = [
+const razonColumns = [
+  { dataKey: 'razonHuila', label: 'Huila' },
+  { dataKey: 'razonNacional', label: 'Nacional' },
+  { dataKey: 'razonSuaza', label: 'Suaza' },
+] as const
+
+const brechaLines = [
   {
     dataKey: 'brechaHuila',
-    name: 'Brecha absoluta Huila',
+    name: 'Huila',
     color: '#6b7280',
     yAxisId: 'left',
   },
   {
     dataKey: 'brechaNacional',
-    name: 'Brecha absoluta Nacional',
+    name: 'Nacional',
     color: '#3b82f6',
     yAxisId: 'left',
   },
 ]
 
-const bars = [
+const brechaBars = [
   {
     dataKey: 'brechaSuaza',
-    name: 'Brecha absoluta Suaza',
+    name: 'Suaza',
+    color: '#f59e0b',
+    yAxisId: 'right',
+  },
+]
+
+const razonLines = [
+  {
+    dataKey: 'razonHuila',
+    name: 'Huila',
+    color: '#6b7280',
+    yAxisId: 'left',
+  },
+  {
+    dataKey: 'razonNacional',
+    name: 'Nacional',
+    color: '#3b82f6',
+    yAxisId: 'left',
+  },
+]
+
+const razonBars = [
+  {
+    dataKey: 'razonSuaza',
+    name: 'Suaza',
     color: '#f59e0b',
     yAxisId: 'right',
   },
@@ -53,6 +83,11 @@ export const SuicideGapsChart = ({
   csvPath,
 }: SuicideGapsChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
+  const [metric, setMetric] = useState<'brecha' | 'razon'>('brecha')
+
+  const columns = metric === 'brecha' ? brechaColumns : razonColumns
+  const lines = metric === 'brecha' ? brechaLines : razonLines
+  const bars = metric === 'brecha' ? brechaBars : razonBars
 
   if (!data || data.length === 0) {
     return (
@@ -67,30 +102,65 @@ export const SuicideGapsChart = ({
       style={{ width: '100%', margin: '0 auto' }}
       data-stratifier={stratifier}
     >
-      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
-        <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-          <button
-            onClick={() => setView('chart')}
-            className={`px-4 py-1.5 transition-colors ${
-              view === 'chart'
-                ? 'bg-gray-800 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Gráfico
-          </button>
-          <button
-            onClick={() => setView('table')}
-            className={`px-4 py-1.5 transition-colors ${
-              view === 'table'
-                ? 'bg-gray-800 text-white'
-                : 'bg-white text-gray-600 hover:bg-gray-50'
-            }`}
-          >
-            Tabla
-          </button>
+      {metric === 'brecha' ? (
+        <div className="py-4">
+          <h2 className="text-xl font-bold">Brecha Absoluta</h2>
+          <p>Suaza en barras; Nacional y Huila como referencia</p>
         </div>
+      ) : (
+        <div className="py-4">
+          <h2 className="text-xl font-bold">Brecha Relativa</h2>
+          <p>Suaza en barras; Nacional y Huila como referencia</p>
+        </div>
+      )}
+      <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
+        <div className="flex gap-2 flex-wrap">
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+            <button
+              onClick={() => setView('chart')}
+              className={`px-4 py-1.5 transition-colors ${
+                view === 'chart'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Gráfico
+            </button>
+            <button
+              onClick={() => setView('table')}
+              className={`px-4 py-1.5 transition-colors ${
+                view === 'table'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Tabla
+            </button>
+          </div>
 
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+            <button
+              onClick={() => setMetric('brecha')}
+              className={`px-4 py-1.5 transition-colors ${
+                metric === 'brecha'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Brecha Absoluta
+            </button>
+            <button
+              onClick={() => setMetric('razon')}
+              className={`px-4 py-1.5 transition-colors ${
+                metric === 'razon'
+                  ? 'bg-gray-800 text-white'
+                  : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              Brecha Relativa
+            </button>
+          </div>
+        </div>
         {csvPath && (
           <a
             href={csvPath}

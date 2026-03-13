@@ -161,83 +161,51 @@ export type GapsChartPoint = {
   razonHuila?: number
   razonNacional?: number
   razonSuaza?: number
+  femeninoHuila?: number
+  femeninoNacional?: number
+  femeninoSuaza?: number
+  masculinoHuila?: number
+  masculinoNacional?: number
+  masculinoSuaza?: number
 }
 
 export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
   const byYear = new Map<number, GapsChartPoint>()
+
   for (const row of rows) {
     const anio = Number(row[0])
-    if (!Number.isFinite(anio)) {
-      continue
-    }
+    if (!Number.isFinite(anio)) continue
 
     const territorio = String(row[1])
+    if (territorio !== 'Huila' && territorio !== 'Nacional' && territorio !== 'Suaza') continue
+
     const brechaAbsoluta = Number(row[4])
+    if (!Number.isFinite(brechaAbsoluta)) continue
+
+    if (!byYear.has(anio)) byYear.set(anio, { anio })
+    const point = byYear.get(anio)!
+
+    const femenino = Number(row[2])
+    const masculino = Number(row[3])
     const razon = Number(row[5])
 
-    // Only consider expected territories
-    if (
-      territorio !== 'Huila' &&
-      territorio !== 'Nacional' &&
-      territorio !== 'Suaza'
-    ) {
-      continue
-    }
-
-    let point = byYear.get(anio)
-
     if (territorio === 'Huila') {
-      if (!Number.isFinite(brechaAbsoluta)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
       point.brechaHuila = brechaAbsoluta
-      if (!Number.isFinite(razon)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
-      point.razonHuila = razon
+      if (Number.isFinite(razon)) point.razonHuila = razon
+      if (Number.isFinite(masculino)) point.masculinoHuila = masculino
+      if (Number.isFinite(femenino)) point.femeninoHuila = femenino
     } else if (territorio === 'Nacional') {
-      if (!Number.isFinite(brechaAbsoluta)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
       point.brechaNacional = brechaAbsoluta
-      if (!Number.isFinite(razon)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
-      point.razonNacional = razon
-    } else if (territorio === 'Suaza') {
-      if (!Number.isFinite(brechaAbsoluta)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
+      if (Number.isFinite(razon)) point.razonNacional = razon
+      if (Number.isFinite(masculino)) point.masculinoNacional = masculino
+      if (Number.isFinite(femenino)) point.femeninoNacional = femenino
+    } else {
       point.brechaSuaza = brechaAbsoluta
-      if (!Number.isFinite(razon)) {
-        continue
-      }
-      if (!point) {
-        point = { anio }
-        byYear.set(anio, point)
-      }
-      point.razonSuaza = razon
+      if (Number.isFinite(razon)) point.razonSuaza = razon
+      if (Number.isFinite(masculino)) point.masculinoSuaza = masculino
+      if (Number.isFinite(femenino)) point.femeninoSuaza = femenino
     }
   }
+
   return Array.from(byYear.values()).sort((a, b) => a.anio - b.anio)
 }
