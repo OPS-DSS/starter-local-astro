@@ -5,18 +5,28 @@ import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
 import SuicideMortality from '@/components/SuicideMortality.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
-import { readParquet, dataPath, pivotBySexo } from '../lib/parquet'
+import { readParquet, dataPath, filterSuicideRows, pivotGaps } from '../lib/parquet'
 import { indicators } from '../data/indicators'
 
-import type { ChartPoint, SuicideRow } from '../lib/parquet'
+import type { SuicideRow, SuicideDataRow, GapsRow, GapsChartPoint } from '../lib/parquet'
 
 export async function getStaticPaths() {
-  let suicideData: ChartPoint[] = []
+  let suicideData: SuicideDataRow[] = []
   try {
     const rows = await readParquet<SuicideRow>(
       dataPath('suicide_huila.parquet'),
     )
-    suicideData = pivotBySexo(rows)
+    suicideData = filterSuicideRows(rows)
+  } catch (e) {
+    console.error(e)
+  }
+
+  let suicideGapsData: GapsChartPoint[] = []
+  try {
+    const rows = await readParquet<GapsRow>(
+      dataPath('suicide_huila_gaps.parquet'),
+    )
+    suicideGapsData = pivotGaps(rows)
   } catch (e) {
     console.error(e)
   }
@@ -40,7 +50,7 @@ export async function getStaticPaths() {
       text: ind.text,
       date: ind.date,
       ...(ind.slug === 'indicador/mortalidad-suicidio'
-        ? { data: suicideData }
+        ? { data: suicideData, gapsData: suicideGapsData }
         : {}),
     })),
   ]
@@ -51,7 +61,7 @@ export async function getStaticPaths() {
   }))
 }
 
-const { title, text, pages, slug, date, data } = Astro.props
+const { title, text, pages, slug, date, data, gapsData } = Astro.props
 ---
 
 <Layout title={title} text={text} date={date} pages={pages} currentPage={slug}>
@@ -73,7 +83,9 @@ const { title, text, pages, slug, date, data } = Astro.props
         title={title}
         text={text}
         data={data}
+        gapsData={gapsData}
         csvPath={`${import.meta.env.BASE_URL}/data/suicide_huila.csv`}
+        gapsCsvPath={`${import.meta.env.BASE_URL}/data/suicide_huila_gaps.csv`}
       />
     )
   }

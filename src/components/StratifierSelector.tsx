@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import {
   Select,
   SelectTrigger,
@@ -13,14 +12,25 @@ const stratifiers = [
   { value: 'sexo', label: 'Sexo' },
 ]
 
-export const StratifierSelector = () => {
-  const [selectedStratifier, setSelectedStratifier] = useState('')
+interface StratifierSelectorProps {
+  value?: string
+  onValueChange?: (value: string) => void
+}
+
+export const StratifierSelector = ({
+  value,
+  onValueChange,
+}: StratifierSelectorProps = {}) => {
+  const selectProps =
+    value === undefined
+      ? { defaultValue: 'total', onValueChange }
+      : { value, onValueChange }
 
   return (
     <div>
-      <Select onValueChange={setSelectedStratifier}>
+      <Select {...selectProps}>
         <SelectTrigger>
-          <SelectValue placeholder="Estratificador" />
+          <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
@@ -32,15 +42,6 @@ export const StratifierSelector = () => {
           </SelectGroup>
         </SelectContent>
       </Select>
-
-      {selectedStratifier && (
-        <p className="mt-4">
-          Estratificador:{' '}
-          <strong>
-            {stratifiers.find((r) => r.value === selectedStratifier)?.label}
-          </strong>
-        </p>
-      )}
     </div>
   )
 }

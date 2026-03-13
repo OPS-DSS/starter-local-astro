@@ -121,3 +121,96 @@ export function pivotBySexo(rows: SuicideRow[]): ChartPoint[] {
     (a, b) => (a.anio as number) - (b.anio as number),
   )
 }
+
+export type SuicideDataRow = {
+  anio: number
+  territorio: string
+  sexo: string
+  valor: number
+}
+
+const CHART_TERRITORIES = new Set(['Suaza', 'Huila', 'Nacional'])
+
+/**
+ * Filters the raw suicide parquet rows to only Suaza, Huila, and Nacional,
+ * returning flat objects suitable for client-side pivoting.
+ * Columns: iso3[0], territorio[1], cod_sub[2], cod_local[3], anio[4], sexo[5], valor[6]
+ */
+export function filterSuicideRows(rows: SuicideRow[]): SuicideDataRow[] {
+  const result: SuicideDataRow[] = []
+  for (const row of rows) {
+    const territorio = String(row[1])
+    if (!CHART_TERRITORIES.has(territorio)) continue
+    const anio = Number(row[4])
+    const sexo = String(row[5])
+    const valor = Number(row[6])
+    if (Number.isFinite(anio) && Number.isFinite(valor) && valor !== 0) {
+      result.push({ anio, territorio, sexo, valor })
+    }
+  }
+  return result
+}
+
+// Gaps data types — columns: anio, territorio, Femenino, Masculino, brecha_absoluta, razon
+export type GapsRow = unknown[]
+export type GapsChartPoint = {
+  anio: number
+  razonHuila?: number
+  razonNacional?: number
+  brechaSuaza?: number
+}
+
+export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
+  const byYear = new Map<number, GapsChartPoint>()
+  for (const row of rows) {
+    const anio = Number(row[0])
+    if (!Number.isFinite(anio)) {
+      continue
+    }
+
+    const territorio = String(row[1])
+    const brechaAbsoluta = Number(row[4])
+    const razon = Number(row[5])
+
+    // Only consider expected territories
+    if (
+      territorio !== 'Huila' &&
+      territorio !== 'Nacional' &&
+      territorio !== 'Suaza'
+    ) {
+      continue
+    }
+
+    let point = byYear.get(anio)
+
+    if (territorio === 'Huila') {
+      if (!Number.isFinite(razon)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.razonHuila = razon
+    } else if (territorio === 'Nacional') {
+      if (!Number.isFinite(razon)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.razonNacional = razon
+    } else if (territorio === 'Suaza') {
+      if (!Number.isFinite(brechaAbsoluta)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.brechaSuaza = brechaAbsoluta
+    }
+  }
+  return Array.from(byYear.values()).sort((a, b) => a.anio - b.anio)
+}
