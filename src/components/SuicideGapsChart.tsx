@@ -23,13 +23,13 @@ const columns = [
 const lines = [
   {
     dataKey: 'brechaHuila',
-    name: 'Brecha Absoluta Huila',
+    name: 'Brecha absoluta Huila',
     color: '#6b7280',
     yAxisId: 'left',
   },
   {
     dataKey: 'brechaNacional',
-    name: 'Brecha Absoluta Nacional',
+    name: 'Brecha absoluta Nacional',
     color: '#3b82f6',
     yAxisId: 'left',
   },
