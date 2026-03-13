@@ -169,6 +169,68 @@ export type GapsChartPoint = {
   masculinoSuaza?: number
 }
 
+// Education data types
+// Parquet columns (by index): anio[0], municipio[1], departamento[2],
+// cobertura_bruta[3], cobertura_neta[4], deserci_n[5],
+// aprobaci_n[6], reprobaci_n[7], repitencia[8]
+export type EducationRow = unknown[]
+
+export type EducationDataRow = {
+  anio: number
+  cobertura_bruta: number
+  cobertura_neta: number
+  deserci_n: number
+  aprobaci_n: number
+  reprobaci_n: number
+  repitencia: number
+}
+
+export type EducationIndicator =
+  | 'cobertura_bruta'
+  | 'cobertura_neta'
+  | 'deserci_n'
+  | 'aprobaci_n'
+  | 'reprobaci_n'
+  | 'repitencia'
+
+export function filterEducationRows(rows: EducationRow[]): EducationDataRow[] {
+  const result: EducationDataRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    if (!Number.isFinite(anio)) continue
+
+    const cobertura_bruta = Number(row[3])
+    const cobertura_neta  = Number(row[4])
+    const deserci_n       = Number(row[5])
+    const aprobaci_n      = Number(row[6])
+    const reprobaci_n     = Number(row[7])
+    const repitencia      = Number(row[8])
+
+    // Skip rows where any indicator value is not a finite number
+    if (
+      !Number.isFinite(cobertura_bruta) ||
+      !Number.isFinite(cobertura_neta) ||
+      !Number.isFinite(deserci_n) ||
+      !Number.isFinite(aprobaci_n) ||
+      !Number.isFinite(reprobaci_n) ||
+      !Number.isFinite(repitencia)
+    ) {
+      continue
+    }
+
+    result.push({
+      anio,
+      cobertura_bruta,
+      cobertura_neta,
+      deserci_n,
+      aprobaci_n,
+      reprobaci_n,
+      repitencia,
+    })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
 export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
   const byYear = new Map<number, GapsChartPoint>()
 
