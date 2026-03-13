@@ -158,6 +158,9 @@ export type GapsChartPoint = {
   brechaHuila?: number
   brechaNacional?: number
   brechaSuaza?: number
+  razonHuila?: number
+  razonNacional?: number
+  razonSuaza?: number
 }
 
 export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
@@ -192,6 +195,14 @@ export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
         byYear.set(anio, point)
       }
       point.brechaHuila = brechaAbsoluta
+      if (!Number.isFinite(razon)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.razonHuila = razon
     } else if (territorio === 'Nacional') {
       if (!Number.isFinite(brechaAbsoluta)) {
         continue
@@ -201,6 +212,14 @@ export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
         byYear.set(anio, point)
       }
       point.brechaNacional = brechaAbsoluta
+      if (!Number.isFinite(razon)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.razonNacional = razon
     } else if (territorio === 'Suaza') {
       if (!Number.isFinite(brechaAbsoluta)) {
         continue
@@ -210,6 +229,14 @@ export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
         byYear.set(anio, point)
       }
       point.brechaSuaza = brechaAbsoluta
+      if (!Number.isFinite(razon)) {
+        continue
+      }
+      if (!point) {
+        point = { anio }
+        byYear.set(anio, point)
+      }
+      point.razonSuaza = razon
     }
   }
   return Array.from(byYear.values()).sort((a, b) => a.anio - b.anio)
