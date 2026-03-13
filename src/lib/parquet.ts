@@ -231,6 +231,84 @@ export function filterEducationRows(rows: EducationRow[]): EducationDataRow[] {
   return result.sort((a, b) => a.anio - b.anio)
 }
 
+// ── Analytics data types ──────────────────────────────────────────────────────
+// Cross-indicator: suicide mortality (Suaza, Total) joined with education data.
+// Parquet columns (by index) when analytics_suaza.parquet is present:
+//   anio[0], valor[1], cobertura_bruta[2], cobertura_neta[3],
+//   desercion[4], aprobacion[5], reprobacion[6], repitencia[7]
+export type AnalyticsRow = unknown[]
+
+export type AnalyticsDataRow = {
+  anio: number
+  valor: number
+  cobertura_bruta: number
+  cobertura_neta: number
+  desercion: number
+  aprobacion: number
+  reprobacion: number
+  repitencia: number
+}
+
+/** Parse rows from analytics_suaza.parquet (produced by the R script). */
+export function filterAnalyticsRows(rows: AnalyticsRow[]): AnalyticsDataRow[] {
+  const result: AnalyticsDataRow[] = []
+  for (const row of rows) {
+    const anio            = Number(row[0])
+    const valor           = Number(row[1])
+    const cobertura_bruta = Number(row[2])
+    const cobertura_neta  = Number(row[3])
+    const desercion       = Number(row[4])
+    const aprobacion      = Number(row[5])
+    const reprobacion     = Number(row[6])
+    const repitencia      = Number(row[7])
+    if (!Number.isFinite(anio) || !Number.isFinite(repitencia)) continue
+    result.push({ anio, valor, cobertura_bruta, cobertura_neta, desercion, aprobacion, reprobacion, repitencia })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+/**
+ * Build the analytics joined dataset from already-read suicide and education
+ * parquet rows (fallback when analytics_suaza.parquet has not been generated yet).
+ * Mirrors the R inner_join(suicidio, educacion, by="anio") for Suaza/Total.
+ */
+export function buildAnalyticsData(
+  suicideRows: SuicideRow[],
+  educationRows: EducationRow[],
+): AnalyticsDataRow[] {
+  // Index education by year
+  const eduByYear = new Map<number, AnalyticsDataRow>()
+  for (const row of educationRows) {
+    const anio        = Number(row[0])
+    const repitencia  = Number(row[8])
+    if (!Number.isFinite(anio) || !Number.isFinite(repitencia)) continue
+    eduByYear.set(anio, {
+      anio,
+      valor:           0, // filled below
+      cobertura_bruta: Number(row[3]),
+      cobertura_neta:  Number(row[4]),
+      desercion:       Number(row[5]),
+      aprobacion:      Number(row[6]),
+      reprobacion:     Number(row[7]),
+      repitencia,
+    })
+  }
+  // Join with Suaza/Total suicide rows
+  const result: AnalyticsDataRow[] = []
+  for (const row of suicideRows) {
+    const territorio = String(row[1])
+    const sexo       = String(row[5])
+    if (territorio !== 'Suaza' || sexo !== 'Total') continue
+    const anio  = Number(row[4])
+    const valor = Number(row[6])
+    if (!Number.isFinite(anio)) continue
+    const edu = eduByYear.get(anio)
+    if (!edu) continue
+    result.push({ ...edu, valor })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
 export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
   const byYear = new Map<number, GapsChartPoint>()
 
