@@ -3,8 +3,8 @@ import { DSComboChart } from '@ops-dss/charts/combo-chart'
 
 type GapsChartPoint = {
   anio: number
-  razonHuila?: number
-  razonNacional?: number
+  brechaHuila?: number
+  brechaNacional?: number
   brechaSuaza?: number
 }
 
@@ -15,21 +15,21 @@ interface SuicideGapsChartProps {
 }
 
 const columns = [
-  { dataKey: 'razonHuila', label: 'Razón H/M Huila' },
-  { dataKey: 'razonNacional', label: 'Razón H/M Nacional' },
+  { dataKey: 'brechaHuila', label: 'Brecha absoluta Huila' },
+  { dataKey: 'brechaNacional', label: 'Brecha absoluta Nacional' },
   { dataKey: 'brechaSuaza', label: 'Brecha absoluta Suaza' },
 ] as const
 
 const lines = [
   {
-    dataKey: 'razonHuila',
-    name: 'Razón H/M Huila',
+    dataKey: 'brechaHuila',
+    name: 'Brecha Absoluta Huila',
     color: '#6b7280',
     yAxisId: 'left',
   },
   {
-    dataKey: 'razonNacional',
-    name: 'Razón H/M Nacional',
+    dataKey: 'brechaNacional',
+    name: 'Brecha Absoluta Nacional',
     color: '#3b82f6',
     yAxisId: 'left',
   },
@@ -60,7 +60,10 @@ export const SuicideGapsChart = ({
   }
 
   return (
-    <div style={{ width: '100%', margin: '0 auto' }} data-stratifier={stratifier}>
+    <div
+      style={{ width: '100%', margin: '0 auto' }}
+      data-stratifier={stratifier}
+    >
       <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
         <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
           <button

@@ -1,11 +1,16 @@
 ---
 import { SuicideMortalityPanel } from './SuicideMortalityPanel'
 
-type SuicideDataRow = { anio: number; territorio: string; sexo: string; valor: number }
+type SuicideDataRow = {
+  anio: number
+  territorio: string
+  sexo: string
+  valor: number
+}
 type GapsChartPoint = {
   anio: number
-  razonHuila?: number
-  razonNacional?: number
+  brechaHuila?: number
+  brechaNacional?: number
   brechaSuaza?: number
 }
 

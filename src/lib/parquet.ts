@@ -155,8 +155,8 @@ export function filterSuicideRows(rows: SuicideRow[]): SuicideDataRow[] {
 export type GapsRow = unknown[]
 export type GapsChartPoint = {
   anio: number
-  razonHuila?: number
-  razonNacional?: number
+  brechaHuila?: number
+  brechaNacional?: number
   brechaSuaza?: number
 }
 
@@ -184,23 +184,23 @@ export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
     let point = byYear.get(anio)
 
     if (territorio === 'Huila') {
-      if (!Number.isFinite(razon)) {
+      if (!Number.isFinite(brechaAbsoluta)) {
         continue
       }
       if (!point) {
         point = { anio }
         byYear.set(anio, point)
       }
-      point.razonHuila = razon
+      point.brechaHuila = brechaAbsoluta
     } else if (territorio === 'Nacional') {
-      if (!Number.isFinite(razon)) {
+      if (!Number.isFinite(brechaAbsoluta)) {
         continue
       }
       if (!point) {
         point = { anio }
         byYear.set(anio, point)
       }
-      point.razonNacional = razon
+      point.brechaNacional = brechaAbsoluta
     } else if (territorio === 'Suaza') {
       if (!Number.isFinite(brechaAbsoluta)) {
         continue
