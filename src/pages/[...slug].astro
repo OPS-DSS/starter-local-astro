@@ -1,5 +1,5 @@
 ---
-import MultidimensionalPoverty from '@/components/MultidimensionalPoverty.astro'
+import Education from '@/components/Education.astro'
 import Layout from '../layouts/Layout.astro'
 import AlcoholConsumption from '@/components/AlcoholConsumption.astro'
 import SuicideMortality from '@/components/SuicideMortality.astro'
@@ -77,11 +77,7 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props
 <Layout title={title} text={text} date={date} pages={pages} currentPage={slug}>
   {slug === undefined && <Welcome text={text} />}
   {slug === 'indicador' && <Catalog title={title} text={text} />}
-  {
-    slug === 'indicador/educacion' && (
-      <MultidimensionalPoverty title={title} text={text} />
-    )
-  }
+  {slug === 'indicador/educacion' && <Education title={title} text={text} />}
   {
     slug === 'indicador/mortalidad-suicidio' && (
       <SuicideMortality

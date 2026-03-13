@@ -11,7 +11,7 @@ export const indicators: IndicatorMeta[] = [
   {
     slug: 'indicador/educacion',
     title: 'Educación',
-    text: 'Los indicadores de Educación incluyen la tasa de alfabetización, la tasa de matrícula escolar, el porcentaje de estudiantes que completan la educación primaria y secundaria, y el acceso a recursos educativos. Estos indicadores reflejan el nivel de desarrollo educativo en el municipio y ayudan a identificar áreas de mejora para garantizar una educación de calidad para todos los habitantes.',
+    text: 'Los indicadores de Educación incluyen cobertura bruta, cobertura neta, deserción, aprobación, reprobación y repitencia.',
     description:
       'Los indicadores de Educación incluyen cobertura bruta, cobertura neta, deserción, aprobación, reprobación y repitencia',
     date: '2026-01-01',
