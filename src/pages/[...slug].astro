@@ -2,6 +2,7 @@
 import Education from '@/components/Education.astro'
 import Layout from '../layouts/Layout.astro'
 import SuicideMortality from '@/components/SuicideMortality.astro'
+import HuilaMap from '@/components/HuilaMap.astro'
 import Analytics from '@/components/Analytics.astro'
 import Welcome from '@/components/Welcome.astro'
 import Catalog from '@/components/Catalog.astro'
@@ -140,6 +141,14 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props
       text={text}
       data={data}
       csvPath={`${import.meta.env.BASE_URL}/data/analytics_suaza.csv`}
+    />
+  )}
+  {slug === 'indicador/mapa-huila' && (
+    <HuilaMap
+      title={title}
+      text={text}
+      geojsonUrl={`${import.meta.env.BASE_URL}/data/huila_municipalities.geojson`}
+      csvUrl={`${import.meta.env.BASE_URL}/data/huila_map.csv`}
     />
   )}
 </Layout>
