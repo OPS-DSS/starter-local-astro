@@ -10,14 +10,6 @@ import {
 } from './ui/select'
 import type { EducationIndicator } from '../lib/parquet'
 
-const PALETTE = [
-  { color: '#FFFFB2', label: 'Clase 1 (menor)' },
-  { color: '#FECC5C', label: 'Clase 2' },
-  { color: '#FD8D3C', label: 'Clase 3' },
-  { color: '#F03B20', label: 'Clase 4' },
-  { color: '#BD0026', label: 'Clase 5 (mayor)' },
-  { color: '#CCCCCC', label: 'Sin datos' },
-]
 
 const INDICATORS: { value: EducationIndicator; label: string }[] = [
   { value: 'cobertura_bruta', label: 'Cobertura Bruta' },
@@ -153,31 +145,39 @@ export const HuilaMapPanel = ({ geojsonUrls, csvUrl }: HuilaMapPanelProps) => {
             height="520px"
             nameProperty="NAME_2"
             valueProperty="value"
+            valueName={INDICATOR_LABEL[indicator]}
           />
 
-          <div className="flex flex-wrap gap-3 items-center text-sm">
+          <div className="flex flex-wrap gap-4 items-center text-sm">
             <span className="font-medium text-gray-700">Leyenda:</span>
-            {PALETTE.map(({ color, label }) => (
-              <div key={color} className="flex items-center gap-1.5">
-                <div
-                  style={{
-                    width: 18,
-                    height: 18,
-                    background: color,
-                    border: '1px solid #9ca3af',
-                    borderRadius: 3,
-                    flexShrink: 0,
-                  }}
-                />
-                <span className="text-gray-600">{label}</span>
-              </div>
-            ))}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600">Menor</span>
+              <div
+                style={{
+                  width: 160,
+                  height: 18,
+                  background:
+                    'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
+                  border: '1px solid #9ca3af',
+                  borderRadius: 3,
+                }}
+              />
+              <span className="text-gray-600">Mayor</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: '#CCCCCC',
+                  border: '1px solid #9ca3af',
+                  borderRadius: 3,
+                  flexShrink: 0,
+                }}
+              />
+              <span className="text-gray-600">Sin datos</span>
+            </div>
           </div>
-
-          <p className="text-sm text-gray-500 italic">
-            Haz clic en un municipio para ver su valor. Usa la rueda del ratón o
-            los controles del mapa para hacer zoom.
-          </p>
         </>
       )}
 

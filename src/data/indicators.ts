@@ -37,7 +37,7 @@ export const indicators: IndicatorMeta[] = [
   {
     slug: 'indicador/mapa-huila',
     title: 'Mapa Municipal de Huila',
-    text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento. Cada municipio se colorea según su valor relativo utilizando una escala YlOrRd de 5 clases.',
+    text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
     description:
       'Mapa coroplético interactivo que compara indicadores de salud por municipio en el departamento de Huila.',
     date: '2026-01-01',
