@@ -35,6 +35,15 @@ export const indicators: IndicatorMeta[] = [
     category: 'Análisis',
   },
   {
+    slug: 'indicador/forest-plot-suaza',
+    title: 'Educación y Brecha de Suicidio',
+    text: 'Gráfico de bosque (forest plot) que muestra la correlación de Spearman entre cada indicador de educación y la brecha de género en mortalidad por suicidio en Suaza. Permite identificar qué indicadores educativos están más relacionados con la brecha.',
+    description:
+      'Correlación de Spearman entre indicadores de educación y la brecha de género en mortalidad por suicidio en Suaza (forest plot).',
+    date: '2026-01-01',
+    category: 'Análisis',
+  },
+  {
     slug: 'indicador/mapa-huila',
     title: 'Mapa Municipal de Huila',
     text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
