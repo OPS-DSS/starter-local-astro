@@ -112,6 +112,16 @@ export async function getStaticPaths() {
       date: '2026-01-01',
       navbar: true,
     },
+    {
+      slug: 'mapa-huila',
+      title: 'Mapa Municipal de Huila',
+      text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
+      description:
+        'Mapa coroplético interactivo que compara indicadores de salud por municipio en el departamento de Huila.',
+      date: '2026-01-01',
+      category: 'Salud',
+      navbar: true,
+    },
     ...indicators.map((ind) => ({
       slug: ind.slug,
       title: ind.title,
@@ -122,7 +132,7 @@ export async function getStaticPaths() {
         ? { data: suicideData, gapsData: suicideGapsData }
         : {}),
       ...(ind.slug === 'inequidades-en-salud' ? { data: educationData } : {}),
-      ...(ind.slug === 'analitica' ? { data: analyticsData } : {}),
+      ...(ind.slug === 'desercion-suicidio' ? { data: analyticsData } : {}),
       ...(ind.slug === 'correlacion-suaza' ? { data: forestPlotData } : {}),
     })),
   ]
@@ -178,7 +188,7 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
     )
   }
   {
-    slug === 'analitica' && (
+    slug === 'desercion-suicidio' && (
       <Analytics
         title={title}
         text={text}
