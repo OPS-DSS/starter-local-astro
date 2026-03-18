@@ -93,38 +93,43 @@ export async function getStaticPaths() {
     {
       slug: undefined,
       title: 'Inicio',
-      text: 'Bienvenidos al Observatorio de Salud de Suaza, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud en el municipio de Suaza. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
+      text: 'Bienvenidos al Observatorio de Salud, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
       date: '2026-01-01',
+      navbar: true,
     },
     {
-      slug: 'indicador',
-      title: 'Indicadores',
-      text: 'Lista de los indicadores de salud disponibles en el observatorio, con sus respectivas descripciones y visualizaciones.',
+      slug: 'inequidades-en-salud',
+      title: 'Inequidades en Salud',
+      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
+      data: educationData,
+      navbar: true,
+    },
+    {
+      slug: 'determinantes-de-la-salud',
+      title: 'Determinantes Sociales de la Salud',
+      text: 'Factores que influyen en la salud de la población',
+      date: '2026-01-01',
+      navbar: true,
     },
     ...indicators.map((ind) => ({
       slug: ind.slug,
       title: ind.title,
       text: ind.text,
       date: ind.date,
-      ...(ind.slug === 'indicador/mortalidad-suicidio'
+      navbar: ind.navbar,
+      ...(ind.slug === 'mortalidad-suicidio'
         ? { data: suicideData, gapsData: suicideGapsData }
         : {}),
-      ...(ind.slug === 'indicador/educacion'
-        ? { data: educationData }
-        : {}),
-      ...(ind.slug === 'indicador/analitica'
-        ? { data: analyticsData }
-        : {}),
-      ...(ind.slug === 'indicador/forest-plot-suaza'
-        ? { data: forestPlotData }
-        : {}),
+      ...(ind.slug === 'inequidades-en-salud' ? { data: educationData } : {}),
+      ...(ind.slug === 'analitica' ? { data: analyticsData } : {}),
+      ...(ind.slug === 'correlacion-suaza' ? { data: forestPlotData } : {}),
     })),
   ]
 
-  return pages.map(({ slug, title, text, date, ...rest }) => ({
+  return pages.map(({ slug, title, text, date, navbar, ...rest }) => ({
     params: { slug },
-    props: { title, text, pages, slug, date: new Date(date), ...rest },
+    props: { title, text, pages, slug, date: new Date(date), navbar, ...rest },
   }))
 }
 
@@ -134,24 +139,34 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   pages: unknown[]
   slug: string | undefined
   date: Date
-  data?: SuicideDataRow[] | EducationDataRow[] | AnalyticsDataRow[] | ForestPlotDataRow[]
+  data?:
+    | SuicideDataRow[]
+    | EducationDataRow[]
+    | AnalyticsDataRow[]
+    | ForestPlotDataRow[]
   gapsData?: GapsChartPoint[]
 }
 ---
 
 <Layout title={title} text={text} date={date} pages={pages} currentPage={slug}>
   {slug === undefined && <Welcome text={text} />}
-  {slug === 'indicador' && <Catalog title={title} text={text} />}
-  {slug === 'indicador/educacion' && (
-    <Education
-      title={title}
-      text={text}
-      data={data as EducationDataRow[]}
-      csvPath={`${import.meta.env.BASE_URL}/data/education_suaza.csv`}
-    />
-  )}
   {
-    slug === 'indicador/mortalidad-suicidio' && (
+    slug === 'determinantes-de-la-salud' && (
+      <Catalog title={title} text={text} />
+    )
+  }
+  {
+    slug === 'inequidades-en-salud' && (
+      <Education
+        title={title}
+        text={text}
+        data={data as EducationDataRow[]}
+        csvPath={`${import.meta.env.BASE_URL}/data/education_suaza.csv`}
+      />
+    )
+  }
+  {
+    slug === 'mortalidad-suicidio' && (
       <SuicideMortality
         title={title}
         text={text}
@@ -162,35 +177,41 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
       />
     )
   }
-  {slug === 'indicador/analitica' && (
-    <Analytics
-      title={title}
-      text={text}
-      data={data as AnalyticsDataRow[]}
-      csvPath={`${import.meta.env.BASE_URL}/data/analytics_suaza.csv`}
-    />
-  )}
-  {slug === 'indicador/forest-plot-suaza' && (
-    <ForestPlot
-      title={title}
-      text={text}
-      data={data as ForestPlotDataRow[]}
-      csvPath={`${import.meta.env.BASE_URL}/data/forest_plot_suaza.csv`}
-    />
-  )}
-  {slug === 'indicador/mapa-huila' && (
-    <HuilaMap
-      title={title}
-      text={text}
-      geojsonUrls={{
-        cobertura_bruta: `${import.meta.env.BASE_URL}/data/huila_cobertura_bruta.geojson`,
-        cobertura_neta:  `${import.meta.env.BASE_URL}/data/huila_cobertura_neta.geojson`,
-        deserci_n:       `${import.meta.env.BASE_URL}/data/huila_desercion.geojson`,
-        aprobaci_n:      `${import.meta.env.BASE_URL}/data/huila_aprobacion.geojson`,
-        reprobaci_n:     `${import.meta.env.BASE_URL}/data/huila_reprobacion.geojson`,
-        repitencia:      `${import.meta.env.BASE_URL}/data/huila_repitencia.geojson`,
-      }}
-      csvUrl={`${import.meta.env.BASE_URL}/data/huila_map.csv`}
-    />
-  )}
+  {
+    slug === 'analitica' && (
+      <Analytics
+        title={title}
+        text={text}
+        data={data as AnalyticsDataRow[]}
+        csvPath={`${import.meta.env.BASE_URL}/data/analytics_suaza.csv`}
+      />
+    )
+  }
+  {
+    slug === 'correlacion-suaza' && (
+      <ForestPlot
+        title={title}
+        text={text}
+        data={data as ForestPlotDataRow[]}
+        csvPath={`${import.meta.env.BASE_URL}/data/forest_plot_suaza.csv`}
+      />
+    )
+  }
+  {
+    slug === 'mapa-huila' && (
+      <HuilaMap
+        title={title}
+        text={text}
+        geojsonUrls={{
+          cobertura_bruta: `${import.meta.env.BASE_URL}/data/huila_cobertura_bruta.geojson`,
+          cobertura_neta: `${import.meta.env.BASE_URL}/data/huila_cobertura_neta.geojson`,
+          deserci_n: `${import.meta.env.BASE_URL}/data/huila_desercion.geojson`,
+          aprobaci_n: `${import.meta.env.BASE_URL}/data/huila_aprobacion.geojson`,
+          reprobaci_n: `${import.meta.env.BASE_URL}/data/huila_reprobacion.geojson`,
+          repitencia: `${import.meta.env.BASE_URL}/data/huila_repitencia.geojson`,
+        }}
+        csvUrl={`${import.meta.env.BASE_URL}/data/huila_map.csv`}
+      />
+    )
+  }
 </Layout>
