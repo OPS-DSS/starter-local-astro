@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",
-    "hyparquet": "^1.14.0",
     "@ops-dss/charts": "latest",
     "@ops-dss/ui": "latest",
     "@tailwindcss/vite": "^4.1.18",
@@ -24,6 +23,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "hyparquet": "^1.14.0",
     "lucide-react": "^0.563.0",
     "radix-ui": "^1.4.3",
     "react": "^19.1.0",
@@ -32,7 +32,9 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
+    "@iconify-json/fa6-solid": "^1.2.4",
     "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/roentgen": "^1.2.11",
     "@types/react": "^19.2.13",
     "@types/react-dom": "^19.2.3",
     "baseline-browser-mapping": "^2.9.19",
