@@ -11,25 +11,15 @@ export type IndicatorMeta = {
 
 export const indicators: IndicatorMeta[] = [
   {
-    slug: 'mortalidad-suicidio',
-    title: 'Mortalidad por Suicidio en Suaza',
-    text: 'Tasa de mortalidad por suicidio por cada 100.000 habitantes. El indicador se desagrega por sexo (masculino y femenino) para identificar brechas de género y apoyar intervenciones diferenciadas en salud mental.',
+    slug: 'educacion',
+    title: 'Educación',
+    text: 'Indicadores de educación en Suaza, incluyendo tasa de deserción escolar, entre otros.',
     description:
-      'Tasa de mortalidad por suicidio (por 100.000 hab.) desagregada por sexo.',
+      'Indicadores de educación en Suaza, incluyendo tasa de deserción escolar, entre otros.',
     date: '2026-01-01',
-    category: 'Salud Mental',
+    category: 'Indicadores',
     navbar: false,
     priority: true,
-  },
-  {
-    slug: 'desercion-suicidio',
-    title: 'Deserción Escolar y Suicidio en Suaza',
-    text: 'Análisis de la relación entre la deserción escolar y la mortalidad por suicidio.',
-    description: 'Indicadores de análisis de datos y visualización.',
-    date: '2026-01-01',
-    category: 'Tendencia',
-    navbar: false,
-    priority: false,
   },
   {
     slug: 'correlacion-suaza',

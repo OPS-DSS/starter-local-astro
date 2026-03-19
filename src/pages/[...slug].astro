@@ -102,7 +102,8 @@ export async function getStaticPaths() {
       title: 'Inequidades en Salud',
       text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
-      data: educationData,
+      data: suicideData,
+      gapsData: suicideGapsData,
       navbar: true,
     },
     {
@@ -122,17 +123,24 @@ export async function getStaticPaths() {
       category: 'Salud',
       navbar: true,
     },
+    {
+      slug: 'analisis',
+      title: 'Análisis',
+      text: 'Análisis de la relación entre la deserción escolar y la mortalidad por suicidio.',
+      description: 'Indicadores de análisis de datos y visualización.',
+      date: '2026-01-01',
+      category: 'Tendencia',
+      data: analyticsData,
+      navbar: true,
+      priority: false,
+    },
     ...indicators.map((ind) => ({
       slug: ind.slug,
       title: ind.title,
       text: ind.text,
       date: ind.date,
       navbar: ind.navbar,
-      ...(ind.slug === 'mortalidad-suicidio'
-        ? { data: suicideData, gapsData: suicideGapsData }
-        : {}),
-      ...(ind.slug === 'inequidades-en-salud' ? { data: educationData } : {}),
-      ...(ind.slug === 'desercion-suicidio' ? { data: analyticsData } : {}),
+      ...(ind.slug === 'educacion' ? { data: educationData } : {}),
       ...(ind.slug === 'correlacion-suaza' ? { data: forestPlotData } : {}),
     })),
   ]
@@ -167,16 +175,6 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   }
   {
     slug === 'inequidades-en-salud' && (
-      <Education
-        title={title}
-        text={text}
-        data={data as EducationDataRow[]}
-        csvPath={`${import.meta.env.BASE_URL}/data/education_suaza.csv`}
-      />
-    )
-  }
-  {
-    slug === 'mortalidad-suicidio' && (
       <SuicideMortality
         title={title}
         text={text}
@@ -188,7 +186,17 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
     )
   }
   {
-    slug === 'desercion-suicidio' && (
+    slug === 'educacion' && (
+      <Education
+        title={title}
+        text={text}
+        data={data as EducationDataRow[]}
+        csvPath={`${import.meta.env.BASE_URL}/data/education_suaza.csv`}
+      />
+    )
+  }
+  {
+    slug === 'analisis' && (
       <Analytics
         title={title}
         text={text}
