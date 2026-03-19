@@ -93,13 +93,13 @@ export async function getStaticPaths() {
     {
       slug: undefined,
       title: 'Inicio',
-      text: 'Bienvenidos al Observatorio de Salud, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
+      text: 'Bienvenidos al Observatorio de Determinantes Sociales de la Salud, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
       date: '2026-01-01',
       navbar: true,
     },
     {
       slug: 'inequidades-en-salud',
-      title: 'Inequidades en Salud',
+      title: 'Inequidades en Salud o Problematica Priorizada',
       text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
       data: suicideData,
@@ -114,16 +114,6 @@ export async function getStaticPaths() {
       navbar: true,
     },
     {
-      slug: 'mapa-huila',
-      title: 'Mapa Municipal de Huila',
-      text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
-      description:
-        'Mapa coroplético interactivo que compara indicadores de salud por municipio en el departamento de Huila.',
-      date: '2026-01-01',
-      category: 'Salud',
-      navbar: true,
-    },
-    {
       slug: 'analisis',
       title: 'Análisis',
       text: 'Análisis de la relación entre la deserción escolar y la mortalidad por suicidio.',
@@ -133,6 +123,16 @@ export async function getStaticPaths() {
       data: analyticsData,
       navbar: true,
       priority: false,
+    },
+    {
+      slug: 'mapa-huila',
+      title: 'Análisis Territorial',
+      text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
+      description:
+        'Mapa coroplético interactivo que compara indicadores de salud por municipio en el departamento de Huila.',
+      date: '2026-01-01',
+      category: 'Salud',
+      navbar: true,
     },
     ...indicators.map((ind) => ({
       slug: ind.slug,

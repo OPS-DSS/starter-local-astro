@@ -19,16 +19,6 @@ const base = import.meta.env.BASE_URL.endsWith('/')
             href={`${base}${ind.slug}`}
             class="block rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
           >
-            {ind.category === 'Análisis' ? (
-              <span class="text-xs font-medium text-fuchsia-500 uppercase tracking-wide">
-                {ind.category}
-              </span>
-            ) : (
-              <span class="text-xs font-medium text-blue-600 uppercase tracking-wide">
-                {ind.category}
-              </span>
-            )}
-
             <h2 class="mt-1 text-lg font-semibold text-gray-900">
               {ind.title}
             </h2>

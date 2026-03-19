@@ -17,18 +17,18 @@ interface SuicideChartProps {
 // Total mode: one line per territory
 const TOTAL_COLORS: Record<string, string> = {
   Nacional: '#6b7280',
-  Huila:    '#3b82f6',
-  Suaza:    '#10b981',
+  Huila: '#3b82f6',
+  Suaza: '#10b981',
 }
 
 // Sexo mode: one line per territory+sex combination
 const SEXO_COLORS: Record<string, string> = {
   'Nacional Femenino': '#f43f5e',
   'Nacional Masculino': '#6b7280',
-  'Huila Femenino':    '#ec4899',
-  'Huila Masculino':   '#3b82f6',
-  'Suaza Femenino':    '#f97316',
-  'Suaza Masculino':   '#10b981',
+  'Huila Femenino': '#ec4899',
+  'Huila Masculino': '#3b82f6',
+  'Suaza Femenino': '#f97316',
+  'Suaza Masculino': '#10b981',
 }
 
 const FALLBACK_COLORS = ['#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6']
@@ -36,9 +36,12 @@ const FALLBACK_COLORS = ['#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6']
 // Preferred display order
 const TOTAL_ORDER = ['Nacional', 'Huila', 'Suaza']
 const SEXO_ORDER = [
-  'Nacional Femenino', 'Nacional Masculino',
-  'Huila Femenino',    'Huila Masculino',
-  'Suaza Femenino',    'Suaza Masculino',
+  'Nacional Femenino',
+  'Nacional Masculino',
+  'Huila Femenino',
+  'Huila Masculino',
+  'Suaza Femenino',
+  'Suaza Masculino',
 ]
 
 function pivotRows(rows: SuicideDataRow[], stratifier: string) {
@@ -65,7 +68,9 @@ function pivotRows(rows: SuicideDataRow[], stratifier: string) {
     return idx === -1 ? Number.POSITIVE_INFINITY : idx
   }
   const keys = Array.from(
-    new Set(chartData.flatMap((row) => Object.keys(row).filter((k) => k !== 'anio')))
+    new Set(
+      chartData.flatMap((row) => Object.keys(row).filter((k) => k !== 'anio')),
+    ),
   ).sort((a, b) => {
     const indexA = getOrderIndex(a)
     const indexB = getOrderIndex(b)
@@ -78,14 +83,18 @@ function pivotRows(rows: SuicideDataRow[], stratifier: string) {
 
   const lines = keys.map((key, i) => ({
     dataKey: key,
-    name:    key,
-    color:   colorMap[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+    name: key,
+    color: colorMap[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
   }))
 
   return { chartData, lines, keys }
 }
 
-export const SuicideChart = ({ data, csvPath, stratifier = 'total' }: SuicideChartProps) => {
+export const SuicideChart = ({
+  data,
+  csvPath,
+  stratifier = 'total',
+}: SuicideChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   const { chartData, lines, keys } = useMemo(
@@ -148,7 +157,7 @@ export const SuicideChart = ({ data, csvPath, stratifier = 'total' }: SuicideCha
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Descargar CSV
+            Descargar tabla
           </a>
         )}
       </div>
@@ -175,8 +184,13 @@ export const SuicideChart = ({ data, csvPath, stratifier = 'total' }: SuicideCha
             </thead>
             <tbody className="divide-y divide-gray-100">
               {chartData.map((row) => (
-                <tr key={row.anio} className="bg-white hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">{row.anio}</td>
+                <tr
+                  key={row.anio}
+                  className="bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    {row.anio}
+                  </td>
                   {keys.map((cat) => {
                     const value = (row as Record<string, unknown>)[cat]
                     return (

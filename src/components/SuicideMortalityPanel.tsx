@@ -35,7 +35,7 @@ export const SuicideMortalityPanel = ({
         no permiten distinguir con certeza entre ausencia real del evento y
         posibles limitaciones del dato reportado.
       </p>
-      <h2 className="text-xl font-bold">Tabla Último Año</h2>
+      <h2 className="text-xl font-bold">Análisis del Último Año</h2>
       <table>
         <thead className="bg-gray-100">
           <tr>
@@ -91,7 +91,10 @@ export const SuicideMortalityPanel = ({
                   {row.razonHuila ? row.razonHuila.toFixed(2) : 'N/A'}
                 </td>
               </tr>
-              <tr key={`<REPLACE_WITH_TERRITORY>-${row.anio}`} className="text-center">
+              <tr
+                key={`<REPLACE_WITH_TERRITORY>-${row.anio}`}
+                className="text-center"
+              >
                 <td className="px-4 py-2 border">Suaza</td>
                 <td className="px-4 py-2 border">{row.anio}</td>
                 <td className="px-4 py-2 border">
