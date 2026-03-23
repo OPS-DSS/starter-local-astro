@@ -14,11 +14,11 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/react": "^4.3.0",
+    "@astrojs/react": "^5.0.1",
     "@ops-dss/charts": "latest",
     "@ops-dss/ui": "latest",
     "@tailwindcss/vite": "^4.1.18",
-    "astro": "^5.16.2",
+    "astro": "^6.0.8",
     "astro-icon": "^1.1.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
