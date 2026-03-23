@@ -10,7 +10,7 @@ export const priorities: PriorityMeta[] = [
   {
     slug: 'violencia',
     title: 'Violencia',
-    description: 'La violencia es un factor importante.',
+    description: 'La violencia es un factor en la comunidad.',
     date: '2026-03-01',
     category: 'inequidad',
   },
