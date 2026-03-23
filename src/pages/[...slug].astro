@@ -32,6 +32,7 @@ import type {
   ForestPlotRow,
   ForestPlotDataRow,
 } from '../lib/parquet'
+import PrioritySelector from '@/components/PrioritySelector.astro'
 
 export async function getStaticPaths() {
   let suicideData: SuicideDataRow[] = []
@@ -99,12 +100,19 @@ export async function getStaticPaths() {
     },
     {
       slug: 'inequidades-en-salud',
-      title: 'Inequidades en Salud o Problematica Priorizada',
+      title: 'Inequidades en Salud',
+      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
+      date: '2026-01-01',
+      navbar: true,
+    },
+    {
+      slug: 'inequidades-en-salud/mortalidad-por-suicidio',
+      title: 'Mortalidad por Suicidio',
       text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
       data: suicideData,
       gapsData: suicideGapsData,
-      navbar: true,
+      navbar: false,
     },
     {
       slug: 'determinantes-de-la-salud',
@@ -112,6 +120,13 @@ export async function getStaticPaths() {
       text: 'Factores que influyen en la salud de la población',
       date: '2026-01-01',
       navbar: true,
+    },
+    {
+      slug: 'determinantes-de-la-salud/mortalidad-por-suicidio',
+      title: 'Mortalidad por Suicidio',
+      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
+      date: '2026-01-01',
+      navbar: false,
     },
     {
       slug: 'analisis',
@@ -170,11 +185,21 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   {slug === undefined && <Welcome text={text} />}
   {
     slug === 'determinantes-de-la-salud' && (
+      <PrioritySelector title={title} text={text} section={slug} />
+    )
+  }
+  {
+    slug === 'determinantes-de-la-salud/mortalidad-por-suicidio' && (
       <Catalog title={title} text={text} />
     )
   }
   {
     slug === 'inequidades-en-salud' && (
+      <PrioritySelector title={title} text={text} section={slug} />
+    )
+  }
+  {
+    slug === 'inequidades-en-salud/mortalidad-por-suicidio' && (
       <SuicideMortality
         title={title}
         text={text}

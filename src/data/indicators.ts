@@ -21,15 +21,4 @@ export const indicators: IndicatorMeta[] = [
     navbar: false,
     priority: true,
   },
-  {
-    slug: 'correlacion-suaza',
-    title: 'Educación y Brecha de Suicidio en Suaza',
-    text: 'Gráfico de bosque que muestra la correlación de Spearman entre cada indicador de educación y la brecha de género en mortalidad por suicidio en Suaza. Permite identificar qué indicadores educativos están más relacionados con la brecha.',
-    description:
-      'Correlación de Spearman entre indicadores de educación y la brecha de género en mortalidad por suicidio en Suaza.',
-    date: '2026-01-01',
-    category: 'Brechas',
-    navbar: false,
-    priority: true,
-  },
 ]

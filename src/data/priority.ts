@@ -12,13 +12,13 @@ export const priorities: PriorityMeta[] = [
     title: 'Violencia',
     description: 'La violencia es un factor importante.',
     date: '2026-03-01',
-    category: 'Prioridades',
+    category: 'inequidad',
   },
   {
     slug: 'mortalidad-por-suicidio',
     title: 'Mortalidad por Suicidio',
     description: 'La mortalidad por suicidio es un indicador clave.',
     date: '2026-03-01',
-    category: 'Prioridades',
+    category: 'comunidad',
   },
 ]
