@@ -1,5 +1,5 @@
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import type { AnalyticsDataRow } from '../lib/parquet'
+import type { AnalyticsDataRow } from '@/lib/parquet'
 
 interface AnalyticsDualChartProps {
   data: AnalyticsDataRow[]
@@ -20,12 +20,16 @@ export const AnalyticsDualChart = ({ data }: AnalyticsDualChartProps) => {
   }
 
   const suicideData = data.map((row) => ({ anio: row.anio, valor: row.valor }))
-  const desercionData = data.map((row) => ({ anio: row.anio, desercion: row.desercion }))
+  const desercionData = data.map((row) => ({
+    anio: row.anio,
+    desercion: row.desercion,
+  }))
 
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold text-gray-800">
-        Tendencia temporal de deserción escolar y mortalidad por suicidio en Suaza
+        Tendencia temporal de deserción escolar y mortalidad por suicidio en
+        Suaza
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="flex flex-col gap-2">

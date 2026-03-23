@@ -10,15 +10,9 @@
 function lgamma(x: number): number {
   const g = 7
   const C = [
-    0.99999999999980993,
-    676.5203681218851,
-    -1259.1392167224028,
-    771.32342877765313,
-    -176.61502916214059,
-    12.507343278686905,
-    -0.13857109526572012,
-    9.9843695780195716e-6,
-    1.5056327351493116e-7,
+    0.99999999999980993, 676.5203681218851, -1259.1392167224028,
+    771.32342877765313, -176.61502916214059, 12.507343278686905,
+    -0.13857109526572012, 9.9843695780195716e-6, 1.5056327351493116e-7,
   ]
   if (x < 0.5) {
     return Math.log(Math.PI / Math.sin(Math.PI * x)) - lgamma(1 - x)
@@ -71,8 +65,13 @@ function betacf(a: number, b: number, x: number): number {
 function ibeta(a: number, b: number, x: number): number {
   if (x <= 0) return 0
   if (x >= 1) return 1
-  const bt =
-    Math.exp(lgamma(a + b) - lgamma(a) - lgamma(b) + a * Math.log(x) + b * Math.log(1 - x))
+  const bt = Math.exp(
+    lgamma(a + b) -
+      lgamma(a) -
+      lgamma(b) +
+      a * Math.log(x) +
+      b * Math.log(1 - x),
+  )
   if (x < (a + 1) / (a + b + 2)) return (bt * betacf(a, b, x)) / a
   return 1 - (bt * betacf(b, a, 1 - x)) / b
 }
@@ -103,7 +102,10 @@ function matMul(A: number[][], B: number[][]): number[][] {
   const k = B.length
   return Array.from({ length: n }, (_, i) =>
     Array.from({ length: m }, (_, j) =>
-      Array.from({ length: k }, (_, l) => A[i][l] * B[l][j]).reduce((s, v) => s + v, 0),
+      Array.from({ length: k }, (_, l) => A[i][l] * B[l][j]).reduce(
+        (s, v) => s + v,
+        0,
+      ),
     ),
   )
 }
@@ -115,9 +117,10 @@ function matVec(A: number[][], v: number[]): number[] {
 /** Gauss-Jordan matrix inversion (in-place on a copy). */
 function matInv(A: number[][]): number[][] {
   const n = A.length
-  const aug = A.map((row, i) =>
-    [...row, ...Array.from({ length: n }, (_, j) => (i === j ? 1 : 0))],
-  )
+  const aug = A.map((row, i) => [
+    ...row,
+    ...Array.from({ length: n }, (_, j) => (i === j ? 1 : 0)),
+  ])
   for (let col = 0; col < n; col++) {
     let maxRow = col
     for (let row = col + 1; row < n; row++) {
@@ -155,7 +158,7 @@ export type OlsResult = {
   fPVal: number
   dfModel: number
   dfResidual: number
-  rse: number   // residual standard error
+  rse: number // residual standard error
   n: number
 }
 
@@ -166,7 +169,11 @@ export type OlsResult = {
  * @param y  Response vector (length n).
  * @param termNames  Names for each column of X (length p).
  */
-export function ols(X: number[][], y: number[], termNames: string[]): OlsResult {
+export function ols(
+  X: number[][],
+  y: number[],
+  termNames: string[],
+): OlsResult {
   const n = y.length
   const p = X[0].length
 
@@ -190,7 +197,7 @@ export function ols(X: number[][], y: number[], termNames: string[]): OlsResult 
   const ymean = y.reduce((s, yi) => s + yi, 0) / n
   const tss = y.reduce((s, yi) => s + (yi - ymean) ** 2, 0)
   const r2 = 1 - rss / tss
-  const r2Adj = 1 - (rss / dfResidual) / (tss / (n - 1))
+  const r2Adj = 1 - rss / dfResidual / (tss / (n - 1))
 
   const dfModel = p - 1
   const fStat = (tss - rss) / dfModel / (rss / dfResidual)

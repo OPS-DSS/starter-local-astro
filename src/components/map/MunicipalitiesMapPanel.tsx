@@ -7,9 +7,8 @@ import {
   SelectContent,
   SelectItem,
   SelectGroup,
-} from './ui/select'
-import type { EducationIndicator } from '../lib/parquet'
-
+} from '../ui/select'
+import type { EducationIndicator } from '@/lib/parquet'
 
 const INDICATORS: { value: EducationIndicator; label: string }[] = [
   { value: 'cobertura_bruta', label: 'Cobertura Bruta' },
@@ -31,12 +30,15 @@ const INDICATOR_LABEL: Record<EducationIndicator, string> = {
 
 type TableRow = { name: string; value: number | null }
 
-interface HuilaMapPanelProps {
+interface MunicipalitiesMapPanelProps {
   geojsonUrls: Record<EducationIndicator, string>
   csvUrl?: string
 }
 
-export const HuilaMapPanel = ({ geojsonUrls, csvUrl }: HuilaMapPanelProps) => {
+export const MunicipalitiesMapPanel = ({
+  geojsonUrls,
+  csvUrl,
+}: MunicipalitiesMapPanelProps) => {
   const [indicator, setIndicator] =
     useState<EducationIndicator>('cobertura_bruta')
   const [view, setView] = useState<'map' | 'table'>('map')

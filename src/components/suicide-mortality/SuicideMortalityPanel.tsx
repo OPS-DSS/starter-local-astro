@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { StratifierSelector } from './StratifierSelector'
 import { SuicideChart } from './SuicideChart'
 import { SuicideGapsChart } from './SuicideGapsChart'
-import type { SuicideDataRow, GapsChartPoint } from '../lib/parquet'
+import type { SuicideDataRow, GapsChartPoint } from '@/lib/parquet'
 
 interface SuicideMortalityPanelProps {
   data: SuicideDataRow[]

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { AnalyticsDualChart } from './AnalyticsDualChart'
-import { ols, designMatrix, pStars, fmtFixed, fmt } from '../lib/stats'
-import type { AnalyticsDataRow } from '../lib/parquet'
-import type { OlsResult } from '../lib/stats'
+import { ols, designMatrix, pStars, fmtFixed, fmt } from '@/lib/stats'
+import type { AnalyticsDataRow } from '@/lib/parquet'
+import type { OlsResult } from '@/lib/stats'
 
 interface AnalyticsPanelProps {
   data: AnalyticsDataRow[]
@@ -44,7 +44,10 @@ function runLag1Trend(lagData: LagRow[]): OlsResult | null {
   const rows = lagData.filter((r) => r.desercion_lag1 !== null)
   if (rows.length < 4) return null
   const X = designMatrix(
-    rows.map((r) => ({ desercion_lag1: r.desercion_lag1 as number, anio: r.anio })),
+    rows.map((r) => ({
+      desercion_lag1: r.desercion_lag1 as number,
+      anio: r.anio,
+    })),
     ['desercion_lag1', 'anio'],
   )
   const y = rows.map((r) => r.valor)
@@ -55,7 +58,10 @@ function runLag2Trend(lagData: LagRow[]): OlsResult | null {
   const rows = lagData.filter((r) => r.desercion_lag2 !== null)
   if (rows.length < 4) return null
   const X = designMatrix(
-    rows.map((r) => ({ desercion_lag2: r.desercion_lag2 as number, anio: r.anio })),
+    rows.map((r) => ({
+      desercion_lag2: r.desercion_lag2 as number,
+      anio: r.anio,
+    })),
     ['desercion_lag2', 'anio'],
   )
   const y = rows.map((r) => r.valor)
@@ -86,11 +92,21 @@ function ModelSummary({ result, title }: { result: OlsResult; title: string }) {
             {result.terms.map((term) => (
               <tr key={term.term} className="bg-white">
                 <td className="pr-4 py-1.5 text-gray-700">{term.term}</td>
-                <td className="px-4 py-1.5 text-right">{fmtFixed(term.estimate, 4)}</td>
-                <td className="px-4 py-1.5 text-right">{fmtFixed(term.stdError, 4)}</td>
-                <td className="px-4 py-1.5 text-right">{fmtFixed(term.tValue, 3)}</td>
-                <td className="px-4 py-1.5 text-right">{fmt(term.pValue, 3)}</td>
-                <td className="px-2 py-1.5 text-blue-600 font-bold">{pStars(term.pValue)}</td>
+                <td className="px-4 py-1.5 text-right">
+                  {fmtFixed(term.estimate, 4)}
+                </td>
+                <td className="px-4 py-1.5 text-right">
+                  {fmtFixed(term.stdError, 4)}
+                </td>
+                <td className="px-4 py-1.5 text-right">
+                  {fmtFixed(term.tValue, 3)}
+                </td>
+                <td className="px-4 py-1.5 text-right">
+                  {fmt(term.pValue, 3)}
+                </td>
+                <td className="px-2 py-1.5 text-blue-600 font-bold">
+                  {pStars(term.pValue)}
+                </td>
               </tr>
             ))}
           </tbody>
@@ -101,8 +117,8 @@ function ModelSummary({ result, title }: { result: OlsResult; title: string }) {
       <div className="grid grid-cols-2 gap-x-8 gap-y-1 text-sm font-mono text-gray-600 border-t border-gray-200 pt-2">
         <span>
           Error estándar residual:{' '}
-          <span className="text-gray-900">{fmtFixed(result.rse, 4)}</span>
-          {' '}con {result.dfResidual} g.l.
+          <span className="text-gray-900">{fmtFixed(result.rse, 4)}</span> con{' '}
+          {result.dfResidual} g.l.
         </span>
         <span>
           n = <span className="text-gray-900">{result.n}</span>
@@ -111,17 +127,22 @@ function ModelSummary({ result, title }: { result: OlsResult; title: string }) {
           R² = <span className="text-gray-900">{fmtFixed(result.r2, 4)}</span>
         </span>
         <span>
-          R² ajustado = <span className="text-gray-900">{fmtFixed(result.r2Adj, 4)}</span>
+          R² ajustado ={' '}
+          <span className="text-gray-900">{fmtFixed(result.r2Adj, 4)}</span>
         </span>
         <span className="col-span-2">
           F({result.dfModel}, {result.dfResidual}) ={' '}
           <span className="text-gray-900">{fmtFixed(result.fStat, 4)}</span>
-          {', '}p = <span className="text-gray-900">{fmt(result.fPVal, 3)}</span>
-          {' '}<span className="text-blue-600 font-bold">{pStars(result.fPVal)}</span>
+          {', '}p ={' '}
+          <span className="text-gray-900">{fmt(result.fPVal, 3)}</span>{' '}
+          <span className="text-blue-600 font-bold">
+            {pStars(result.fPVal)}
+          </span>
         </span>
       </div>
       <p className="text-xs text-gray-400">
-        Significancia: *** p&lt;0.001 &nbsp; ** p&lt;0.01 &nbsp; * p&lt;0.05 &nbsp; . p&lt;0.1
+        Significancia: *** p&lt;0.001 &nbsp; ** p&lt;0.01 &nbsp; * p&lt;0.05
+        &nbsp; . p&lt;0.1
       </p>
     </div>
   )
@@ -134,8 +155,16 @@ function DataTable({ data }: { data: AnalyticsDataRow[] }) {
         <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
           <tr>
             <th className="px-3 py-2">Año</th>
-            <th className="px-3 py-2 text-right">Suicidio<br />(×100k)</th>
-            <th className="px-3 py-2 text-right">Deserción<br />(%)</th>
+            <th className="px-3 py-2 text-right">
+              Suicidio
+              <br />
+              (×100k)
+            </th>
+            <th className="px-3 py-2 text-right">
+              Deserción
+              <br />
+              (%)
+            </th>
             <th className="px-3 py-2 text-right">Cob. Bruta</th>
             <th className="px-3 py-2 text-right">Cob. Neta</th>
             <th className="px-3 py-2 text-right">Aprobación</th>
@@ -145,28 +174,45 @@ function DataTable({ data }: { data: AnalyticsDataRow[] }) {
         </thead>
         <tbody className="divide-y divide-gray-100">
           {data.map((row) => (
-            <tr key={row.anio} className="bg-white hover:bg-gray-50 transition-colors">
-              <td className="px-3 py-2 font-medium text-gray-900">{row.anio}</td>
+            <tr
+              key={row.anio}
+              className="bg-white hover:bg-gray-50 transition-colors"
+            >
+              <td className="px-3 py-2 font-medium text-gray-900">
+                {row.anio}
+              </td>
               <td className="px-3 py-2 text-right text-gray-700">
                 {Number.isFinite(row.valor) ? row.valor.toFixed(2) : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.desercion) ? row.desercion.toFixed(2) : '—'}
+                {Number.isFinite(row.desercion)
+                  ? row.desercion.toFixed(2)
+                  : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.cobertura_bruta) ? row.cobertura_bruta.toFixed(2) : '—'}
+                {Number.isFinite(row.cobertura_bruta)
+                  ? row.cobertura_bruta.toFixed(2)
+                  : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.cobertura_neta) ? row.cobertura_neta.toFixed(2) : '—'}
+                {Number.isFinite(row.cobertura_neta)
+                  ? row.cobertura_neta.toFixed(2)
+                  : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.aprobacion) ? row.aprobacion.toFixed(2) : '—'}
+                {Number.isFinite(row.aprobacion)
+                  ? row.aprobacion.toFixed(2)
+                  : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.reprobacion) ? row.reprobacion.toFixed(2) : '—'}
+                {Number.isFinite(row.reprobacion)
+                  ? row.reprobacion.toFixed(2)
+                  : '—'}
               </td>
               <td className="px-3 py-2 text-right text-gray-700">
-                {Number.isFinite(row.repitencia) ? row.repitencia.toFixed(2) : '—'}
+                {Number.isFinite(row.repitencia)
+                  ? row.repitencia.toFixed(2)
+                  : '—'}
               </td>
             </tr>
           ))}
@@ -190,13 +236,12 @@ export const AnalyticsPanel = ({ data, csvPath }: AnalyticsPanelProps) => {
   }
 
   const lagData = buildLagData(data)
-  const lag1     = runLag1(lagData)
-  const lag1t    = runLag1Trend(lagData)
-  const lag2t    = runLag2Trend(lagData)
+  const lag1 = runLag1(lagData)
+  const lag1t = runLag1Trend(lagData)
+  const lag2t = runLag2Trend(lagData)
 
   return (
     <div className="flex flex-col gap-10">
-
       {/* ── Temporal trends chart ── */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">

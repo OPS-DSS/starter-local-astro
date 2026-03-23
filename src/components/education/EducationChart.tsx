@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import type { EducationDataRow, EducationIndicator } from '../lib/parquet'
+import type { EducationDataRow, EducationIndicator } from '@/lib/parquet'
 
 interface EducationChartProps {
   data: EducationDataRow[]
@@ -10,20 +10,20 @@ interface EducationChartProps {
 
 const INDICATOR_COLOR: Record<EducationIndicator, string> = {
   cobertura_bruta: '#3b82f6',
-  cobertura_neta:  '#10b981',
-  deserci_n:       '#ef4444',
-  aprobaci_n:      '#8b5cf6',
-  reprobaci_n:     '#f97316',
-  repitencia:      '#f59e0b',
+  cobertura_neta: '#10b981',
+  deserci_n: '#ef4444',
+  aprobaci_n: '#8b5cf6',
+  reprobaci_n: '#f97316',
+  repitencia: '#f59e0b',
 }
 
 const INDICATOR_LABEL: Record<EducationIndicator, string> = {
   cobertura_bruta: 'Cobertura Bruta (%)',
-  cobertura_neta:  'Cobertura Neta (%)',
-  deserci_n:       'Deserción (%)',
-  aprobaci_n:      'Aprobación (%)',
-  reprobaci_n:     'Reprobación (%)',
-  repitencia:      'Repitencia (%)',
+  cobertura_neta: 'Cobertura Neta (%)',
+  deserci_n: 'Deserción (%)',
+  aprobaci_n: 'Aprobación (%)',
+  reprobaci_n: 'Reprobación (%)',
+  repitencia: 'Repitencia (%)',
 }
 
 export const EducationChart = ({

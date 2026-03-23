@@ -5,11 +5,10 @@ export type IndicatorMeta = {
   description: string
   date: string
   category: string
-  navbar: boolean
   priority: boolean
 }
 
-export const indicators: IndicatorMeta[] = [
+export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
   {
     slug: 'educacion',
     title: 'Educación',
@@ -18,7 +17,6 @@ export const indicators: IndicatorMeta[] = [
       'Indicadores de educación en Suaza, incluyendo tasa de deserción escolar, entre otros.',
     date: '2026-01-01',
     category: 'Indicadores',
-    navbar: false,
     priority: true,
   },
 ]

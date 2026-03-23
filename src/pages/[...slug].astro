@@ -1,12 +1,11 @@
 ---
-import Education from '@/components/Education.astro'
+import Education from '@/components/education/Education.astro'
 import Layout from '../layouts/Layout.astro'
-import SuicideMortality from '@/components/SuicideMortality.astro'
-import HuilaMap from '@/components/HuilaMap.astro'
-import Analytics from '@/components/Analytics.astro'
-import ForestPlot from '@/components/ForestPlot.astro'
+import SuicideMortalityInequity from '@/components/suicide-mortality/SuicideMortalityInequity.astro'
+import MunicipalitiesMap from '@/components/map/MunicipalitiesMap.astro'
+import Analytics from '@/components/analytics/Analytics.astro'
 import Welcome from '@/components/Welcome.astro'
-import Catalog from '@/components/Catalog.astro'
+import SuicideMortalitySDoH from '@/components/suicide-mortality/SuicideMortalitySDoH.astro'
 import {
   readParquet,
   dataPath,
@@ -14,11 +13,9 @@ import {
   pivotGaps,
   filterEducationRows,
   filterAnalyticsRows,
-  filterForestPlotRows,
   buildAnalyticsData,
-  buildForestPlotData,
 } from '../lib/parquet'
-import { indicators } from '../data/indicators'
+import { suicideMortalitySDoHIndicators } from '../data/indicators'
 
 import type {
   SuicideRow,
@@ -29,8 +26,6 @@ import type {
   EducationDataRow,
   AnalyticsRow,
   AnalyticsDataRow,
-  ForestPlotRow,
-  ForestPlotDataRow,
 } from '../lib/parquet'
 import PrioritySelector from '@/components/PrioritySelector.astro'
 
@@ -77,17 +72,6 @@ export async function getStaticPaths() {
   } catch {
     // Fallback: derive at build time from already-loaded suicide + education rows
     analyticsData = buildAnalyticsData(suicideRawRows, educationRawRows)
-  }
-
-  let forestPlotData: ForestPlotDataRow[] = []
-  try {
-    const rows = await readParquet<ForestPlotRow>(
-      dataPath('forest_plot_suaza.parquet'),
-    )
-    forestPlotData = filterForestPlotRows(rows)
-  } catch {
-    // Fallback: compute from already-loaded suicide + education rows
-    forestPlotData = buildForestPlotData(suicideRawRows, educationRawRows)
   }
 
   const pages = [
@@ -149,14 +133,13 @@ export async function getStaticPaths() {
       category: 'Salud',
       navbar: true,
     },
-    ...indicators.map((ind) => ({
+    ...suicideMortalitySDoHIndicators.map((ind) => ({
       slug: ind.slug,
       title: ind.title,
       text: ind.text,
       date: ind.date,
-      navbar: ind.navbar,
+      navbar: false,
       ...(ind.slug === 'educacion' ? { data: educationData } : {}),
-      ...(ind.slug === 'correlacion-suaza' ? { data: forestPlotData } : {}),
     })),
   ]
 
@@ -172,11 +155,7 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   pages: unknown[]
   slug: string | undefined
   date: Date
-  data?:
-    | SuicideDataRow[]
-    | EducationDataRow[]
-    | AnalyticsDataRow[]
-    | ForestPlotDataRow[]
+  data?: SuicideDataRow[] | EducationDataRow[] | AnalyticsDataRow[]
   gapsData?: GapsChartPoint[]
 }
 ---
@@ -190,7 +169,7 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   }
   {
     slug === 'determinantes-de-la-salud/mortalidad-por-suicidio' && (
-      <Catalog title={title} text={text} />
+      <SuicideMortalitySDoH title={title} text={text} />
     )
   }
   {
@@ -200,7 +179,7 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
   }
   {
     slug === 'inequidades-en-salud/mortalidad-por-suicidio' && (
-      <SuicideMortality
+      <SuicideMortalityInequity
         title={title}
         text={text}
         data={data as SuicideDataRow[]}
@@ -231,18 +210,8 @@ const { title, text, pages, slug, date, data, gapsData } = Astro.props as {
     )
   }
   {
-    slug === 'correlacion-suaza' && (
-      <ForestPlot
-        title={title}
-        text={text}
-        data={data as ForestPlotDataRow[]}
-        csvPath={`${import.meta.env.BASE_URL}/data/forest_plot_suaza.csv`}
-      />
-    )
-  }
-  {
     slug === 'mapa-huila' && (
-      <HuilaMap
+      <MunicipalitiesMap
         title={title}
         text={text}
         geojsonUrls={{
