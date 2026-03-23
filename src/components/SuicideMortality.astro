@@ -1,20 +1,46 @@
 ---
-import { SuicideChart } from './SuicideChart'
+import { SuicideMortalityPanel } from './SuicideMortalityPanel'
 
-type ChartPoint = { anio: number; [key: string]: number | string }
-
-interface Props {
-  title:   string
-  text:    string
-  data:    ChartPoint[]
-  csvPath?: string
+type SuicideDataRow = {
+  anio: number
+  territorio: string
+  sexo: string
+  valor: number
+}
+type GapsChartPoint = {
+  anio: number
+  brechaHuila?: number
+  brechaNacional?: number
+  brechaSuaza?: number
+  razonHuila?: number
+  razonNacional?: number
+  razonSuaza?: number
 }
 
-const { title, text, data, csvPath } = Astro.props
+interface Props {
+  title: string
+  text: string
+  data: SuicideDataRow[] | undefined
+  gapsData?: GapsChartPoint[]
+  csvPath?: string
+  gapsCsvPath?: string
+}
+
+const { title, text, data, gapsData = [], csvPath, gapsCsvPath } = Astro.props
 ---
 
 <div class="flex flex-col gap-2">
   <h1 class="text-3xl font-bold my-6">{title}</h1>
   <p class="text-gray-700">{text}</p>
-  <SuicideChart data={data} csvPath={csvPath} client:load />
+  {
+    data && (
+      <SuicideMortalityPanel
+        data={data}
+        gapsData={gapsData}
+        csvPath={csvPath}
+        gapsCsvPath={gapsCsvPath}
+        client:load
+      />
+    )
+  }
 </div>

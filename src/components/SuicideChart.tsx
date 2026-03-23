@@ -1,29 +1,106 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 
-interface DataPoint {
+type SuicideDataRow = {
   anio: number
-  [key: string]: number | string
+  territorio: string
+  sexo: string
+  valor: number
 }
 
 interface SuicideChartProps {
-  data: DataPoint[]
+  data: SuicideDataRow[]
   csvPath?: string
+  stratifier?: string
 }
 
-const COLOR_MAP: Record<string, string> = {
-  Masculino: '#3b82f6',
-  masculino: '#3b82f6',
-  Femenino:  '#ec4899',
-  femenino:  '#ec4899',
-  Total:     '#6b7280',
-  total:     '#6b7280',
+// Total mode: one line per territory
+const TOTAL_COLORS: Record<string, string> = {
+  Nacional: '#6b7280',
+  Huila: '#3b82f6',
+  Suaza: '#10b981',
 }
 
-const FALLBACK_COLORS = ['#8b5cf6', '#f59e0b', '#10b981', '#ef4444']
+// Sexo mode: one line per territory+sex combination
+const SEXO_COLORS: Record<string, string> = {
+  'Nacional Femenino': '#f43f5e',
+  'Nacional Masculino': '#6b7280',
+  'Huila Femenino': '#ec4899',
+  'Huila Masculino': '#3b82f6',
+  'Suaza Femenino': '#f97316',
+  'Suaza Masculino': '#10b981',
+}
 
-export const SuicideChart = ({ data, csvPath }: SuicideChartProps) => {
+const FALLBACK_COLORS = ['#8b5cf6', '#f59e0b', '#ef4444', '#14b8a6']
+
+// Preferred display order
+const TOTAL_ORDER = ['Nacional', 'Huila', 'Suaza']
+const SEXO_ORDER = [
+  'Nacional Femenino',
+  'Nacional Masculino',
+  'Huila Femenino',
+  'Huila Masculino',
+  'Suaza Femenino',
+  'Suaza Masculino',
+]
+
+function pivotRows(rows: SuicideDataRow[], stratifier: string) {
+  const byYear = new Map<number, Record<string, number>>()
+
+  for (const row of rows) {
+    const isTotal = stratifier === 'total'
+    if (isTotal && row.sexo !== 'Total') continue
+    if (!isTotal && row.sexo === 'Total') continue
+
+    const key = isTotal ? row.territorio : `${row.territorio} ${row.sexo}`
+    if (!byYear.has(row.anio)) byYear.set(row.anio, {})
+    byYear.get(row.anio)![key] = row.valor
+  }
+
+  const chartData = Array.from(byYear.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([anio, vals]) => ({ anio, ...vals }))
+
+  const order = stratifier === 'total' ? TOTAL_ORDER : SEXO_ORDER
+  const colorMap = stratifier === 'total' ? TOTAL_COLORS : SEXO_COLORS
+  const getOrderIndex = (key: string): number => {
+    const idx = order.indexOf(key)
+    return idx === -1 ? Number.POSITIVE_INFINITY : idx
+  }
+  const keys = Array.from(
+    new Set(
+      chartData.flatMap((row) => Object.keys(row).filter((k) => k !== 'anio')),
+    ),
+  ).sort((a, b) => {
+    const indexA = getOrderIndex(a)
+    const indexB = getOrderIndex(b)
+    if (indexA === indexB) {
+      // For keys not present in the preferred order, fall back to alphabetical order
+      return a.localeCompare(b)
+    }
+    return indexA - indexB
+  })
+
+  const lines = keys.map((key, i) => ({
+    dataKey: key,
+    name: key,
+    color: colorMap[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
+  }))
+
+  return { chartData, lines, keys }
+}
+
+export const SuicideChart = ({
+  data,
+  csvPath,
+  stratifier = 'total',
+}: SuicideChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
+
+  const { chartData, lines, keys } = useMemo(
+    () => pivotRows(data, stratifier),
+    [data, stratifier],
+  )
 
   if (!data || data.length === 0) {
     return (
@@ -32,16 +109,6 @@ export const SuicideChart = ({ data, csvPath }: SuicideChartProps) => {
       </p>
     )
   }
-
-  const sexCategories = Array.from(
-    new Set(data.flatMap(row => Object.keys(row).filter(k => k !== 'anio')))
-  )
-
-  const lines = sexCategories.map((category, i) => ({
-    dataKey: category,
-    name:    category,
-    color:   COLOR_MAP[category] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length],
-  }))
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
@@ -90,14 +157,14 @@ export const SuicideChart = ({ data, csvPath }: SuicideChartProps) => {
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Descargar CSV
+            Descargar tabla
           </a>
         )}
       </div>
 
       {view === 'chart' ? (
         <DSLineChart
-          data={data}
+          data={chartData}
           xAxisKey="anio"
           lines={lines}
           height={400}
@@ -108,7 +175,7 @@ export const SuicideChart = ({ data, csvPath }: SuicideChartProps) => {
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-4 py-3 font-medium">Año</th>
-                {sexCategories.map(cat => (
+                {keys.map((cat) => (
                   <th key={cat} className="px-4 py-3 font-medium">
                     {cat}
                   </th>
@@ -116,15 +183,19 @@ export const SuicideChart = ({ data, csvPath }: SuicideChartProps) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {data.map(row => (
-                <tr key={row.anio} className="bg-white hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">{row.anio}</td>
-                  {sexCategories.map(cat => {
-                    const value = row[cat]
-
+              {chartData.map((row) => (
+                <tr
+                  key={row.anio}
+                  className="bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <td className="px-4 py-3 font-medium text-gray-900">
+                    {row.anio}
+                  </td>
+                  {keys.map((cat) => {
+                    const value = (row as Record<string, unknown>)[cat]
                     return (
                       <td key={cat} className="px-4 py-3 text-gray-600">
-                        {typeof value === 'number' ? value.toFixed(2) : '0.00'}
+                        {typeof value === 'number' ? value.toFixed(2) : '—'}
                       </td>
                     )
                   })}

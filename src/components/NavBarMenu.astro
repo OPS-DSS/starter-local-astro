@@ -4,6 +4,7 @@ import { Icon } from 'astro-icon/components'
 interface MenuItem {
   slug: string | undefined
   title: string
+  navbar: boolean
 }
 
 interface Props {
@@ -43,14 +44,19 @@ export function getBasePath() {
             transition duration-150 ease-out"
         >
           {
-            pages.map(({ slug, title }) => (
-              <a
-                href={slug == undefined ? getBasePath() : getBasePath() + slug}
-                class="flex items-center rounded-sm px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 transition-colors"
-              >
-                {title}
-              </a>
-            ))
+            pages.map(
+              ({ slug, title, navbar }) =>
+                navbar && (
+                  <a
+                    href={
+                      slug == undefined ? getBasePath() : getBasePath() + slug
+                    }
+                    class="flex items-center rounded-sm px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 focus:bg-gray-100 focus:text-gray-900 transition-colors"
+                  >
+                    {title}
+                  </a>
+                ),
+            )
           }
         </div>
       </div>
@@ -64,16 +70,21 @@ export function getBasePath() {
           <div class="hidden md:ml-6 md:block">
             <div class="flex space-x-4">
               {
-                pages.map(({ slug, title }) => (
-                  <a
-                    href={
-                      slug == undefined ? getBasePath() : getBasePath() + slug
-                    }
-                    class="rounded-md px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 hover:text-gray-800"
-                  >
-                    {title}
-                  </a>
-                ))
+                pages.map(
+                  ({ slug, title, navbar }) =>
+                    navbar && (
+                      <a
+                        href={
+                          slug == undefined
+                            ? getBasePath()
+                            : getBasePath() + slug
+                        }
+                        class="rounded-md px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-200 hover:text-gray-800"
+                      >
+                        {title}
+                      </a>
+                    ),
+                )
               }
             </div>
           </div>
@@ -84,20 +95,44 @@ export function getBasePath() {
 </nav>
 
 <script>
-  const button = document.getElementById('mobile-menu-button') as HTMLButtonElement
-  const dropdown = document.getElementById('mobile-menu-dropdown') as HTMLElement
+  const button = document.getElementById(
+    'mobile-menu-button',
+  ) as HTMLButtonElement
+  const dropdown = document.getElementById(
+    'mobile-menu-dropdown',
+  ) as HTMLElement
   const srText = document.getElementById('mobile-menu-sr-text') as HTMLElement
 
   function openMenu() {
-    dropdown.classList.remove('opacity-0', 'scale-95', '-translate-y-1', 'pointer-events-none')
-    dropdown.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto')
+    dropdown.classList.remove(
+      'opacity-0',
+      'scale-95',
+      '-translate-y-1',
+      'pointer-events-none',
+    )
+    dropdown.classList.add(
+      'opacity-100',
+      'scale-100',
+      'translate-y-0',
+      'pointer-events-auto',
+    )
     button.setAttribute('aria-expanded', 'true')
     srText.textContent = 'Close main menu'
   }
 
   function closeMenu() {
-    dropdown.classList.add('opacity-0', 'scale-95', '-translate-y-1', 'pointer-events-none')
-    dropdown.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto')
+    dropdown.classList.add(
+      'opacity-0',
+      'scale-95',
+      '-translate-y-1',
+      'pointer-events-none',
+    )
+    dropdown.classList.remove(
+      'opacity-100',
+      'scale-100',
+      'translate-y-0',
+      'pointer-events-auto',
+    )
     button.setAttribute('aria-expanded', 'false')
     srText.textContent = 'Open main menu'
   }
@@ -108,7 +143,10 @@ export function getBasePath() {
   })
 
   document.addEventListener('click', (e) => {
-    if (!button.contains(e.target as Node) && !dropdown.contains(e.target as Node)) {
+    if (
+      !button.contains(e.target as Node) &&
+      !dropdown.contains(e.target as Node)
+    ) {
       closeMenu()
     }
   })
