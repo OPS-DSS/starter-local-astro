@@ -20,3 +20,16 @@ export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
     priority: true,
   },
 ]
+
+export const violenceIndicators: IndicatorMeta[] = [
+  {
+    slug: 'educacion',
+    title: 'Educación',
+    text: 'Indicadores de educación en Suaza, incluyendo tasa de deserción escolar, entre otros.',
+    description:
+      'Indicadores de educación en Suaza, incluyendo tasa de deserción escolar, entre otros.',
+    date: '2026-01-01',
+    category: 'Indicadores',
+    priority: true,
+  },
+]
