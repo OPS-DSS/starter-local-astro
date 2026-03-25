@@ -109,14 +109,14 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       navbar: true,
     },
     {
-      slug: 'inequidades-en-salud',
-      title: 'Inequidades en Salud',
+      slug: 'analisis-de-inequidad',
+      title: 'Análisis de Inequidad',
       text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
       navbar: true,
     },
     {
-      slug: 'inequidades-en-salud/mortalidad-por-suicidio',
+      slug: 'analisis-de-inequidad/mortalidad-por-suicidio',
       title: 'Mortalidad por Suicidio',
       text: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
@@ -125,7 +125,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       gapsData: datasets.suicideGapsData,
     },
     {
-      slug: 'inequidades-en-salud/violencia',
+      slug: 'analisis-de-inequidad/violencia',
       title: 'Violencia',
       text: 'Indicadores relacionados con la violencia en Suaza, incluyendo tasas de homicidio, violencia intrafamiliar, entre otros.',
       description:

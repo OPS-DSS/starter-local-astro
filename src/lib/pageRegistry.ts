@@ -47,7 +47,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   },
 
   // ─── Section index pages ───────────────────────────────────────────────────
-  'inequidades-en-salud': {
+  'analisis-de-inequidad': {
     component: PrioritySelector,
     resolveProps: ({ title, text, slug }) => ({ title, text, section: slug }),
   },
@@ -65,7 +65,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
     component: ViolenceSDoH,
     resolveProps: ({ title, text }) => ({ title, text }),
   },
-  'inequidades-en-salud/mortalidad-por-suicidio': {
+  'analisis-de-inequidad/mortalidad-por-suicidio': {
     component: SuicideMortalityInequity,
     resolveProps: ({ title, text, data, gapsData }, baseUrl) => ({
       title,
@@ -76,7 +76,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       gapsCsvPath: base(baseUrl, 'suicide_huila_gaps.csv'),
     }),
   },
-  'inequidades-en-salud/violencia': {
+  'analisis-de-inequidad/violencia': {
     component: ViolenceInequity,
     resolveProps: ({ title, text }) => ({
       title,
