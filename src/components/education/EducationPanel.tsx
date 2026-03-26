@@ -45,7 +45,7 @@ export const EducationPanel = ({ data, csvPath }: EducationPanelProps) => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-10">
         {INDICATORS.map((ind) => (
           <div key={ind.value}>
             <h2 className="text-lg font-semibold text-gray-800 mb-4">

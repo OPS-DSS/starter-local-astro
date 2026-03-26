@@ -2,7 +2,6 @@ import type { AstroComponentFactory } from 'astro/runtime/server/index.js'
 
 import Education from '@/components/education/Education.astro'
 import SuicideMortalityInequity from '@/components/suicide-mortality/SuicideMortalityInequity.astro'
-import MunicipalitiesMap from '@/components/map/MunicipalitiesMap.astro'
 import Analytics from '@/components/analytics/Analytics.astro'
 import Welcome from '@/components/Welcome.astro'
 import SuicideMortalitySDoH from '@/components/suicide-mortality/SuicideMortalitySDoH.astro'
@@ -55,6 +54,10 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
     component: PrioritySelector,
     resolveProps: ({ title, text, slug }) => ({ title, text, section: slug }),
   },
+  analisis: {
+    component: PrioritySelector,
+    resolveProps: ({ title, text, slug }) => ({ title, text, section: slug }),
+  },
 
   // ─── Detail pages ──────────────────────────────────────────────────────────
   'determinantes-de-la-salud/mortalidad-por-suicidio': {
@@ -83,16 +86,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       text,
     }),
   },
-  educacion: {
-    component: Education,
-    resolveProps: ({ title, text, data }, baseUrl) => ({
-      title,
-      text,
-      data,
-      csvPath: base(baseUrl, 'education_suaza.csv'),
-    }),
-  },
-  analisis: {
+  'analisis/mortalidad-por-suicidio': {
     component: Analytics,
     resolveProps: ({ title, text, data }, baseUrl) => ({
       title,
@@ -101,20 +95,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       csvPath: base(baseUrl, 'analytics_suaza.csv'),
     }),
   },
-  'mapa-huila': {
-    component: MunicipalitiesMap,
-    resolveProps: ({ title, text }, baseUrl) => ({
+  educacion: {
+    component: Education,
+    resolveProps: ({ title, text, data }, baseUrl) => ({
       title,
       text,
-      geojsonUrls: {
-        cobertura_bruta: base(baseUrl, 'huila_cobertura_bruta.geojson'),
-        cobertura_neta: base(baseUrl, 'huila_cobertura_neta.geojson'),
-        deserci_n: base(baseUrl, 'huila_desercion.geojson'),
-        aprobaci_n: base(baseUrl, 'huila_aprobacion.geojson'),
-        reprobaci_n: base(baseUrl, 'huila_reprobacion.geojson'),
-        repitencia: base(baseUrl, 'huila_repitencia.geojson'),
-      },
-      csvUrl: base(baseUrl, 'huila_map.csv'),
+      data,
+      csvPath: base(baseUrl, 'education_suaza.csv'),
     }),
   },
 }

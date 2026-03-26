@@ -152,13 +152,6 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       navbar: true,
     },
     {
-      slug: 'determinantes-de-la-salud/mortalidad-por-suicidio',
-      title: 'Mortalidad por Suicidio',
-      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
-      date: '2026-01-01',
-      navbar: false,
-    },
-    {
       slug: 'determinantes-de-la-salud/violencia',
       title: 'Violencia',
       text: 'Indicadores relacionados con la violencia en Suaza, incluyendo tasas de homicidio, violencia intrafamiliar, entre otros.',
@@ -172,23 +165,20 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     {
       slug: 'analisis',
       title: 'Análisis',
-      text: 'Análisis de la relación entre la deserción escolar y la mortalidad por suicidio.',
+      text: 'Análisis de la relaciónes.',
+      date: '2026-01-01',
+      navbar: true,
+    },
+    {
+      slug: 'analisis/mortalidad-por-suicidio',
+      title: 'Análisis',
+      text: 'Análisis de relaciones',
       description: 'Indicadores de análisis de datos y visualización.',
       date: '2026-01-01',
       category: 'Tendencia',
-      navbar: true,
+      navbar: false,
       priority: false,
       data: datasets.analyticsData,
-    },
-    {
-      slug: 'mapa-huila',
-      title: 'Análisis Territorial',
-      text: 'Comparación de indicadores de salud entre los municipios del departamento de Huila, Colombia. El mapa permite comparar a Suaza con los demás municipios de su departamento.',
-      description:
-        'Mapa coroplético interactivo que compara indicadores de salud por municipio en el departamento de Huila.',
-      date: '2026-01-01',
-      category: 'Salud',
-      navbar: true,
     },
   ]
 
