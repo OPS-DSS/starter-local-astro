@@ -1,5 +1,9 @@
 import { useState } from 'react'
 import { AnalyticsDualChart } from './AnalyticsDualChart'
+import {
+  EDUCATION_INDICATORS,
+  type EducationIndicatorKey,
+} from './educationIndicators'
 import type { AnalyticsDataRow } from '@/lib/parquet'
 
 interface AnalyticsPanelProps {
@@ -87,6 +91,8 @@ function DataTable({ data }: { data: AnalyticsDataRow[] }) {
 
 export const AnalyticsPanel = ({ data, csvPath }: AnalyticsPanelProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
+  const [selectedIndicator, setSelectedIndicator] =
+    useState<EducationIndicatorKey>('desercion')
 
   if (!data || data.length === 0) {
     return (
@@ -98,6 +104,40 @@ export const AnalyticsPanel = ({ data, csvPath }: AnalyticsPanelProps) => {
 
   return (
     <div className="flex flex-col gap-10">
+      {/* ── Indicator selector ── */}
+      <section className="flex flex-col gap-3">
+        <p className="text-sm font-medium text-gray-600">
+          Indicador de educación
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {(
+            Object.entries(EDUCATION_INDICATORS) as [
+              EducationIndicatorKey,
+              (typeof EDUCATION_INDICATORS)[EducationIndicatorKey],
+            ][]
+          ).map(([key, meta]) => (
+            <button
+              key={key}
+              type="button"
+              aria-pressed={selectedIndicator === key}
+              onClick={() => setSelectedIndicator(key)}
+              className={`px-3 py-1.5 text-sm rounded-full border transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                selectedIndicator === key
+                  ? 'border-transparent text-white'
+                  : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+              }`}
+              style={
+                selectedIndicator === key
+                  ? { backgroundColor: meta.color }
+                  : {}
+              }
+            >
+              {meta.label}
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* ── Temporal trends chart ── */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
@@ -150,7 +190,7 @@ export const AnalyticsPanel = ({ data, csvPath }: AnalyticsPanelProps) => {
         </div>
 
         {view === 'chart' ? (
-          <AnalyticsDualChart data={data} />
+          <AnalyticsDualChart data={data} selectedIndicator={selectedIndicator} />
         ) : (
           <DataTable data={data} />
         )}
