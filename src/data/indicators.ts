@@ -16,7 +16,7 @@ export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
     description:
       'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
     date: '2026-01-01',
-    category: 'Indicadores',
+    category: 'dss',
     priority: true,
   },
   {
@@ -26,7 +26,7 @@ export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
     description:
       'Indicadores de violencia, incluyendo tasa de victimización, entre otros.',
     date: '2026-01-01',
-    category: 'Indicadores',
+    category: 'dss',
     priority: true,
   },
   {
@@ -36,7 +36,7 @@ export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
     description:
       'Indicadores de trabajo, incluyendo tasa de desempleo, entre otros.',
     date: '2026-01-01',
-    category: 'Indicadores',
+    category: 'dss',
     priority: true,
   },
 ]
@@ -49,7 +49,7 @@ export const violenceIndicators: IndicatorMeta[] = [
     description:
       'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
     date: '2026-01-01',
-    category: 'Indicadores',
+    category: 'dss',
     priority: true,
   },
 ]
