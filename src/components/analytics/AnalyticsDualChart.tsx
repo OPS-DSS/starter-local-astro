@@ -53,6 +53,8 @@ export const AnalyticsDualChart = ({
               },
             ]}
             height={320}
+            xAxisLabel="Año"
+            yAxisLabel="Tasa (×100.000 hab.)"
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -70,6 +72,8 @@ export const AnalyticsDualChart = ({
               },
             ]}
             height={320}
+            xAxisLabel="Año"
+            yAxisLabel={indicator.unit}
           />
         </div>
       </div>

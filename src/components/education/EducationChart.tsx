@@ -112,6 +112,8 @@ export const EducationChart = ({
           xAxisKey="anio"
           lines={lines}
           height={400}
+          xAxisLabel="Año"
+          yAxisLabel="Porcentaje (%)"
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">

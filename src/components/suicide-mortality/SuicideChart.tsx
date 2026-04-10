@@ -168,6 +168,8 @@ export const SuicideChart = ({
           xAxisKey="anio"
           lines={lines}
           height={400}
+          xAxisLabel="Año"
+          yAxisLabel="Tasa (×100.000 hab.)"
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
