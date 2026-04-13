@@ -75,8 +75,8 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       text,
       data,
       gapsData,
-      csvPath: base(baseUrl, 'suicide_huila.csv'),
-      gapsCsvPath: base(baseUrl, 'suicide_huila_gaps.csv'),
+      csvPath: base(baseUrl, 'suicide_mortality.csv'),
+      gapsCsvPath: base(baseUrl, 'suicide_mortality_gaps.csv'),
     }),
   },
   'analisis-de-inequidad/violencia': {
@@ -92,7 +92,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       title,
       text,
       data,
-      csvPath: base(baseUrl, 'analytics_suaza.csv'),
+      csvPath: base(baseUrl, 'analytics.csv'),
     }),
   },
   educacion: {
@@ -101,7 +101,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       title,
       text,
       data,
-      csvPath: base(baseUrl, 'education_suaza.csv'),
+      csvPath: base(baseUrl, 'education.csv'),
     }),
   },
 }
