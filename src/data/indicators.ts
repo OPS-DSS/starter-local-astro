@@ -8,48 +8,50 @@ export type IndicatorMeta = {
   priority: boolean
 }
 
-export const suicideMortalitySDoHIndicators: IndicatorMeta[] = [
+export const maternalMortalityIndicators: IndicatorMeta[] = [
   {
-    slug: 'educacion',
-    title: 'Educación',
-    text: 'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
-    description:
-      'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
-    date: '2026-01-01',
+    slug: 'traslado',
+    title: 'Tiempo promedio de traslado a centro de salud',
+    text: 'Minutos promedio desde hogar al centro de salud.',
+    description: 'Minutos promedio desde hogar al centro de salud.',
+    date: '2026-04-10',
     category: 'dss',
     priority: true,
   },
   {
-    slug: 'violencia',
-    title: 'Violencia',
-    text: 'Indicadores de violencia, incluyendo tasa de victimización, entre otros.',
-    description:
-      'Indicadores de violencia, incluyendo tasa de victimización, entre otros.',
-    date: '2026-01-01',
+    slug: 'frecuencia-transporte',
+    title: 'Frecuencia de transporte público',
+    text: 'Número de buses por hora en el territorio.',
+    description: 'Número de buses por hora en el territorio.',
+    date: '2026-04-10',
     category: 'dss',
     priority: true,
   },
   {
-    slug: 'trabajo',
-    title: 'Trabajo',
-    text: 'Indicadores de trabajo, incluyendo tasa de desempleo, entre otros.',
-    description:
-      'Indicadores de trabajo, incluyendo tasa de desempleo, entre otros.',
-    date: '2026-01-01',
+    slug: 'sobrecarga-embarazadas',
+    title: 'Porcentaje de mujeres embarazadas con sobrecarga de cuidados',
+    text: 'Proporción con alta carga de cuidados.',
+    description: 'Proporción con alta carga de cuidados.',
+    date: '2026-04-10',
     category: 'dss',
     priority: true,
   },
-]
-
-export const violenceIndicators: IndicatorMeta[] = [
   {
-    slug: 'educacion',
-    title: 'Educación',
-    text: 'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
-    description:
-      'Indicadores de educación, incluyendo tasa de deserción escolar, entre otros.',
-    date: '2026-01-01',
+    slug: 'embarazadas-empleo-informal',
+    title: 'Porcentaje de mujeres embarazadas con empleo informal',
+    text: 'Proporción sin contrato o protección laboral.',
+    description: 'Proporción sin contrato o protección laboral.',
+    date: '2026-04-10',
     category: 'dss',
+    priority: true,
+  },
+  {
+    slug: 'apoyo-embarazadas',
+    title: 'Porcentaje de cobertura de programa apoyo a embarazadas',
+    text: 'Proporción de embarazadas que acceden al programa.',
+    description: 'Proporción de embarazadas que acceden al programa.',
+    date: '2026-04-10',
+    category: 'policy',
     priority: true,
   },
 ]

@@ -318,6 +318,284 @@ export function buildAnalyticsData(
   return result.sort((a, b) => a.anio - b.anio)
 }
 
+// ── Maternal Mortality data types ─────────────────────────────────────────────
+
+/**
+ * Row from maternal_mortality_rate.parquet
+ * Columns (by index): iso3[0], Territorio[1], cod_local[2], anio[3], valor[4]
+ */
+export type MaternalMortalityRateRawRow = unknown[]
+
+export type MaternalMortalityRateRow = {
+  territorio: string
+  anio: number
+  valor: number
+}
+
+export function filterMaternalMortalityRateRows(
+  rows: MaternalMortalityRateRawRow[],
+): MaternalMortalityRateRow[] {
+  const result: MaternalMortalityRateRow[] = []
+  for (const row of rows) {
+    const territorio = String(row[1])
+    const anio = Number(row[3])
+    const valor = Number(row[4])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({ territorio, anio, valor })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+/**
+ * Row from maternal_mortality_quintiles.parquet (resumen dataframe)
+ * Columns: anio[0], quintil_dss[1], tasa_ponderada[2], n[3], total_pob[4],
+ *          sd_pond[5], se[6], ic_inf[7], ic_sup[8]
+ */
+export type MaternalMortalityQuintilRawRow = unknown[]
+
+export type MaternalMortalityQuintilRow = {
+  anio: number
+  quintil_dss: number
+  tasa_ponderada: number
+  n: number
+  total_pob: number
+  se: number
+  ic_inf: number
+  ic_sup: number
+}
+
+export function filterMaternalMortalityQuintilRows(
+  rows: MaternalMortalityQuintilRawRow[],
+): MaternalMortalityQuintilRow[] {
+  const result: MaternalMortalityQuintilRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    const quintil_dss = Number(row[1])
+    const tasa_ponderada = Number(row[2])
+    const n = Number(row[3])
+    const total_pob = Number(row[4])
+    const se = Number(row[6])
+    const ic_inf = Number(row[7])
+    const ic_sup = Number(row[8])
+    if (!Number.isFinite(anio) || !Number.isFinite(quintil_dss)) continue
+    result.push({
+      anio,
+      quintil_dss,
+      tasa_ponderada,
+      n,
+      total_pob,
+      se,
+      ic_inf,
+      ic_sup,
+    })
+  }
+  return result.sort((a, b) => a.anio - b.anio || a.quintil_dss - b.quintil_dss)
+}
+
+/**
+ * Row from maternal_mortality_gaps.parquet (brecha_quintiles dataframe)
+ * Columns: anio[0], valor_ref[1], valor_comp[2],
+ *          brecha_absoluta[3], ic_inf_abs[4], ic_sup_abs[5],
+ *          brecha_relativa[6], ic_inf_rel[7], ic_sup_rel[8]
+ */
+export type MaternalMortalityGapsRawRow = unknown[]
+
+export type MaternalMortalityGapsRow = {
+  anio: number
+  valor_ref: number
+  valor_comp: number
+  brecha_absoluta: number
+  ic_inf_abs: number
+  ic_sup_abs: number
+  brecha_relativa: number
+  ic_inf_rel: number
+  ic_sup_rel: number
+}
+
+export function filterMaternalMortalityGapsRows(
+  rows: MaternalMortalityGapsRawRow[],
+): MaternalMortalityGapsRow[] {
+  const result: MaternalMortalityGapsRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    if (!Number.isFinite(anio)) continue
+    result.push({
+      anio,
+      valor_ref: Number(row[1]),
+      valor_comp: Number(row[2]),
+      brecha_absoluta: Number(row[3]),
+      ic_inf_abs: Number(row[4]),
+      ic_sup_abs: Number(row[5]),
+      brecha_relativa: Number(row[6]),
+      ic_inf_rel: Number(row[7]),
+      ic_sup_rel: Number(row[8]),
+    })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+// ── Maternal mortality analytics: temporal data (Huila rate + education avg) ──
+// Parquet columns: anio[0], valor[1], cobertura_bruta[2], cobertura_neta[3],
+//   desercion[4], aprobacion[5], reprobacion[6], repitencia[7]
+export type AnalyticsMaternalRawRow = unknown[]
+
+export type AnalyticsMaternalRow = {
+  anio: number
+  valor: number
+  cobertura_bruta: number
+  cobertura_neta: number
+  desercion: number
+  aprobacion: number
+  reprobacion: number
+  repitencia: number
+}
+
+export function filterAnalyticsMaternalRows(
+  rows: AnalyticsMaternalRawRow[],
+): AnalyticsMaternalRow[] {
+  const result: AnalyticsMaternalRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    const valor = Number(row[1])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({
+      anio,
+      valor,
+      cobertura_bruta: Number(row[2]),
+      cobertura_neta: Number(row[3]),
+      desercion: Number(row[4]),
+      aprobacion: Number(row[5]),
+      reprobacion: Number(row[6]),
+      repitencia: Number(row[7]),
+    })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+// ── Maternal mortality scatter: cross-sectional municipality data ──────────────
+// Parquet columns: anio[0], territorio[1], valor[2], cobertura_bruta[3],
+//   cobertura_neta[4], desercion[5], aprobacion[6], reprobacion[7],
+//   repitencia[8], nacimientos[9]
+export type ScatterMaternalRawRow = unknown[]
+
+export type ScatterMaternalRow = {
+  anio: number
+  territorio: string
+  valor: number
+  cobertura_bruta: number
+  cobertura_neta: number
+  desercion: number
+  aprobacion: number
+  reprobacion: number
+  repitencia: number
+  nacimientos: number
+}
+
+export function filterScatterMaternalRows(
+  rows: ScatterMaternalRawRow[],
+): ScatterMaternalRow[] {
+  const result: ScatterMaternalRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    const territorio = String(row[1])
+    const valor = Number(row[2])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({
+      anio,
+      territorio,
+      valor,
+      cobertura_bruta: Number(row[3]),
+      cobertura_neta: Number(row[4]),
+      desercion: Number(row[5]),
+      aprobacion: Number(row[6]),
+      reprobacion: Number(row[7]),
+      repitencia: Number(row[8]),
+      nacimientos: Number(row[9]),
+    })
+  }
+  return result
+}
+
+// ── Forest plot / Correlation data types ─────────────────────────────────────
+// Parquet columns (by index):
+//   indicador[0], label[1], correlacion[2], ci_lower[3], ci_upper[4],
+//   p_value[5], n[6]
+export type ForestPlotRawRow = unknown[]
+
+export type ForestPlotDataRow = {
+  indicador: string
+  label: string
+  correlacion: number
+  ci_lower: number
+  ci_upper: number
+  p_value: number
+  n: number
+}
+
+// ── Shared stratified indicator data types ────────────────────────────────────
+// Used by: traslado, frecuencia_transporte, sobrecarga_cuidados,
+//          empleo_informal, cobertura_programa (and any future stratified DSS indicator)
+//
+// Parquet columns (by index, matching R stratified_indicator_mock.R select order):
+//   anio[0], valor[1], sexo[2], grupo_edad[3], zona[4]
+//
+// Standardised aggregate labels written by the R mock script:
+//   sexo      → "Todos/as"
+//   grupo_edad → "Todas las edades"
+//   zona       → "Todas las zonas"
+export type StratifiedRawRow = unknown[]
+
+export type StratifiedRow = {
+  anio: number
+  valor: number
+  sexo: string
+  grupo_edad: string
+  zona: string
+}
+
+export function filterStratifiedRows(
+  rows: StratifiedRawRow[],
+): StratifiedRow[] {
+  const result: StratifiedRow[] = []
+  for (const row of rows) {
+    const anio = Number(row[0])
+    const valor = Number(row[1])
+    const sexo = String(row[2])
+    const grupo_edad = String(row[3])
+    const zona = String(row[4] ?? 'Todas las zonas')
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({ anio, valor, sexo, grupo_edad, zona })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+// Backward-compatible aliases (traslado was the first stratified indicator)
+export type TrasladoRawRow = StratifiedRawRow
+export type TrasladoRow = StratifiedRow
+export const filterTrasladoRows = filterStratifiedRows
+
+export function filterForestPlotRows(
+  rows: ForestPlotRawRow[],
+): ForestPlotDataRow[] {
+  const result: ForestPlotDataRow[] = []
+  for (const row of rows) {
+    const indicador = String(row[0])
+    const label = String(row[1])
+    const correlacion = Number(row[2])
+    if (!indicador || !label || !Number.isFinite(correlacion)) continue
+    result.push({
+      indicador,
+      label,
+      correlacion,
+      ci_lower: Number(row[3]),
+      ci_upper: Number(row[4]),
+      p_value: Number(row[5]),
+      n: Number(row[6]),
+    })
+  }
+  return result
+}
+
 export function pivotGaps(rows: GapsRow[]): GapsChartPoint[] {
   const byYear = new Map<number, GapsChartPoint>()
 

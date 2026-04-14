@@ -1,37 +1,60 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import type { EducationDataRow, EducationIndicator } from '@/lib/parquet'
+import type { MaternalMortalityRateRow } from '@/lib/parquet'
 
-interface EducationChartProps {
-  data: EducationDataRow[]
-  indicator: EducationIndicator
+const COLORS: Record<string, string> = {
+  Nacional: '#6b7280',
+  Huila: '#3b82f6',
+}
+
+const ORDER = ['Nacional', 'Huila']
+
+function pivotRows(rows: MaternalMortalityRateRow[]) {
+  const byYear = new Map<number, Record<string, number>>()
+
+  for (const row of rows) {
+    if (!byYear.has(row.anio)) byYear.set(row.anio, {})
+    byYear.get(row.anio)![row.territorio] = row.valor
+  }
+
+  const chartData = Array.from(byYear.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([anio, vals]) => ({ anio, ...vals }))
+
+  const keys = Array.from(
+    new Set(
+      chartData.flatMap((row) => Object.keys(row).filter((k) => k !== 'anio')),
+    ),
+  ).sort((a, b) => {
+    const ia = ORDER.indexOf(a)
+    const ib = ORDER.indexOf(b)
+    if (ia === -1 && ib === -1) return a.localeCompare(b)
+    if (ia === -1) return 1
+    if (ib === -1) return -1
+    return ia - ib
+  })
+
+  const lines = keys.map((key) => ({
+    dataKey: key,
+    name: key,
+    color: COLORS[key] ?? '#8b5cf6',
+  }))
+
+  return { chartData, lines, keys }
+}
+
+interface MaternalMortalityChartProps {
+  data: MaternalMortalityRateRow[]
   csvPath?: string
 }
 
-const INDICATOR_COLOR: Record<EducationIndicator, string> = {
-  cobertura_bruta: '#3b82f6',
-  cobertura_neta: '#10b981',
-  deserci_n: '#ef4444',
-  aprobaci_n: '#8b5cf6',
-  reprobaci_n: '#f97316',
-  repitencia: '#f59e0b',
-}
-
-const INDICATOR_LABEL: Record<EducationIndicator, string> = {
-  cobertura_bruta: 'Cobertura Bruta (%)',
-  cobertura_neta: 'Cobertura Neta (%)',
-  deserci_n: 'Deserción (%)',
-  aprobaci_n: 'Aprobación (%)',
-  reprobaci_n: 'Reprobación (%)',
-  repitencia: 'Repitencia (%)',
-}
-
-export const EducationChart = ({
+export const MaternalMortalityChart = ({
   data,
-  indicator,
   csvPath,
-}: EducationChartProps) => {
+}: MaternalMortalityChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
+
+  const { chartData, lines, keys } = useMemo(() => pivotRows(data), [data])
 
   if (!data || data.length === 0) {
     return (
@@ -40,19 +63,6 @@ export const EducationChart = ({
       </p>
     )
   }
-
-  const chartData = data.map((row) => ({
-    anio: row.anio,
-    [indicator]: row[indicator],
-  }))
-
-  const lines = [
-    {
-      dataKey: indicator,
-      name: INDICATOR_LABEL[indicator],
-      color: INDICATOR_COLOR[indicator],
-    },
-  ]
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
@@ -101,7 +111,7 @@ export const EducationChart = ({
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
-            Descargar CSV
+            Descargar tabla
           </a>
         )}
       </div>
@@ -113,7 +123,7 @@ export const EducationChart = ({
           lines={lines}
           height={400}
           xAxisLabel="Año"
-          yAxisLabel="Porcentaje (%)"
+          yAxisLabel="Tasa (×100.000 NV)"
         />
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -121,13 +131,15 @@ export const EducationChart = ({
             <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
               <tr>
                 <th className="px-4 py-3 font-medium">Año</th>
-                <th className="px-4 py-3 font-medium">
-                  {INDICATOR_LABEL[indicator]}
-                </th>
+                {keys.map((k) => (
+                  <th key={k} className="px-4 py-3 font-medium">
+                    {k}
+                  </th>
+                ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {data.map((row) => (
+              {chartData.map((row) => (
                 <tr
                   key={row.anio}
                   className="bg-white hover:bg-gray-50 transition-colors"
@@ -135,11 +147,14 @@ export const EducationChart = ({
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {row.anio}
                   </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {Number.isFinite(row[indicator])
-                      ? (row[indicator] as number).toFixed(2)
-                      : '—'}
-                  </td>
+                  {keys.map((k) => {
+                    const value = (row as Record<string, unknown>)[k]
+                    return (
+                      <td key={k} className="px-4 py-3 text-gray-600">
+                        {typeof value === 'number' ? value.toFixed(2) : '—'}
+                      </td>
+                    )
+                  })}
                 </tr>
               ))}
             </tbody>

@@ -1,20 +1,23 @@
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import type { AnalyticsDataRow } from '@/lib/parquet'
+import type { AnalyticsMaternalRow } from '@/lib/parquet'
 import {
-  EDUCATION_INDICATORS,
-  type EducationIndicatorKey,
+  ANALYTICS_INDICATORS,
+  type AnalyticsIndicatorKey,
 } from './educationIndicators'
 
-export { EDUCATION_INDICATORS, type EducationIndicatorKey }
-
 interface AnalyticsDualChartProps {
-  data: AnalyticsDataRow[]
-  selectedIndicator: EducationIndicatorKey
+  data: AnalyticsMaternalRow[]
+  selectedIndicator?: AnalyticsIndicatorKey
 }
 
+/**
+ * Two vertically stacked line charts:
+ *   - Top: Mortalidad materna (San Martin del Valle, por 100.000 NV)
+ *   - Bottom: Selected education indicator (San Martin del Valle weighted mean)
+ */
 export const AnalyticsDualChart = ({
   data,
-  selectedIndicator,
+  selectedIndicator = 'desercion',
 }: AnalyticsDualChartProps) => {
   if (!data || data.length === 0) {
     return (
@@ -24,56 +27,61 @@ export const AnalyticsDualChart = ({
     )
   }
 
-  const indicator = EDUCATION_INDICATORS[selectedIndicator]
-  const suicideData = data.map((row) => ({ anio: row.anio, valor: row.valor }))
-  const educationData = data.map((row) => ({
+  const indicatorMeta = ANALYTICS_INDICATORS[selectedIndicator]
+  const mortalityData = data.map((row) => ({
     anio: row.anio,
-    valor: row[selectedIndicator],
+    valor: row.valor,
+  }))
+  const indicatorData = data.map((row) => ({
+    anio: row.anio,
+    [selectedIndicator]: row[selectedIndicator],
   }))
 
   return (
     <div className="flex flex-col gap-4">
       <h2 className="text-lg font-semibold text-gray-800">
-        Tendencia temporal de {indicator.label.toLowerCase()} y mortalidad por
-        suicidio en Suaza
+        Tendencias temporales
       </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <p className="text-sm font-semibold text-center text-gray-600">
-            Mortalidad por suicidio (100.000 hab.)
+            Mortalidad materna (×100.000 NV)
           </p>
           <DSLineChart
-            data={suicideData}
+            data={mortalityData}
             xAxisKey="anio"
             lines={[
               {
                 dataKey: 'valor',
-                name: 'Mortalidad por suicidio (100.000 hab.)',
-                color: '#ef4444',
+                name: 'Mortalidad materna (×100k NV)',
+                color: '#e11d48',
               },
             ]}
             height={320}
             xAxisLabel="Año"
-            yAxisLabel="Tasa (×100.000 hab.)"
+            yAxisLabel="Tasa (×100.000 NV)"
           />
         </div>
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-center text-gray-600">
-            {indicator.label} ({indicator.unit})
+          <p
+            className="text-sm font-semibold text-center"
+            style={{ color: indicatorMeta.color }}
+          >
+            {indicatorMeta.label}
           </p>
           <DSLineChart
-            data={educationData}
+            data={indicatorData}
             xAxisKey="anio"
             lines={[
               {
-                dataKey: 'valor',
-                name: `${indicator.label} (${indicator.unit})`,
-                color: indicator.color,
+                dataKey: selectedIndicator,
+                name: indicatorMeta.label,
+                color: indicatorMeta.color,
               },
             ]}
             height={320}
             xAxisLabel="Año"
-            yAxisLabel={indicator.unit}
+            yAxisLabel="Porcentaje (%)"
           />
         </div>
       </div>
