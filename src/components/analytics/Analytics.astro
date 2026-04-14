@@ -5,7 +5,6 @@ import type {
   AnalyticsMaternalRow,
   ScatterMaternalRow,
 } from '@/lib/parquet'
-import type { EducationIndicator } from '@/lib/parquet'
 
 interface Props {
   title: string
@@ -13,9 +12,7 @@ interface Props {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  csvPath?: string
-  geojsonUrls: Record<EducationIndicator, string>
-  maternalGeojsonUrl?: string
+  smvGeojsonUrl?: string
   csvUrl?: string
 }
 
@@ -25,9 +22,7 @@ const {
   forestPlotData,
   analyticsMaternalData,
   scatterMaternalData,
-  csvPath,
-  geojsonUrls,
-  maternalGeojsonUrl,
+  smvGeojsonUrl,
   csvUrl,
 } = Astro.props
 ---
@@ -40,9 +35,7 @@ const {
       forestPlotData={forestPlotData}
       analyticsMaternalData={analyticsMaternalData}
       scatterMaternalData={scatterMaternalData}
-      csvPath={csvPath}
-      geojsonUrls={geojsonUrls}
-      maternalGeojsonUrl={maternalGeojsonUrl}
+      smvGeojsonUrl={smvGeojsonUrl}
       csvUrl={csvUrl}
       client:only="react"
     />
