@@ -438,20 +438,19 @@ export function filterMaternalMortalityGapsRows(
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-// ── Maternal mortality analytics: temporal data (Huila rate + education avg) ──
-// Parquet columns: anio[0], valor[1], cobertura_bruta[2], cobertura_neta[3],
-//   desercion[4], aprobacion[5], reprobacion[6], repitencia[7]
+// ── Maternal mortality analytics: temporal data (MM rate + mock DSS avg) ──────
+// Parquet columns: anio[0], valor[1], traslado[2], empleo_informal[3],
+//   sobrecarga[4], cobertura_programa[5], transporte[6]
 export type AnalyticsMaternalRawRow = unknown[]
 
 export type AnalyticsMaternalRow = {
   anio: number
   valor: number
-  cobertura_bruta: number
-  cobertura_neta: number
-  desercion: number
-  aprobacion: number
-  reprobacion: number
-  repitencia: number
+  traslado: number
+  empleo_informal: number
+  sobrecarga: number
+  cobertura_programa: number
+  transporte: number
 }
 
 export function filterAnalyticsMaternalRows(
@@ -465,33 +464,31 @@ export function filterAnalyticsMaternalRows(
     result.push({
       anio,
       valor,
-      cobertura_bruta: Number(row[2]),
-      cobertura_neta: Number(row[3]),
-      desercion: Number(row[4]),
-      aprobacion: Number(row[5]),
-      reprobacion: Number(row[6]),
-      repitencia: Number(row[7]),
+      traslado:           row[2] == null ? NaN : Number(row[2]),
+      empleo_informal:    row[3] == null ? NaN : Number(row[3]),
+      sobrecarga:         row[4] == null ? NaN : Number(row[4]),
+      cobertura_programa: row[5] == null ? NaN : Number(row[5]),
+      transporte:         row[6] == null ? NaN : Number(row[6]),
     })
   }
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-// ── Maternal mortality scatter: cross-sectional municipality data ──────────────
-// Parquet columns: anio[0], territorio[1], valor[2], cobertura_bruta[3],
-//   cobertura_neta[4], desercion[5], aprobacion[6], reprobacion[7],
-//   repitencia[8], nacimientos[9]
+// ── Maternal mortality scatter: cross-sectional barrio data ───────────────────
+// Parquet columns: anio[0], territorio[1], valor[2], traslado[3],
+//   empleo_informal[4], sobrecarga[5], cobertura_programa[6],
+//   transporte[7], nacimientos[8]
 export type ScatterMaternalRawRow = unknown[]
 
 export type ScatterMaternalRow = {
   anio: number
   territorio: string
   valor: number
-  cobertura_bruta: number
-  cobertura_neta: number
-  desercion: number
-  aprobacion: number
-  reprobacion: number
-  repitencia: number
+  traslado: number
+  empleo_informal: number
+  sobrecarga: number
+  cobertura_programa: number
+  transporte: number
   nacimientos: number
 }
 
@@ -508,13 +505,12 @@ export function filterScatterMaternalRows(
       anio,
       territorio,
       valor,
-      cobertura_bruta: Number(row[3]),
-      cobertura_neta: Number(row[4]),
-      desercion: Number(row[5]),
-      aprobacion: Number(row[6]),
-      reprobacion: Number(row[7]),
-      repitencia: Number(row[8]),
-      nacimientos: Number(row[9]),
+      traslado:           row[3] == null ? NaN : Number(row[3]),
+      empleo_informal:    row[4] == null ? NaN : Number(row[4]),
+      sobrecarga:         row[5] == null ? NaN : Number(row[5]),
+      cobertura_programa: row[6] == null ? NaN : Number(row[6]),
+      transporte:         row[7] == null ? NaN : Number(row[7]),
+      nacimientos:        row[8] == null ? NaN : Number(row[8]),
     })
   }
   return result

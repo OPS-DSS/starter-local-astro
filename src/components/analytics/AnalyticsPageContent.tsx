@@ -6,12 +6,25 @@ import { AnalyticsDualChart } from './AnalyticsDualChart'
 import {
   ANALYTICS_INDICATORS,
   type AnalyticsIndicatorKey,
-} from './educationIndicators'
+} from './mockIndicators'
 import type {
   ForestPlotDataRow,
   AnalyticsMaternalRow,
   ScatterMaternalRow,
 } from '@/lib/parquet'
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const MATERNAL_LABEL = 'Mortalidad Materna (por 100k nv)'
+
+// Bivariate colour palette — BIVARIATE_COLORS[mmRow][indCol]
+// mmRow  0 = low MM … 2 = high MM
+// indCol 0 = low indicator … 2 = high indicator
+const BIVARIATE_COLORS: string[][] = [
+  ['#e8e8e8', '#ace4e4', '#5ac8c8'], // mm low
+  ['#dfb0d6', '#a5b8c5', '#5a9ab5'], // mm med
+  ['#be64ac', '#8c62aa', '#3b4994'], // mm high
+]
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -21,8 +34,79 @@ interface AnalyticsPageContentProps {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  smvGeojsonUrl?: string
+  geojsonUrls?: Record<AnalyticsIndicatorKey, string>
+  maternalGeojsonUrl?: string
   csvUrl?: string
+}
+
+// ── Bivariate legend ──────────────────────────────────────────────────────────
+
+function BivariateLegend({ indLabel }: { indLabel: string }) {
+  const cellSize = 22
+
+  return (
+    <div className="flex items-end gap-3">
+      <div
+        className="flex flex-col items-center gap-1 shrink-0"
+        style={{ width: 14 }}
+      >
+        <span
+          className="text-gray-500 text-xs font-medium"
+          style={{
+            writingMode: 'vertical-rl',
+            transform: 'rotate(180deg)',
+            whiteSpace: 'nowrap',
+            lineHeight: 1.1,
+          }}
+        >
+          Mortalidad Materna →
+        </span>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        {[...BIVARIATE_COLORS].reverse().map((mmRow, reversedIdx) => {
+          const mmIdx = BIVARIATE_COLORS.length - 1 - reversedIdx
+          return (
+            <div key={mmIdx} className="flex gap-0.5">
+              {mmRow.map((color, indIdx) => (
+                <div
+                  key={indIdx}
+                  style={{
+                    width: cellSize,
+                    height: cellSize,
+                    backgroundColor: color,
+                    border: '1px solid rgba(0,0,0,0.08)',
+                  }}
+                  title={`MM: ${mmIdx === 0 ? 'Baja' : mmIdx === 1 ? 'Media' : 'Alta'} / Indicador: ${indIdx === 0 ? 'Bajo' : indIdx === 1 ? 'Medio' : 'Alto'}`}
+                />
+              ))}
+            </div>
+          )
+        })}
+
+        <div
+          className="flex items-center gap-1 mt-0.5"
+          style={{ paddingLeft: 2 }}
+        >
+          <span className="text-gray-400 text-xs">Bajo</span>
+          <div
+            className="flex-1 border-t border-gray-400"
+            style={{ marginTop: 1 }}
+          />
+          <span className="text-gray-400 text-xs">→</span>
+        </div>
+
+        <div className="text-center">
+          <span
+            className="text-gray-500 text-xs font-medium"
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            {indLabel}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -31,19 +115,19 @@ export const AnalyticsPageContent = ({
   forestPlotData,
   analyticsMaternalData,
   scatterMaternalData,
-  smvGeojsonUrl,
+  geojsonUrls,
+  maternalGeojsonUrl,
   csvUrl,
 }: AnalyticsPageContentProps) => {
-  // Shared indicator — drives forest plot, charts
   const [selectedIndicator, setSelectedIndicator] =
-    useState<AnalyticsIndicatorKey>('desercion')
+    useState<AnalyticsIndicatorKey>('traslado')
 
-  // Map-specific state
+  const [isBivariate, setIsBivariate] = useState(true)
   const [view, setView] = useState<'map' | 'table'>('map')
   const [tableData, setTableData] = useState<TableRow[]>([])
   const [tableLoading, setTableLoading] = useState(false)
 
-  // ── Analytics panel derived values ────────────────────────────────────────
+  // ── Derived values ─────────────────────────────────────────────────────────
 
   const hasData =
     (forestPlotData && forestPlotData.length > 0) ||
@@ -70,7 +154,13 @@ export const AnalyticsPageContent = ({
           .filter((d) => Number.isFinite(d.x) && Number.isFinite(d.y))
       : []
 
-  // ── Map handlers ───────────────────────────────────────────────────────────
+  const activeGeojsonUrl = isBivariate
+    ? geojsonUrls?.[selectedIndicator]
+    : maternalGeojsonUrl
+
+  const tableColumnLabel = isBivariate ? selectedMeta.label : MATERNAL_LABEL
+
+  // ── Map / table handlers ───────────────────────────────────────────────────
 
   const fetchTableData = (url: string) => {
     setTableLoading(true)
@@ -81,14 +171,10 @@ export const AnalyticsPageContent = ({
       })
       .then((geojson) => {
         const rows: TableRow[] = (geojson.features ?? [])
-          .map(
-            (f: {
-              properties: { NAME_2?: string; mock_value?: number }
-            }) => ({
-              name: f.properties.NAME_2 ?? '',
-              value: f.properties.mock_value ?? null,
-            }),
-          )
+          .map((f: { properties: { NAME_2?: string; value?: number } }) => ({
+            name: f.properties.NAME_2 ?? '',
+            value: f.properties.value ?? null,
+          }))
           .sort((a: TableRow, b: TableRow) => a.name.localeCompare(b.name))
         setTableData(rows)
         setTableLoading(false)
@@ -96,18 +182,27 @@ export const AnalyticsPageContent = ({
       .catch(() => setTableLoading(false))
   }
 
-  // Fetch table data whenever the view switches to 'table' or the URL changes.
-  // fetchTableData closes only over stable state setters and is intentionally
-  // omitted from the dep array to avoid a stale-closure warning.
   useEffect(() => {
-    if (view === 'table' && smvGeojsonUrl) {
-      fetchTableData(smvGeojsonUrl)
+    if (view === 'table' && activeGeojsonUrl) {
+      fetchTableData(activeGeojsonUrl)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [view, smvGeojsonUrl])
+  }, [activeGeojsonUrl]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleViewChange = (nextView: 'map' | 'table') => {
     setView(nextView)
+    if (nextView === 'table' && activeGeojsonUrl) {
+      fetchTableData(activeGeojsonUrl)
+    }
+  }
+
+  const handleBivariateToggle = (next: boolean) => {
+    setIsBivariate(next)
+    if (view === 'table') {
+      const nextUrl = next
+        ? geojsonUrls?.[selectedIndicator]
+        : maternalGeojsonUrl
+      if (nextUrl) fetchTableData(nextUrl)
+    }
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -130,9 +225,9 @@ export const AnalyticsPageContent = ({
               Correlaciones con mortalidad materna
             </h2>
             <p className="text-sm text-gray-500 mt-1">
-              Correlación de Spearman entre cada indicador educativo y la
-              mortalidad materna (municipios de San Martin del Valle, último año
-              disponible). Haz clic en un indicador para explorar su relación.
+              Correlación de Spearman entre cada indicador y la mortalidad
+              materna (barrios de San Martín del Valle, último año disponible).
+              Haz clic en un indicador para explorar su relación.
             </p>
             <DSForestPlot
               data={forestPlotData}
@@ -168,7 +263,7 @@ export const AnalyticsPageContent = ({
                 vs mortalidad materna
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Cada punto es un municipio de San Martin del Valle (último año
+                Cada punto es un barrio de San Martín del Valle (último año
                 disponible). El tamaño refleja el número de nacidos vivos. La
                 línea punteada muestra la tendencia lineal.
               </p>
@@ -182,10 +277,34 @@ export const AnalyticsPageContent = ({
           </section>
         )}
 
-        {/* ── Municipalities map ── */}
+        {/* ── Map section ── */}
         <section className="flex flex-col gap-4 border rounded-lg p-4">
           {/* Controls bar */}
-          <div className="flex items-center justify-end gap-2 flex-wrap">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            {/* Bivariate / solo toggle */}
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+              <button
+                onClick={() => handleBivariateToggle(true)}
+                className={`px-4 py-1.5 transition-colors ${
+                  isBivariate
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Bivariado
+              </button>
+              <button
+                onClick={() => handleBivariateToggle(false)}
+                className={`px-4 py-1.5 transition-colors ${
+                  !isBivariate
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Solo Mortalidad Materna
+              </button>
+            </div>
+
             <div className="flex items-center gap-2">
               <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
                 <button
@@ -241,56 +360,74 @@ export const AnalyticsPageContent = ({
           {view === 'map' && (
             <>
               <DSChoroplethMap
-                geojsonUrl={smvGeojsonUrl}
+                geojsonUrl={activeGeojsonUrl}
                 center={[2.3, -75.7]}
                 zoom={8}
                 height="30em"
                 nameProperty="NAME_2"
-                valueProperty="mock_value"
-                valueName="Valor indicador"
-                secondaryValueProperty="tipo_zona"
-                secondaryValueName="Tipo de zona"
+                valueProperty="value"
+                valueName={isBivariate ? selectedMeta.label : MATERNAL_LABEL}
+                secondaryValueProperty={
+                  isBivariate ? 'maternal_value' : undefined
+                }
+                secondaryValueName={isBivariate ? MATERNAL_LABEL : undefined}
               />
 
               {/* Legend */}
               <div className="flex flex-col gap-2 text-sm">
                 <span className="font-medium text-gray-700">Leyenda:</span>
-                <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-xs w-28 shrink-0">
-                      Valor indicador
-                    </span>
-                    <span className="text-gray-600 text-xs">Menor</span>
-                    <div
-                      style={{
-                        width: 120,
-                        height: 14,
-                        background:
-                          'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
-                        border: '1px solid #9ca3af',
-                        borderRadius: 3,
-                      }}
-                    />
-                    <span className="text-gray-600 text-xs">Mayor</span>
+
+                {isBivariate ? (
+                  <div className="flex items-start gap-6 flex-wrap">
+                    <BivariateLegend indLabel={`${selectedMeta.label} →`} />
+                    <div className="flex items-center gap-1.5 self-end">
+                      <div
+                        style={{
+                          width: 14,
+                          height: 14,
+                          background: '#CCCCCC',
+                          border: '1px solid #9ca3af',
+                          borderRadius: 3,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span className="text-gray-600 text-xs">Sin datos</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      style={{
-                        width: 14,
-                        height: 14,
-                        background: '#CCCCCC',
-                        border: '1px solid #9ca3af',
-                        borderRadius: 3,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span className="text-gray-600 text-xs">Sin datos</span>
+                ) : (
+                  <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500 text-xs w-36 shrink-0">
+                        Mortalidad Materna
+                      </span>
+                      <span className="text-gray-600 text-xs">Menor</span>
+                      <div
+                        style={{
+                          width: 120,
+                          height: 14,
+                          background:
+                            'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
+                          border: '1px solid #9ca3af',
+                          borderRadius: 3,
+                        }}
+                      />
+                      <span className="text-gray-600 text-xs">Mayor</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <div
+                        style={{
+                          width: 14,
+                          height: 14,
+                          background: '#CCCCCC',
+                          border: '1px solid #9ca3af',
+                          borderRadius: 3,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span className="text-gray-600 text-xs">Sin datos</span>
+                    </div>
                   </div>
-                </div>
-                <p className="text-gray-400 text-xs">
-                  Haz clic en un barrio para ver su tipo de zona (Urbano
-                  central · Periurbano · Rural).
-                </p>
+                )}
               </div>
             </>
           )}
@@ -308,7 +445,7 @@ export const AnalyticsPageContent = ({
                     <tr>
                       <th className="px-4 py-3 font-medium">Barrio</th>
                       <th className="px-4 py-3 font-medium">
-                        Valor indicador
+                        {tableColumnLabel}
                       </th>
                     </tr>
                   </thead>

@@ -3,7 +3,7 @@ import type { AnalyticsMaternalRow } from '@/lib/parquet'
 import {
   ANALYTICS_INDICATORS,
   type AnalyticsIndicatorKey,
-} from './educationIndicators'
+} from './mockIndicators'
 
 interface AnalyticsDualChartProps {
   data: AnalyticsMaternalRow[]
@@ -17,7 +17,7 @@ interface AnalyticsDualChartProps {
  */
 export const AnalyticsDualChart = ({
   data,
-  selectedIndicator = 'desercion',
+  selectedIndicator = 'traslado',
 }: AnalyticsDualChartProps) => {
   if (!data || data.length === 0) {
     return (

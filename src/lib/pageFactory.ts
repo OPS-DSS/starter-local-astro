@@ -68,31 +68,31 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
   let forestPlotData: ForestPlotDataRow[] = []
   try {
     const rows = await readParquet<ForestPlotRawRow>(
-      dataPath('forest_plot.parquet'),
+      dataPath('mock_forest_plot.parquet'),
     )
     forestPlotData = filterForestPlotRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] forest_plot_suaza:', e)
+    console.error('[loadAllDatasets] mock_forest_plot:', e)
   }
 
   let analyticsMaternalData: AnalyticsMaternalRow[] = []
   try {
     const rows = await readParquet<AnalyticsMaternalRawRow>(
-      dataPath('analytics_maternal.parquet'),
+      dataPath('mock_analytics_maternal.parquet'),
     )
     analyticsMaternalData = filterAnalyticsMaternalRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] analytics_maternal:', e)
+    console.error('[loadAllDatasets] mock_analytics_maternal:', e)
   }
 
   let scatterMaternalData: ScatterMaternalRow[] = []
   try {
     const rows = await readParquet<ScatterMaternalRawRow>(
-      dataPath('scatter_maternal.parquet'),
+      dataPath('mock_scatter_maternal.parquet'),
     )
     scatterMaternalData = filterScatterMaternalRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] scatter_maternal:', e)
+    console.error('[loadAllDatasets] mock_scatter_maternal:', e)
   }
 
   let maternalMortalityRateData: MaternalMortalityRateRow[] = []

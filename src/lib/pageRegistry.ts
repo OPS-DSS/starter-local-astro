@@ -8,13 +8,8 @@ import PrioritySelector from '@/components/PrioritySelector.astro'
 import StratifiedIndicator from '@/components/StratifiedIndicator.astro'
 
 import type {
-  SuicideDataRow,
-  GapsChartPoint,
-  EducationDataRow,
   AnalyticsDataRow,
   MaternalMortalityRateRow,
-  MaternalMortalityQuintilRow,
-  MaternalMortalityGapsRow,
   ForestPlotDataRow,
   AnalyticsMaternalRow,
   ScatterMaternalRow,
@@ -27,11 +22,7 @@ export interface PageProps {
   pages: unknown[]
   slug: string | undefined
   date: Date
-  data?:
-    | SuicideDataRow[]
-    | EducationDataRow[]
-    | AnalyticsDataRow[]
-    | MaternalMortalityRateRow[]
+  data?: AnalyticsDataRow[] | MaternalMortalityRateRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
@@ -107,8 +98,21 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       forestPlotData,
       analyticsMaternalData,
       scatterMaternalData,
-      smvGeojsonUrl: base(baseUrl, 'SMV_municipalities.geojson'),
-      csvUrl: base(baseUrl, 'SMV_map.csv'),
+      geojsonUrls: {
+        traslado: base(baseUrl, 'mock_bivariate_traslado.geojson'),
+        empleo_informal: base(
+          baseUrl,
+          'mock_bivariate_empleo_informal.geojson',
+        ),
+        sobrecarga: base(baseUrl, 'mock_bivariate_sobrecarga.geojson'),
+        cobertura_programa: base(
+          baseUrl,
+          'mock_bivariate_cobertura_programa.geojson',
+        ),
+        transporte: base(baseUrl, 'mock_bivariate_transporte.geojson'),
+      },
+      maternalGeojsonUrl: base(baseUrl, 'mock_maternal_mortality.geojson'),
+      csvUrl: base(baseUrl, 'mock_scatter_maternal.csv'),
     }),
   },
   traslado: {

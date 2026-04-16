@@ -5,6 +5,7 @@ import type {
   AnalyticsMaternalRow,
   ScatterMaternalRow,
 } from '@/lib/parquet'
+import type { AnalyticsIndicatorKey } from './mockIndicators'
 
 interface Props {
   title: string
@@ -12,7 +13,8 @@ interface Props {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  smvGeojsonUrl?: string
+  geojsonUrls?: Record<AnalyticsIndicatorKey, string>
+  maternalGeojsonUrl?: string
   csvUrl?: string
 }
 
@@ -22,7 +24,8 @@ const {
   forestPlotData,
   analyticsMaternalData,
   scatterMaternalData,
-  smvGeojsonUrl,
+  geojsonUrls,
+  maternalGeojsonUrl,
   csvUrl,
 } = Astro.props
 ---
@@ -35,7 +38,8 @@ const {
       forestPlotData={forestPlotData}
       analyticsMaternalData={analyticsMaternalData}
       scatterMaternalData={scatterMaternalData}
-      smvGeojsonUrl={smvGeojsonUrl}
+      geojsonUrls={geojsonUrls}
+      maternalGeojsonUrl={maternalGeojsonUrl}
       csvUrl={csvUrl}
       client:only="react"
     />
