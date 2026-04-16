@@ -35,9 +35,6 @@ export interface PageProps {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  gapsData?: GapsChartPoint[]
-  quintilData?: MaternalMortalityQuintilRow[]
-  maternalGapsData?: MaternalMortalityGapsRow[]
   trasladoData?: StratifiedRow[]
   frecuenciaTransporteData?: StratifiedRow[]
   sobrecargaCuidadosData?: StratifiedRow[]
@@ -86,18 +83,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   },
   'analisis-de-inequidad/mortalidad-materna': {
     component: MaternalMortalityInequity,
-    resolveProps: (
-      { title, text, data, quintilData, maternalGapsData },
-      baseUrl,
-    ) => ({
+    resolveProps: ({ title, text, data }, baseUrl) => ({
       title,
       text,
       data,
-      quintilData,
-      maternalGapsData,
       csvPath: base(baseUrl, 'maternal_mortality_rate.csv'),
-      quintilCsvPath: base(baseUrl, 'maternal_mortality_quintiles.csv'),
-      gapsCsvPath: base(baseUrl, 'maternal_mortality_gaps.csv'),
     }),
   },
   'analisis/mortalidad-materna': {

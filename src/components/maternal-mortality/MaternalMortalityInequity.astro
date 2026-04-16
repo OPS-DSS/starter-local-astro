@@ -1,32 +1,15 @@
 ---
 import { MaternalMortalityPanel } from './MaternalMortalityPanel'
-import type {
-  MaternalMortalityRateRow,
-  MaternalMortalityQuintilRow,
-  MaternalMortalityGapsRow,
-} from '@/lib/parquet'
+import type { MaternalMortalityRateRow } from '@/lib/parquet'
 
 interface Props {
   title: string
   text: string
   data: MaternalMortalityRateRow[] | undefined
-  quintilData?: MaternalMortalityQuintilRow[]
-  maternalGapsData?: MaternalMortalityGapsRow[]
   csvPath?: string
-  quintilCsvPath?: string
-  gapsCsvPath?: string
 }
 
-const {
-  title,
-  text,
-  data,
-  quintilData = [],
-  maternalGapsData = [],
-  csvPath,
-  quintilCsvPath,
-  gapsCsvPath,
-} = Astro.props
+const { title, text, data, csvPath } = Astro.props
 ---
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
@@ -35,15 +18,7 @@ const {
     <p class="text-gray-700">{text}</p>
     {
       data && (
-        <MaternalMortalityPanel
-          data={data}
-          quintilData={quintilData}
-          maternalGapsData={maternalGapsData}
-          csvPath={csvPath}
-          quintilCsvPath={quintilCsvPath}
-          gapsCsvPath={gapsCsvPath}
-          client:load
-        />
+        <MaternalMortalityPanel data={data} csvPath={csvPath} client:load />
       )
     }
   </div>

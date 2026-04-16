@@ -4,8 +4,6 @@ import {
   filterEducationRows,
   filterAnalyticsRows,
   filterMaternalMortalityRateRows,
-  filterMaternalMortalityQuintilRows,
-  filterMaternalMortalityGapsRows,
   filterForestPlotRows,
   filterAnalyticsMaternalRows,
   filterScatterMaternalRows,
@@ -20,10 +18,6 @@ import type {
   AnalyticsDataRow,
   MaternalMortalityRateRawRow,
   MaternalMortalityRateRow,
-  MaternalMortalityQuintilRawRow,
-  MaternalMortalityQuintilRow,
-  MaternalMortalityGapsRawRow,
-  MaternalMortalityGapsRow,
   ForestPlotRawRow,
   ForestPlotDataRow,
   AnalyticsMaternalRawRow,
@@ -44,8 +38,6 @@ export interface PageDatasets {
   analyticsMaternalData: AnalyticsMaternalRow[]
   scatterMaternalData: ScatterMaternalRow[]
   maternalMortalityRateData: MaternalMortalityRateRow[]
-  maternalMortalityQuintilData: MaternalMortalityQuintilRow[]
-  maternalMortalityGapsData: MaternalMortalityGapsRow[]
   trasladoData: StratifiedRow[]
   frecuenciaTransporteData: StratifiedRow[]
   sobrecargaCuidadosData: StratifiedRow[]
@@ -113,26 +105,6 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     console.error('[loadAllDatasets] maternal_mortality_rate:', e)
   }
 
-  let maternalMortalityQuintilData: MaternalMortalityQuintilRow[] = []
-  try {
-    const rows = await readParquet<MaternalMortalityQuintilRawRow>(
-      dataPath('maternal_mortality_quintiles.parquet'),
-    )
-    maternalMortalityQuintilData = filterMaternalMortalityQuintilRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] maternal_mortality_quintiles:', e)
-  }
-
-  let maternalMortalityGapsData: MaternalMortalityGapsRow[] = []
-  try {
-    const rows = await readParquet<MaternalMortalityGapsRawRow>(
-      dataPath('maternal_mortality_gaps.parquet'),
-    )
-    maternalMortalityGapsData = filterMaternalMortalityGapsRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] maternal_mortality_gaps:', e)
-  }
-
   let trasladoData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
@@ -191,8 +163,6 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     analyticsMaternalData,
     scatterMaternalData,
     maternalMortalityRateData,
-    maternalMortalityQuintilData,
-    maternalMortalityGapsData,
     trasladoData,
     frecuenciaTransporteData,
     sobrecargaCuidadosData,
@@ -213,8 +183,6 @@ export interface PageDefinition {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  quintilData?: MaternalMortalityQuintilRow[]
-  maternalGapsData?: MaternalMortalityGapsRow[]
   trasladoData?: StratifiedRow[]
   frecuenciaTransporteData?: StratifiedRow[]
   sobrecargaCuidadosData?: StratifiedRow[]
@@ -248,8 +216,6 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       date: '2026-01-01',
       navbar: false,
       data: datasets.maternalMortalityRateData,
-      quintilData: datasets.maternalMortalityQuintilData,
-      maternalGapsData: datasets.maternalMortalityGapsData,
     },
     {
       slug: 'determinantes-de-la-salud',
