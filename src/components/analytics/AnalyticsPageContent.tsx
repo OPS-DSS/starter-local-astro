@@ -217,7 +217,7 @@ export const AnalyticsPageContent = ({
 
   return (
     <div className="flex flex-row gap-4 mb-10">
-      <div className="flex flex-col basis-1/3 flex-1 gap-4">
+      <div className="flex flex-col basis-1/2 flex-1 gap-4">
         {/* ── Forest plot ── */}
         {forestPlotData && forestPlotData.length > 0 && (
           <section className="border rounded-lg p-4">
@@ -250,7 +250,7 @@ export const AnalyticsPageContent = ({
         )}
       </div>
 
-      <div className="flex flex-col basis-2/3 gap-4 flex-1 h-screen">
+      <div className="flex flex-col basis-1/2 gap-4 flex-1 h-screen">
         {/* ── Scatter chart ── */}
         {scatterPoints.length > 0 && (
           <section className="flex flex-col gap-4 border rounded-lg p-4">
