@@ -321,14 +321,16 @@ export function buildAnalyticsData(
 // ── Maternal Mortality data types ─────────────────────────────────────────────
 
 /**
- * Row from maternal_mortality_rate.parquet
- * Columns (by index): iso3[0], Territorio[1], cod_local[2], anio[3], valor[4]
+ * Row from maternal_mortality_rate.parquet (mock SMV data)
+ * Columns (by index): iso3[0], NAME_2[1], anio[2], grupo_edad[3], zona[4], valor[5]
  */
 export type MaternalMortalityRateRawRow = unknown[]
 
 export type MaternalMortalityRateRow = {
   territorio: string
   anio: number
+  grupo_edad: string
+  zona: string
   valor: number
 }
 
@@ -338,10 +340,12 @@ export function filterMaternalMortalityRateRows(
   const result: MaternalMortalityRateRow[] = []
   for (const row of rows) {
     const territorio = String(row[1])
-    const anio = Number(row[3])
-    const valor = Number(row[4])
+    const anio = Number(row[2])
+    const grupo_edad = String(row[3])
+    const zona = String(row[4])
+    const valor = Number(row[5])
     if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ territorio, anio, valor })
+    result.push({ territorio, anio, grupo_edad, zona, valor })
   }
   return result.sort((a, b) => a.anio - b.anio)
 }
