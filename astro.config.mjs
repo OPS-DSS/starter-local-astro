@@ -14,9 +14,6 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
-    ssr: {
-      noExternal: ['@ops-dss/charts'],
-    },
   },
   integrations: [react(), icon()],
 })
