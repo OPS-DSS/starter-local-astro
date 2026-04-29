@@ -36,12 +36,21 @@ interface AnalyticsPageContentProps {
   scatterMaternalData?: ScatterMaternalRow[]
   geojsonUrls?: Record<AnalyticsIndicatorKey, string>
   maternalGeojsonUrl?: string
+  dssBivariateGeojsonUrls?: Partial<
+    Record<AnalyticsIndicatorKey, Partial<Record<AnalyticsIndicatorKey, string>>>
+  >
   csvUrl?: string
 }
 
 // ── Bivariate legend ──────────────────────────────────────────────────────────
 
-function BivariateLegend({ indLabel }: { indLabel: string }) {
+function BivariateLegend({
+  indLabel,
+  yAxisLabel,
+}: {
+  indLabel: string
+  yAxisLabel: string
+}) {
   const cellSize = 22
 
   return (
@@ -59,7 +68,7 @@ function BivariateLegend({ indLabel }: { indLabel: string }) {
             lineHeight: 1.1,
           }}
         >
-          Mortalidad Materna →
+          {yAxisLabel} →
         </span>
       </div>
 
@@ -77,7 +86,7 @@ function BivariateLegend({ indLabel }: { indLabel: string }) {
                     backgroundColor: color,
                     border: '1px solid rgba(0,0,0,0.08)',
                   }}
-                  title={`MM: ${mmIdx === 0 ? 'Baja' : mmIdx === 1 ? 'Media' : 'Alta'} / Indicador: ${indIdx === 0 ? 'Bajo' : indIdx === 1 ? 'Medio' : 'Alto'}`}
+                  title={`${yAxisLabel}: ${mmIdx === 0 ? 'Baja' : mmIdx === 1 ? 'Media' : 'Alta'} / Indicador: ${indIdx === 0 ? 'Bajo' : indIdx === 1 ? 'Medio' : 'Alto'}`}
                 />
               ))}
             </div>
@@ -117,15 +126,26 @@ export const AnalyticsPageContent = ({
   scatterMaternalData,
   geojsonUrls,
   maternalGeojsonUrl,
+  dssBivariateGeojsonUrls,
   csvUrl,
 }: AnalyticsPageContentProps) => {
   const [selectedIndicator, setSelectedIndicator] =
     useState<AnalyticsIndicatorKey>('traslado')
 
   const [isBivariate, setIsBivariate] = useState(true)
+  // null = no DSS-vs-DSS mode; a key = show bivariate of selectedIndicator × selectedDssIndicator
+  const [selectedDssIndicator, setSelectedDssIndicator] =
+    useState<AnalyticsIndicatorKey | null>(null)
+
   const [view, setView] = useState<'map' | 'table'>('map')
   const [tableData, setTableData] = useState<TableRow[]>([])
   const [tableLoading, setTableLoading] = useState(false)
+
+  // Reset DSS indicator choice whenever the forest-plot selection changes so the
+  // dropdown never holds the same key as selectedIndicator.
+  useEffect(() => {
+    setSelectedDssIndicator(null)
+  }, [selectedIndicator])
 
   // ── Derived values ─────────────────────────────────────────────────────────
 
@@ -154,11 +174,40 @@ export const AnalyticsPageContent = ({
           .filter((d) => Number.isFinite(d.x) && Number.isFinite(d.y))
       : []
 
-  const activeGeojsonUrl = isBivariate
-    ? geojsonUrls?.[selectedIndicator]
-    : maternalGeojsonUrl
+  // 3 map modes:
+  //   DSS bivariate  — selectedDssIndicator is set
+  //   MM bivariate   — selectedDssIndicator is null && isBivariate
+  //   Solo MM        — selectedDssIndicator is null && !isBivariate
+  const activeGeojsonUrl = selectedDssIndicator
+    ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[selectedDssIndicator]
+    : isBivariate
+      ? geojsonUrls?.[selectedIndicator]
+      : maternalGeojsonUrl
 
-  const tableColumnLabel = isBivariate ? selectedMeta.label : MATERNAL_LABEL
+  const isDssBivariate = selectedDssIndicator !== null
+  const dssSecondaryMeta = selectedDssIndicator
+    ? ANALYTICS_INDICATORS[selectedDssIndicator]
+    : null
+
+  // For the map's valueName / secondaryValueName
+  const mapValueName =
+    !isBivariate && !isDssBivariate ? MATERNAL_LABEL : selectedMeta.label
+  const mapSecondaryValueName = isDssBivariate
+    ? dssSecondaryMeta!.label
+    : isBivariate
+      ? MATERNAL_LABEL
+      : undefined
+
+  const tableColumnLabel =
+    isDssBivariate || isBivariate ? selectedMeta.label : MATERNAL_LABEL
+
+  // All indicator options except the currently selected one (for the DSS selector)
+  const dssOptions = (
+    Object.entries(ANALYTICS_INDICATORS) as [
+      AnalyticsIndicatorKey,
+      (typeof ANALYTICS_INDICATORS)[AnalyticsIndicatorKey],
+    ][]
+  ).filter(([key]) => key !== selectedIndicator)
 
   // ── Map / table handlers ───────────────────────────────────────────────────
 
@@ -196,11 +245,24 @@ export const AnalyticsPageContent = ({
   }
 
   const handleBivariateToggle = (next: boolean) => {
+    setSelectedDssIndicator(null)
     setIsBivariate(next)
     if (view === 'table') {
       const nextUrl = next
         ? geojsonUrls?.[selectedIndicator]
         : maternalGeojsonUrl
+      if (nextUrl) fetchTableData(nextUrl)
+    }
+  }
+
+  const handleDssIndicatorChange = (key: AnalyticsIndicatorKey | null) => {
+    setSelectedDssIndicator(key)
+    if (view === 'table') {
+      const nextUrl = key
+        ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[key]
+        : isBivariate
+          ? geojsonUrls?.[selectedIndicator]
+          : maternalGeojsonUrl
       if (nextUrl) fetchTableData(nextUrl)
     }
   }
@@ -281,28 +343,59 @@ export const AnalyticsPageContent = ({
         <section className="flex flex-col gap-4 border rounded-lg p-4">
           {/* Controls bar */}
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            {/* Bivariate / solo toggle */}
-            <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-              <button
-                onClick={() => handleBivariateToggle(true)}
-                className={`px-4 py-1.5 transition-colors ${
-                  isBivariate
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Bivariado
-              </button>
-              <button
-                onClick={() => handleBivariateToggle(false)}
-                className={`px-4 py-1.5 transition-colors ${
-                  !isBivariate
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                Solo Mortalidad Materna
-              </button>
+            {/* Bivariate / solo toggle + DSS indicator selector */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+                <button
+                  onClick={() => handleBivariateToggle(true)}
+                  className={`px-4 py-1.5 transition-colors ${
+                    isBivariate && !isDssBivariate
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Bivariado
+                </button>
+                <button
+                  onClick={() => handleBivariateToggle(false)}
+                  className={`px-4 py-1.5 transition-colors ${
+                    !isBivariate && !isDssBivariate
+                      ? 'bg-gray-800 text-white'
+                      : 'bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  Solo Mortalidad Materna
+                </button>
+              </div>
+
+              {/* DSS indicator selector */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs text-gray-500 shrink-0">
+                  Bivariado DSS:
+                </span>
+                <select
+                  value={selectedDssIndicator ?? ''}
+                  onChange={(e) =>
+                    handleDssIndicatorChange(
+                      e.target.value
+                        ? (e.target.value as AnalyticsIndicatorKey)
+                        : null,
+                    )
+                  }
+                  className={`text-sm rounded-lg border px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+                    isDssBivariate
+                      ? 'border-gray-800 bg-gray-800 text-white'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                  }`}
+                >
+                  <option value="">— Seleccionar indicador —</option>
+                  {dssOptions.map(([key, meta]) => (
+                    <option key={key} value={key}>
+                      {meta.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div className="flex items-center gap-2">
@@ -366,20 +459,27 @@ export const AnalyticsPageContent = ({
                 height="30em"
                 nameProperty="NAME_2"
                 valueProperty="value"
-                valueName={isBivariate ? selectedMeta.label : MATERNAL_LABEL}
+                valueName={mapValueName}
                 secondaryValueProperty={
-                  isBivariate ? 'maternal_value' : undefined
+                  isDssBivariate || isBivariate ? 'maternal_value' : undefined
                 }
-                secondaryValueName={isBivariate ? MATERNAL_LABEL : undefined}
+                secondaryValueName={mapSecondaryValueName}
               />
 
               {/* Legend */}
               <div className="flex flex-col gap-2 text-sm">
                 <span className="font-medium text-gray-700">Leyenda:</span>
 
-                {isBivariate ? (
+                {isDssBivariate || isBivariate ? (
                   <div className="flex items-start gap-6 flex-wrap">
-                    <BivariateLegend indLabel={`${selectedMeta.label} →`} />
+                    <BivariateLegend
+                      indLabel={`${selectedMeta.label} →`}
+                      yAxisLabel={
+                        isDssBivariate
+                          ? dssSecondaryMeta!.label
+                          : MATERNAL_LABEL
+                      }
+                    />
                     <div className="flex items-center gap-1.5 self-end">
                       <div
                         style={{

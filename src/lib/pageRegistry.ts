@@ -112,6 +112,38 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         transporte: base(baseUrl, 'mock_bivariate_transporte.geojson'),
       },
       maternalGeojsonUrl: base(baseUrl, 'mock_maternal_mortality.geojson'),
+      dssBivariateGeojsonUrls: {
+        traslado: {
+          empleo_informal: base(baseUrl, 'mock_bivariate_dss_traslado_empleo_informal.geojson'),
+          sobrecarga: base(baseUrl, 'mock_bivariate_dss_traslado_sobrecarga.geojson'),
+          cobertura_programa: base(baseUrl, 'mock_bivariate_dss_traslado_cobertura_programa.geojson'),
+          transporte: base(baseUrl, 'mock_bivariate_dss_traslado_transporte.geojson'),
+        },
+        empleo_informal: {
+          traslado: base(baseUrl, 'mock_bivariate_dss_empleo_informal_traslado.geojson'),
+          sobrecarga: base(baseUrl, 'mock_bivariate_dss_empleo_informal_sobrecarga.geojson'),
+          cobertura_programa: base(baseUrl, 'mock_bivariate_dss_empleo_informal_cobertura_programa.geojson'),
+          transporte: base(baseUrl, 'mock_bivariate_dss_empleo_informal_transporte.geojson'),
+        },
+        sobrecarga: {
+          traslado: base(baseUrl, 'mock_bivariate_dss_sobrecarga_traslado.geojson'),
+          empleo_informal: base(baseUrl, 'mock_bivariate_dss_sobrecarga_empleo_informal.geojson'),
+          cobertura_programa: base(baseUrl, 'mock_bivariate_dss_sobrecarga_cobertura_programa.geojson'),
+          transporte: base(baseUrl, 'mock_bivariate_dss_sobrecarga_transporte.geojson'),
+        },
+        cobertura_programa: {
+          traslado: base(baseUrl, 'mock_bivariate_dss_cobertura_programa_traslado.geojson'),
+          empleo_informal: base(baseUrl, 'mock_bivariate_dss_cobertura_programa_empleo_informal.geojson'),
+          sobrecarga: base(baseUrl, 'mock_bivariate_dss_cobertura_programa_sobrecarga.geojson'),
+          transporte: base(baseUrl, 'mock_bivariate_dss_cobertura_programa_transporte.geojson'),
+        },
+        transporte: {
+          traslado: base(baseUrl, 'mock_bivariate_dss_transporte_traslado.geojson'),
+          empleo_informal: base(baseUrl, 'mock_bivariate_dss_transporte_empleo_informal.geojson'),
+          sobrecarga: base(baseUrl, 'mock_bivariate_dss_transporte_sobrecarga.geojson'),
+          cobertura_programa: base(baseUrl, 'mock_bivariate_dss_transporte_cobertura_programa.geojson'),
+        },
+      },
       csvUrl: base(baseUrl, 'mock_scatter_maternal.csv'),
     }),
   },

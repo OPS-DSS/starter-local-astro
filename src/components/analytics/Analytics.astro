@@ -15,6 +15,9 @@ interface Props {
   scatterMaternalData?: ScatterMaternalRow[]
   geojsonUrls?: Record<AnalyticsIndicatorKey, string>
   maternalGeojsonUrl?: string
+  dssBivariateGeojsonUrls?: Partial<
+    Record<AnalyticsIndicatorKey, Partial<Record<AnalyticsIndicatorKey, string>>>
+  >
   csvUrl?: string
 }
 
@@ -26,6 +29,7 @@ const {
   scatterMaternalData,
   geojsonUrls,
   maternalGeojsonUrl,
+  dssBivariateGeojsonUrls,
   csvUrl,
 } = Astro.props
 ---
@@ -40,6 +44,7 @@ const {
       scatterMaternalData={scatterMaternalData}
       geojsonUrls={geojsonUrls}
       maternalGeojsonUrl={maternalGeojsonUrl}
+      dssBivariateGeojsonUrls={dssBivariateGeojsonUrls}
       csvUrl={csvUrl}
       client:only="react"
     />
