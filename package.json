@@ -19,7 +19,7 @@
   "dependencies": {
     "@astrojs/react": "^5.0.1",
     "@ops-dss/charts": "latest",
-    "@tailwindcss/vite": "^4.2.4",
+    "@tailwindcss/vite": "^4.1.18",
     "astro": "^6.0.8",
     "astro-icon": "^1.1.5",
     "class-variance-authority": "^0.7.1",
@@ -30,7 +30,7 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.2.4"
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@iconify-json/fa6-solid": "^1.2.4",
