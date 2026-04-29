@@ -21,7 +21,7 @@
     "@ops-dss/charts": "latest",
     "@ops-dss/ui": "latest",
     "@tailwindcss/vite": "^4.2.4",
-    "astro": "^6.0.0",
+    "astro": "^6.0.8",
     "astro-icon": "^1.1.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
