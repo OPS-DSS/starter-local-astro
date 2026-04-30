@@ -4,18 +4,33 @@ import type { StratifiedRow } from '@/lib/parquet'
 
 interface Props {
   title: string
+  dimension: string
+  subdimension: string
   text: string
   data: StratifiedRow[]
   yAxisLabel?: string
   csvPath?: string
 }
 
-const { title, text, data, yAxisLabel, csvPath } = Astro.props
+const { title, dimension, subdimension, text, data, yAxisLabel, csvPath } =
+  Astro.props
 ---
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
   <div class="flex flex-col gap-4">
-    <h1 class="text-3xl font-bold my-6">{title}</h1>
+    <div class="flex mt-4 gap-2">
+      <h2 class="text-sm font-semibold text-gray-900">
+        {
+          dimension === 'dss'
+            ? 'Determinantes Sociales de la Salud'
+            : dimension === 'policy'
+              ? 'Políticas'
+              : dimension
+        }
+      </h2>
+      <p class="text-sm text-gray-600 capitalize">/ {subdimension}</p>
+    </div>
+    <h1 class="text-3xl font-bold mb-6">{title}</h1>
     <p class="text-gray-700">{text}</p>
 
     <StratifiedLineChart

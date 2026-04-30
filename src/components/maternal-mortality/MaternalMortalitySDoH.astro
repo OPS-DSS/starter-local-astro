@@ -6,6 +6,18 @@ const { title, text } = Astro.props
 const base = import.meta.env.BASE_URL.endsWith('/')
   ? import.meta.env.BASE_URL
   : import.meta.env.BASE_URL + '/'
+
+type IndicatorItem = (typeof indicators)[number]
+
+const grouped = indicators.reduce<Record<string, Record<string, IndicatorItem[]>>>(
+  (acc, ind) => {
+    acc[ind.dimension] ??= {}
+    acc[ind.dimension][ind.subdimension] ??= []
+    acc[ind.dimension][ind.subdimension].push(ind)
+    return acc
+  },
+  {},
+)
 ---
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
@@ -37,26 +49,41 @@ const base = import.meta.env.BASE_URL.endsWith('/')
       </div>
     </div>
 
-    <ul id="indicators-list" class="mt-6 flex flex-col gap-4">
+    <div id="indicators-container" class="mt-6 flex flex-col gap-8">
       {
-        indicators.map((ind) => (
-          <li data-category={ind.dimension}>
-            <a
-              href={`${base}${ind.slug}`}
-              class="block rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
-            >
-              <h2 class="mt-1 text-lg font-semibold text-gray-900">
-                {ind.title}
-              </h2>
-              <p class="mt-1 text-sm text-gray-600">{ind.description}</p>
-            </a>
-          </li>
+        Object.entries(grouped).map(([dimension, subdimensions]) => (
+          <div data-dimension={dimension}>
+            {Object.entries(subdimensions).map(([subdimension, items]) => (
+              <div class="mb-8">
+                <h2 class="text-base font-semibold uppercase tracking-wide text-gray-500 mb-3 capitalize">
+                  {subdimension}
+                </h2>
+                <ul class="flex flex-col gap-4">
+                  {items.map((ind) => (
+                    <li>
+                      <a
+                        href={`${base}${ind.slug}`}
+                        class="block rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
+                      >
+                        <h3 class="mt-1 text-lg font-semibold text-gray-900">
+                          {ind.title}
+                        </h3>
+                        <p class="mt-1 text-sm text-gray-600">
+                          {ind.description}
+                        </p>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         ))
       }
-    </ul>
+    </div>
 
     <p id="empty-message" class="text-gray-500 italic mt-4 hidden">
-      No hay indicadores disponibles para esta categoría.
+      No hay indicadores disponibles para esta dimensión.
     </p>
   </div>
 </div>
@@ -70,17 +97,17 @@ const base = import.meta.env.BASE_URL.endsWith('/')
   let selectedDimension = getInitialDimension()
 
   function filterIndicators() {
-    const items = document.querySelectorAll<HTMLLIElement>(
-      '#indicators-list li[data-category]',
+    const groups = document.querySelectorAll<HTMLDivElement>(
+      '#indicators-container [data-dimension]',
     )
     let visibleCount = 0
 
-    items.forEach((item) => {
-      if (item.getAttribute('data-category') === selectedDimension) {
-        item.style.display = ''
+    groups.forEach((group) => {
+      if (group.getAttribute('data-dimension') === selectedDimension) {
+        group.style.display = ''
         visibleCount++
       } else {
-        item.style.display = 'none'
+        group.style.display = 'none'
       }
     })
 

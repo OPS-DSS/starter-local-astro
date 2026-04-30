@@ -13,7 +13,7 @@ interface Props {
 }
 
 const { title, text, section } = Astro.props
-const showCategoryToggle = section === 'determinantes-de-la-salud'
+const showDimensionToggle = section === 'determinantes-de-la-salud'
 ---
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
 <div class="flex flex-col">
@@ -30,12 +30,12 @@ const showCategoryToggle = section === 'determinantes-de-la-salud'
     </p>
 
     {
-      showCategoryToggle && (
+      showDimensionToggle && (
         <div class="flex gap-3 items-center">
           <span class="text-sm text-gray-600 font-medium">Ver indicadores de:</span>
           <div class="flex rounded-lg border border-gray-300 overflow-hidden text-sm">
             <button
-              id="category-btn-dss"
+              id="dimension-btn-dss"
               type="button"
               aria-pressed="true"
               class="px-4 py-2 font-medium bg-gray-800 text-white transition-colors"
@@ -43,7 +43,7 @@ const showCategoryToggle = section === 'determinantes-de-la-salud'
               Determinantes Sociales de la Salud
             </button>
             <button
-              id="category-btn-policy"
+              id="dimension-btn-policy"
               type="button"
               aria-pressed="false"
               class="px-4 py-2 font-medium bg-white text-gray-700 hover:bg-gray-50 transition-colors"
@@ -94,24 +94,24 @@ const showCategoryToggle = section === 'determinantes-de-la-salud'
 </div>
 </div>
 {
-  showCategoryToggle && (
+  showDimensionToggle && (
     <script>
       const _params = new URLSearchParams(window.location.search)
-      const _cat = _params.get('category')
-      let selectedCategory: string = _cat === 'dss' || _cat === 'policy' ? _cat : 'dss'
+      const _cat = _params.get('dimension')
+      let selectedDimension: string = _cat === 'dss' || _cat === 'policy' ? _cat : 'dss'
 
       function updateLinks() {
         document.querySelectorAll<HTMLAnchorElement>('[data-base-href]').forEach((link) => {
           const baseHref = link.getAttribute('data-base-href')!
-          link.setAttribute('href', `${baseHref}?category=${selectedCategory}`)
+          link.setAttribute('href', `${baseHref}?dimension=${selectedDimension}`)
         })
       }
 
       function updateToggle() {
-        const btnDss = document.getElementById('category-btn-dss')
-        const btnPolicy = document.getElementById('category-btn-policy')
+        const btnDss = document.getElementById('dimension-btn-dss')
+        const btnPolicy = document.getElementById('dimension-btn-policy')
 
-        if (selectedCategory === 'dss') {
+        if (selectedDimension === 'dss') {
           btnDss?.classList.add('bg-gray-800', 'text-white')
           btnDss?.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50')
           btnPolicy?.classList.remove('bg-gray-800', 'text-white')
@@ -128,14 +128,14 @@ const showCategoryToggle = section === 'determinantes-de-la-salud'
         }
       }
 
-      document.getElementById('category-btn-dss')?.addEventListener('click', () => {
-        selectedCategory = 'dss'
+      document.getElementById('dimension-btn-dss')?.addEventListener('click', () => {
+        selectedDimension = 'dss'
         updateToggle()
         updateLinks()
       })
 
-      document.getElementById('category-btn-policy')?.addEventListener('click', () => {
-        selectedCategory = 'policy'
+      document.getElementById('dimension-btn-policy')?.addEventListener('click', () => {
+        selectedDimension = 'policy'
         updateToggle()
         updateLinks()
       })

@@ -188,6 +188,8 @@ export interface PageDefinition {
   sobrecargaCuidadosData?: StratifiedRow[]
   empleoInformalData?: StratifiedRow[]
   coberturaProgramaData?: StratifiedRow[]
+  dimension?: string
+  subdimension?: string
   description?: string
   category?: string
   priority?: boolean
@@ -258,6 +260,8 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       slug: ind.slug,
       title: ind.title,
       text: ind.text,
+      dimension: ind.dimension,
+      subdimension: ind.subdimension,
       date: ind.date,
       navbar: false,
       ...(ind.slug === 'educacion' ? { data: datasets.educationData } : {}),
