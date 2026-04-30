@@ -326,9 +326,7 @@ export const AnalyticsPageContent = ({
               return (
                 <button
                   key={yr}
-                  onClick={() =>
-                    setSelectedYear(yr === lastYear ? null : yr)
-                  }
+                  onClick={() => setSelectedYear(yr === lastYear ? null : yr)}
                   className={`px-3 py-1 text-sm rounded-full border transition-colors ${
                     isActive
                       ? 'bg-gray-800 text-white border-gray-800'
@@ -343,8 +341,8 @@ export const AnalyticsPageContent = ({
         </div>
       )}
 
-      <div className="flex flex-row gap-4">
-        <div className="flex flex-col basis-1/2 flex-1 gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex flex-col md:basis-1/2 flex-1 gap-4">
           {/* ── Forest plot ── */}
           {forestPlotData && forestPlotData.length > 0 && (
             <section className="border rounded-lg p-4">
@@ -354,8 +352,10 @@ export const AnalyticsPageContent = ({
               <p className="text-sm text-gray-500 mt-1">
                 Correlación de Spearman entre cada indicador y la mortalidad
                 materna (barrios de San Martín del Valle,{' '}
-                {effectiveYear !== null ? `año ${effectiveYear}` : 'último año disponible'}).
-                Haz clic en un indicador para explorar su relación.
+                {effectiveYear !== null
+                  ? `año ${effectiveYear}`
+                  : 'último año disponible'}
+                ). Haz clic en un indicador para explorar su relación.
               </p>
               {forestPlotForYear.length > 0 ? (
                 <DSForestPlot
@@ -385,7 +385,7 @@ export const AnalyticsPageContent = ({
           )}
         </div>
 
-        <div className="flex flex-col basis-1/2 gap-4 flex-1 h-screen">
+        <div className="flex flex-col md:basis-1/2 gap-4 flex-1 h-screen">
           {/* ── Scatter chart ── */}
           {scatterPoints.length > 0 && (
             <section className="flex flex-col gap-4 border rounded-lg p-4">
@@ -399,8 +399,10 @@ export const AnalyticsPageContent = ({
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Cada punto es un barrio de San Martín del Valle (
-                  {effectiveYear !== null ? `año ${effectiveYear}` : 'último año disponible'}).
-                  El tamaño refleja el número de nacidos vivos. La línea
+                  {effectiveYear !== null
+                    ? `año ${effectiveYear}`
+                    : 'último año disponible'}
+                  ). El tamaño refleja el número de nacidos vivos. La línea
                   punteada muestra la tendencia lineal.
                 </p>
               </div>
