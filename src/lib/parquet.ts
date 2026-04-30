@@ -518,11 +518,12 @@ export function filterScatterMaternalRows(
 
 // ── Forest plot / Correlation data types ─────────────────────────────────────
 // Parquet columns (by index):
-//   indicador[0], label[1], correlacion[2], ci_lower[3], ci_upper[4],
-//   p_value[5], n[6]
+//   anio[0], indicador[1], label[2], correlacion[3], ci_lower[4],
+//   ci_upper[5], p_value[6], n[7]
 export type ForestPlotRawRow = unknown[]
 
 export type ForestPlotDataRow = {
+  anio: number
   indicador: string
   label: string
   correlacion: number
@@ -579,18 +580,20 @@ export function filterForestPlotRows(
 ): ForestPlotDataRow[] {
   const result: ForestPlotDataRow[] = []
   for (const row of rows) {
-    const indicador = String(row[0])
-    const label = String(row[1])
-    const correlacion = Number(row[2])
-    if (!indicador || !label || !Number.isFinite(correlacion)) continue
+    const anio = Number(row[0])
+    const indicador = String(row[1])
+    const label = String(row[2])
+    const correlacion = Number(row[3])
+    if (!Number.isFinite(anio) || !indicador || !label || !Number.isFinite(correlacion)) continue
     result.push({
+      anio,
       indicador,
       label,
       correlacion,
-      ci_lower: Number(row[3]),
-      ci_upper: Number(row[4]),
-      p_value: Number(row[5]),
-      n: Number(row[6]),
+      ci_lower: Number(row[4]),
+      ci_upper: Number(row[5]),
+      p_value: Number(row[6]),
+      n: Number(row[7]),
     })
   }
   return result

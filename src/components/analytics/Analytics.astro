@@ -13,10 +13,10 @@ interface Props {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  geojsonUrls?: Record<AnalyticsIndicatorKey, string>
-  maternalGeojsonUrl?: string
+  geojsonUrls?: Record<AnalyticsIndicatorKey, Record<number, string>>
+  maternalGeojsonUrls?: Record<number, string>
   dssBivariateGeojsonUrls?: Partial<
-    Record<AnalyticsIndicatorKey, Partial<Record<AnalyticsIndicatorKey, string>>>
+    Record<AnalyticsIndicatorKey, Partial<Record<AnalyticsIndicatorKey, Record<number, string>>>>
   >
   csvUrl?: string
 }
@@ -28,7 +28,7 @@ const {
   analyticsMaternalData,
   scatterMaternalData,
   geojsonUrls,
-  maternalGeojsonUrl,
+  maternalGeojsonUrls,
   dssBivariateGeojsonUrls,
   csvUrl,
 } = Astro.props
@@ -43,7 +43,7 @@ const {
       analyticsMaternalData={analyticsMaternalData}
       scatterMaternalData={scatterMaternalData}
       geojsonUrls={geojsonUrls}
-      maternalGeojsonUrl={maternalGeojsonUrl}
+      maternalGeojsonUrls={maternalGeojsonUrls}
       dssBivariateGeojsonUrls={dssBivariateGeojsonUrls}
       csvUrl={csvUrl}
       client:only="react"

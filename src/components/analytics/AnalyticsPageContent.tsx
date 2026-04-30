@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { DSForestPlot } from '@ops-dss/charts/forest-plot'
 import { DSScatterChart } from '@ops-dss/charts/scatter-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
@@ -34,10 +34,13 @@ interface AnalyticsPageContentProps {
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
-  geojsonUrls?: Record<AnalyticsIndicatorKey, string>
-  maternalGeojsonUrl?: string
+  geojsonUrls?: Record<AnalyticsIndicatorKey, Record<number, string>>
+  maternalGeojsonUrls?: Record<number, string>
   dssBivariateGeojsonUrls?: Partial<
-    Record<AnalyticsIndicatorKey, Partial<Record<AnalyticsIndicatorKey, string>>>
+    Record<
+      AnalyticsIndicatorKey,
+      Partial<Record<AnalyticsIndicatorKey, Record<number, string>>>
+    >
   >
   csvUrl?: string
 }
@@ -125,7 +128,7 @@ export const AnalyticsPageContent = ({
   analyticsMaternalData,
   scatterMaternalData,
   geojsonUrls,
-  maternalGeojsonUrl,
+  maternalGeojsonUrls,
   dssBivariateGeojsonUrls,
   csvUrl,
 }: AnalyticsPageContentProps) => {
@@ -140,6 +143,23 @@ export const AnalyticsPageContent = ({
   const [view, setView] = useState<'map' | 'table'>('map')
   const [tableData, setTableData] = useState<TableRow[]>([])
   const [tableLoading, setTableLoading] = useState(false)
+
+  // ── Year selection ──────────────────────────────────────────────────────────
+
+  // Derive available years from scatter data (sorted descending for display)
+  const availableYears = useMemo(() => {
+    if (!scatterMaternalData || scatterMaternalData.length === 0) return []
+    const years = [...new Set(scatterMaternalData.map((r) => r.anio))].sort(
+      (a, b) => b - a,
+    )
+    return years
+  }, [scatterMaternalData])
+
+  const lastYear = availableYears[0] ?? null
+
+  // selectedYear === null means "use lastYear" (default, pre-selected)
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const effectiveYear: number | null = selectedYear ?? lastYear
 
   // Reset DSS indicator choice whenever the forest-plot selection changes so the
   // dropdown never holds the same key as selectedIndicator.
@@ -156,15 +176,17 @@ export const AnalyticsPageContent = ({
 
   const selectedMeta = ANALYTICS_INDICATORS[selectedIndicator]
 
-  const lastYear =
-    scatterMaternalData && scatterMaternalData.length > 0
-      ? Math.max(...scatterMaternalData.map((r) => r.anio))
-      : null
+  // Forest plot: filter to the selected year; rows without data for this year
+  // are simply absent (the R script skips indicator-year combos with n < 4).
+  const forestPlotForYear = useMemo(() => {
+    if (!forestPlotData || effectiveYear === null) return forestPlotData ?? []
+    return forestPlotData.filter((r) => r.anio === effectiveYear)
+  }, [forestPlotData, effectiveYear])
 
   const scatterPoints =
-    scatterMaternalData && lastYear !== null
+    scatterMaternalData && effectiveYear !== null
       ? scatterMaternalData
-          .filter((r) => r.anio === lastYear)
+          .filter((r) => r.anio === effectiveYear)
           .map((r) => ({
             x: r[selectedIndicator] as number,
             y: r.valor,
@@ -178,11 +200,16 @@ export const AnalyticsPageContent = ({
   //   DSS bivariate  — selectedDssIndicator is set
   //   MM bivariate   — selectedDssIndicator is null && isBivariate
   //   Solo MM        — selectedDssIndicator is null && !isBivariate
-  const activeGeojsonUrl = selectedDssIndicator
-    ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[selectedDssIndicator]
-    : isBivariate
-      ? geojsonUrls?.[selectedIndicator]
-      : maternalGeojsonUrl
+  const activeGeojsonUrl =
+    effectiveYear !== null
+      ? selectedDssIndicator
+        ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[
+            selectedDssIndicator
+          ]?.[effectiveYear]
+        : isBivariate
+          ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
+          : maternalGeojsonUrls?.[effectiveYear]
+      : undefined
 
   const isDssBivariate = selectedDssIndicator !== null
   const dssSecondaryMeta = selectedDssIndicator
@@ -248,9 +275,12 @@ export const AnalyticsPageContent = ({
     setSelectedDssIndicator(null)
     setIsBivariate(next)
     if (view === 'table') {
-      const nextUrl = next
-        ? geojsonUrls?.[selectedIndicator]
-        : maternalGeojsonUrl
+      const nextUrl =
+        effectiveYear !== null
+          ? next
+            ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
+            : maternalGeojsonUrls?.[effectiveYear]
+          : undefined
       if (nextUrl) fetchTableData(nextUrl)
     }
   }
@@ -258,11 +288,16 @@ export const AnalyticsPageContent = ({
   const handleDssIndicatorChange = (key: AnalyticsIndicatorKey | null) => {
     setSelectedDssIndicator(key)
     if (view === 'table') {
-      const nextUrl = key
-        ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[key]
-        : isBivariate
-          ? geojsonUrls?.[selectedIndicator]
-          : maternalGeojsonUrl
+      const nextUrl =
+        effectiveYear !== null
+          ? key
+            ? dssBivariateGeojsonUrls?.[selectedIndicator]?.[key]?.[
+                effectiveYear
+              ]
+            : isBivariate
+              ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
+              : maternalGeojsonUrls?.[effectiveYear]
+          : undefined
       if (nextUrl) fetchTableData(nextUrl)
     }
   }
@@ -278,298 +313,338 @@ export const AnalyticsPageContent = ({
   }
 
   return (
-    <div className="flex flex-row gap-4 mb-10">
-      <div className="flex flex-col basis-1/2 flex-1 gap-4">
-        {/* ── Forest plot ── */}
-        {forestPlotData && forestPlotData.length > 0 && (
-          <section className="border rounded-lg p-4">
-            <h2 className="text-xl font-bold text-gray-900">
-              Correlaciones con mortalidad materna
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Correlación de Spearman entre cada indicador y la mortalidad
-              materna (barrios de San Martín del Valle, último año disponible).
-              Haz clic en un indicador para explorar su relación.
-            </p>
-            <DSForestPlot
-              data={forestPlotData}
-              selectedIndicator={selectedIndicator}
-              onSelectIndicator={(ind) =>
-                setSelectedIndicator(ind as AnalyticsIndicatorKey)
-              }
-            />
-          </section>
-        )}
+    <div className="flex flex-col gap-4 mb-10">
+      {/* ── Year selector ── */}
+      {availableYears.length > 1 && (
+        <div className="flex items-center gap-3 flex-wrap">
+          <span className="text-sm font-medium text-gray-700 shrink-0">
+            Año seleccionado:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {availableYears.map((yr) => {
+              const isActive = yr === effectiveYear
+              return (
+                <button
+                  key={yr}
+                  onClick={() =>
+                    setSelectedYear(yr === lastYear ? null : yr)
+                  }
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    isActive
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {yr}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
-        {/* ── Temporal trends ── */}
-        {analyticsMaternalData && analyticsMaternalData.length > 0 && (
-          <section className="flex flex-col gap-4 border rounded-lg p-4">
-            <AnalyticsDualChart
-              data={analyticsMaternalData}
-              selectedIndicator={selectedIndicator}
-            />
-          </section>
-        )}
-      </div>
-
-      <div className="flex flex-col basis-1/2 gap-4 flex-1 h-screen">
-        {/* ── Scatter chart ── */}
-        {scatterPoints.length > 0 && (
-          <section className="flex flex-col gap-4 border rounded-lg p-4">
-            <div>
+      <div className="flex flex-row gap-4">
+        <div className="flex flex-col basis-1/2 flex-1 gap-4">
+          {/* ── Forest plot ── */}
+          {forestPlotData && forestPlotData.length > 0 && (
+            <section className="border rounded-lg p-4">
               <h2 className="text-xl font-bold text-gray-900">
-                Dispersión:{' '}
-                <span style={{ color: selectedMeta.color }}>
-                  {selectedMeta.label}
-                </span>{' '}
-                vs mortalidad materna
+                Correlaciones con mortalidad materna
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Cada punto es un barrio de San Martín del Valle (último año
-                disponible). El tamaño refleja el número de nacidos vivos. La
-                línea punteada muestra la tendencia lineal.
+                Correlación de Spearman entre cada indicador y la mortalidad
+                materna (barrios de San Martín del Valle,{' '}
+                {effectiveYear !== null ? `año ${effectiveYear}` : 'último año disponible'}).
+                Haz clic en un indicador para explorar su relación.
               </p>
-            </div>
-            <DSScatterChart
-              data={scatterPoints}
-              xLabel={selectedMeta.label}
-              yLabel="Mortalidad materna (×100k NV)"
-              width={800}
-            />
-          </section>
-        )}
-
-        {/* ── Map section ── */}
-        <section className="flex flex-col gap-4 border rounded-lg p-4">
-          {/* Controls bar */}
-          <div className="flex items-center justify-between gap-2 flex-wrap">
-            {/* Bivariate / solo toggle + DSS indicator selector */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-                <button
-                  onClick={() => handleBivariateToggle(true)}
-                  className={`px-4 py-1.5 transition-colors ${
-                    isBivariate && !isDssBivariate
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Bivariado
-                </button>
-                <button
-                  onClick={() => handleBivariateToggle(false)}
-                  className={`px-4 py-1.5 transition-colors ${
-                    !isBivariate && !isDssBivariate
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Solo Mortalidad Materna
-                </button>
-              </div>
-
-              {/* DSS indicator selector */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs text-gray-500 shrink-0">
-                  Bivariado DSS:
-                </span>
-                <select
-                  value={selectedDssIndicator ?? ''}
-                  onChange={(e) =>
-                    handleDssIndicatorChange(
-                      e.target.value
-                        ? (e.target.value as AnalyticsIndicatorKey)
-                        : null,
-                    )
+              {forestPlotForYear.length > 0 ? (
+                <DSForestPlot
+                  data={forestPlotForYear}
+                  selectedIndicator={selectedIndicator}
+                  onSelectIndicator={(ind) =>
+                    setSelectedIndicator(ind as AnalyticsIndicatorKey)
                   }
-                  className={`text-sm rounded-lg border px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 ${
-                    isDssBivariate
-                      ? 'border-gray-800 bg-gray-800 text-white'
-                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <option value="">— Seleccionar indicador —</option>
-                  {dssOptions.map(([key, meta]) => (
-                    <option key={key} value={key}>
-                      {meta.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-                <button
-                  onClick={() => handleViewChange('map')}
-                  className={`px-4 py-1.5 transition-colors ${
-                    view === 'map'
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Mapa
-                </button>
-                <button
-                  onClick={() => handleViewChange('table')}
-                  className={`px-4 py-1.5 transition-colors ${
-                    view === 'table'
-                      ? 'bg-gray-800 text-white'
-                      : 'bg-white text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  Tabla
-                </button>
-              </div>
-
-              {csvUrl && (
-                <a
-                  href={csvUrl}
-                  download
-                  className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="7 10 12 15 17 10" />
-                    <line x1="12" y1="15" x2="12" y2="3" />
-                  </svg>
-                  Descargar Tabla
-                </a>
+                />
+              ) : (
+                <p className="text-gray-400 italic text-sm py-6 text-center">
+                  Sin datos suficientes para {effectiveYear}.
+                </p>
               )}
-            </div>
-          </div>
-
-          {/* Map view */}
-          {view === 'map' && (
-            <>
-              <DSChoroplethMap
-                geojsonUrl={activeGeojsonUrl}
-                center={[2.3, -75.7]}
-                zoom={8}
-                height="30em"
-                nameProperty="NAME_2"
-                valueProperty="value"
-                valueName={mapValueName}
-                secondaryValueProperty={
-                  isDssBivariate || isBivariate ? 'maternal_value' : undefined
-                }
-                secondaryValueName={mapSecondaryValueName}
-              />
-
-              {/* Legend */}
-              <div className="flex flex-col gap-2 text-sm">
-                <span className="font-medium text-gray-700">Leyenda:</span>
-
-                {isDssBivariate || isBivariate ? (
-                  <div className="flex items-start gap-6 flex-wrap">
-                    <BivariateLegend
-                      indLabel={`${selectedMeta.label} →`}
-                      yAxisLabel={
-                        isDssBivariate
-                          ? dssSecondaryMeta!.label
-                          : MATERNAL_LABEL
-                      }
-                    />
-                    <div className="flex items-center gap-1.5 self-end">
-                      <div
-                        style={{
-                          width: 14,
-                          height: 14,
-                          background: '#CCCCCC',
-                          border: '1px solid #9ca3af',
-                          borderRadius: 3,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span className="text-gray-600 text-xs">Sin datos</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500 text-xs w-36 shrink-0">
-                        Mortalidad Materna
-                      </span>
-                      <span className="text-gray-600 text-xs">Menor</span>
-                      <div
-                        style={{
-                          width: 120,
-                          height: 14,
-                          background:
-                            'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
-                          border: '1px solid #9ca3af',
-                          borderRadius: 3,
-                        }}
-                      />
-                      <span className="text-gray-600 text-xs">Mayor</span>
-                    </div>
-                    <div className="flex items-center gap-1.5">
-                      <div
-                        style={{
-                          width: 14,
-                          height: 14,
-                          background: '#CCCCCC',
-                          border: '1px solid #9ca3af',
-                          borderRadius: 3,
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span className="text-gray-600 text-xs">Sin datos</span>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
+            </section>
           )}
 
-          {/* Table view */}
-          {view === 'table' &&
-            (tableLoading ? (
-              <p className="text-gray-500 italic py-8 text-center">
-                Cargando datos…
-              </p>
-            ) : (
-              <div className="overflow-x-auto rounded-lg border border-gray-200">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-                    <tr>
-                      <th className="px-4 py-3 font-medium">Barrio</th>
-                      <th className="px-4 py-3 font-medium">
-                        {tableColumnLabel}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100">
-                    {tableData.map((row) => (
-                      <tr
-                        key={row.name}
-                        className="bg-white hover:bg-gray-50 transition-colors"
-                      >
-                        <td className="px-4 py-3 font-medium text-gray-900">
-                          {row.name}
-                        </td>
-                        <td className="px-4 py-3 text-gray-600">
-                          {row.value != null && Number.isFinite(row.value)
-                            ? row.value.toFixed(2)
-                            : '—'}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          {/* ── Temporal trends ── */}
+          {analyticsMaternalData && analyticsMaternalData.length > 0 && (
+            <section className="flex flex-col gap-4 border rounded-lg p-4">
+              <AnalyticsDualChart
+                data={analyticsMaternalData}
+                selectedIndicator={selectedIndicator}
+                selectedYear={effectiveYear}
+              />
+            </section>
+          )}
+        </div>
+
+        <div className="flex flex-col basis-1/2 gap-4 flex-1 h-screen">
+          {/* ── Scatter chart ── */}
+          {scatterPoints.length > 0 && (
+            <section className="flex flex-col gap-4 border rounded-lg p-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Dispersión:{' '}
+                  <span style={{ color: selectedMeta.color }}>
+                    {selectedMeta.label}
+                  </span>{' '}
+                  vs mortalidad materna
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Cada punto es un barrio de San Martín del Valle (
+                  {effectiveYear !== null ? `año ${effectiveYear}` : 'último año disponible'}).
+                  El tamaño refleja el número de nacidos vivos. La línea
+                  punteada muestra la tendencia lineal.
+                </p>
               </div>
-            ))}
-        </section>
+              <DSScatterChart
+                data={scatterPoints}
+                xLabel={selectedMeta.label}
+                yLabel="Mortalidad materna (×100k NV)"
+                width={800}
+              />
+            </section>
+          )}
+
+          {/* ── Map section ── */}
+          <section className="flex flex-col gap-4 border rounded-lg p-4">
+            {/* Controls bar */}
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              {/* Bivariate / solo toggle + DSS indicator selector */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+                  <button
+                    onClick={() => handleBivariateToggle(true)}
+                    className={`px-4 py-1.5 transition-colors ${
+                      isBivariate && !isDssBivariate
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Bivariado
+                  </button>
+                  <button
+                    onClick={() => handleBivariateToggle(false)}
+                    className={`px-4 py-1.5 transition-colors ${
+                      !isBivariate && !isDssBivariate
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Solo Mortalidad Materna
+                  </button>
+                </div>
+
+                {/* DSS indicator selector */}
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500 shrink-0">
+                    Bivariado DSS:
+                  </span>
+                  <select
+                    value={selectedDssIndicator ?? ''}
+                    onChange={(e) =>
+                      handleDssIndicatorChange(
+                        e.target.value
+                          ? (e.target.value as AnalyticsIndicatorKey)
+                          : null,
+                      )
+                    }
+                    className={`text-sm rounded-lg border px-2 py-1.5 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+                      isDssBivariate
+                        ? 'border-gray-800 bg-gray-800 text-white'
+                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    <option value="">— Seleccionar indicador —</option>
+                    {dssOptions.map(([key, meta]) => (
+                      <option key={key} value={key}>
+                        {meta.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+                  <button
+                    onClick={() => handleViewChange('map')}
+                    className={`px-4 py-1.5 transition-colors ${
+                      view === 'map'
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Mapa
+                  </button>
+                  <button
+                    onClick={() => handleViewChange('table')}
+                    className={`px-4 py-1.5 transition-colors ${
+                      view === 'table'
+                        ? 'bg-gray-800 text-white'
+                        : 'bg-white text-gray-600 hover:bg-gray-50'
+                    }`}
+                  >
+                    Tabla
+                  </button>
+                </div>
+
+                {csvUrl && (
+                  <a
+                    href={csvUrl}
+                    download
+                    className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="7 10 12 15 17 10" />
+                      <line x1="12" y1="15" x2="12" y2="3" />
+                    </svg>
+                    Descargar Tabla
+                  </a>
+                )}
+              </div>
+            </div>
+
+            {/* Map view */}
+            {view === 'map' && (
+              <>
+                <DSChoroplethMap
+                  geojsonUrl={activeGeojsonUrl}
+                  center={[2.3, -75.7]}
+                  zoom={8}
+                  height="30em"
+                  nameProperty="NAME_2"
+                  valueProperty="value"
+                  valueName={mapValueName}
+                  secondaryValueProperty={
+                    isDssBivariate || isBivariate ? 'maternal_value' : undefined
+                  }
+                  secondaryValueName={mapSecondaryValueName}
+                />
+
+                {/* Legend */}
+                <div className="flex flex-col gap-2 text-sm">
+                  <span className="font-medium text-gray-700">Leyenda:</span>
+
+                  {isDssBivariate || isBivariate ? (
+                    <div className="flex items-start gap-6 flex-wrap">
+                      <BivariateLegend
+                        indLabel={`${selectedMeta.label} →`}
+                        yAxisLabel={
+                          isDssBivariate
+                            ? dssSecondaryMeta!.label
+                            : MATERNAL_LABEL
+                        }
+                      />
+                      <div className="flex items-center gap-1.5 self-end">
+                        <div
+                          style={{
+                            width: 14,
+                            height: 14,
+                            background: '#CCCCCC',
+                            border: '1px solid #9ca3af',
+                            borderRadius: 3,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span className="text-gray-600 text-xs">Sin datos</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-xs w-36 shrink-0">
+                          Mortalidad Materna
+                        </span>
+                        <span className="text-gray-600 text-xs">Menor</span>
+                        <div
+                          style={{
+                            width: 120,
+                            height: 14,
+                            background:
+                              'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
+                            border: '1px solid #9ca3af',
+                            borderRadius: 3,
+                          }}
+                        />
+                        <span className="text-gray-600 text-xs">Mayor</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          style={{
+                            width: 14,
+                            height: 14,
+                            background: '#CCCCCC',
+                            border: '1px solid #9ca3af',
+                            borderRadius: 3,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span className="text-gray-600 text-xs">Sin datos</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Table view */}
+            {view === 'table' &&
+              (tableLoading ? (
+                <p className="text-gray-500 italic py-8 text-center">
+                  Cargando datos…
+                </p>
+              ) : (
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                      <tr>
+                        <th className="px-4 py-3 font-medium">Barrio</th>
+                        <th className="px-4 py-3 font-medium">
+                          {tableColumnLabel}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {tableData.map((row) => (
+                        <tr
+                          key={row.name}
+                          className="bg-white hover:bg-gray-50 transition-colors"
+                        >
+                          <td className="px-4 py-3 font-medium text-gray-900">
+                            {row.name}
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {row.value != null && Number.isFinite(row.value)
+                              ? row.value.toFixed(2)
+                              : '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ))}
+          </section>
+        </div>
       </div>
     </div>
   )

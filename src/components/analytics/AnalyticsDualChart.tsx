@@ -8,6 +8,7 @@ import {
 interface AnalyticsDualChartProps {
   data: AnalyticsMaternalRow[]
   selectedIndicator?: AnalyticsIndicatorKey
+  selectedYear?: number | null
 }
 
 /**
@@ -18,6 +19,7 @@ interface AnalyticsDualChartProps {
 export const AnalyticsDualChart = ({
   data,
   selectedIndicator = 'traslado',
+  selectedYear,
 }: AnalyticsDualChartProps) => {
   if (!data || data.length === 0) {
     return (
@@ -60,6 +62,7 @@ export const AnalyticsDualChart = ({
             height={320}
             xAxisLabel="Año"
             yAxisLabel="Tasa (×100.000 NV)"
+            highlightX={selectedYear ?? undefined}
           />
         </div>
         <div className="flex flex-col gap-2">
@@ -82,6 +85,7 @@ export const AnalyticsDualChart = ({
             height={320}
             xAxisLabel="Año"
             yAxisLabel="Porcentaje (%)"
+            highlightX={selectedYear ?? undefined}
           />
         </div>
       </div>

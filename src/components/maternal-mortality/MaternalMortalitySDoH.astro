@@ -40,7 +40,7 @@ const base = import.meta.env.BASE_URL.endsWith('/')
     <ul id="indicators-list" class="mt-6 flex flex-col gap-4">
       {
         indicators.map((ind) => (
-          <li data-category={ind.category}>
+          <li data-category={ind.dimension}>
             <a
               href={`${base}${ind.slug}`}
               class="block rounded-lg border border-gray-200 p-4 hover:border-blue-400 hover:shadow-sm transition-all"
@@ -61,13 +61,13 @@ const base = import.meta.env.BASE_URL.endsWith('/')
   </div>
 </div>
 <script>
-  function getInitialCategory(): string {
+  function getInitialDimension(): string {
     const params = new URLSearchParams(window.location.search)
-    const category = params.get('category')
-    return category === 'dss' || category === 'policy' ? category : 'dss'
+    const dimension = params.get('dimension')
+    return dimension === 'dss' || dimension === 'policy' ? dimension : 'dss'
   }
 
-  let selectedCategory = getInitialCategory()
+  let selectedDimension = getInitialDimension()
 
   function filterIndicators() {
     const items = document.querySelectorAll<HTMLLIElement>(
@@ -76,7 +76,7 @@ const base = import.meta.env.BASE_URL.endsWith('/')
     let visibleCount = 0
 
     items.forEach((item) => {
-      if (item.getAttribute('data-category') === selectedCategory) {
+      if (item.getAttribute('data-category') === selectedDimension) {
         item.style.display = ''
         visibleCount++
       } else {
@@ -94,7 +94,7 @@ const base = import.meta.env.BASE_URL.endsWith('/')
     const btnDss = document.getElementById('category-btn-dss')
     const btnPolicy = document.getElementById('category-btn-policy')
 
-    if (selectedCategory === 'dss') {
+    if (selectedDimension === 'dss') {
       btnDss?.classList.add('bg-gray-800', 'text-white')
       btnDss?.classList.remove('bg-white', 'text-gray-700', 'hover:bg-gray-50')
       btnPolicy?.classList.remove('bg-gray-800', 'text-white')
@@ -115,20 +115,20 @@ const base = import.meta.env.BASE_URL.endsWith('/')
     }
   }
 
-  function setCategory(category: string) {
-    selectedCategory = category
+  function setDimension(dimension: string) {
+    selectedDimension = dimension
     updateToggle()
     filterIndicators()
-    history.replaceState(null, '', `?category=${category}`)
+    history.replaceState(null, '', `?dimension=${dimension}`)
   }
 
   document
     .getElementById('category-btn-dss')
-    ?.addEventListener('click', () => setCategory('dss'))
+    ?.addEventListener('click', () => setDimension('dss'))
 
   document
     .getElementById('category-btn-policy')
-    ?.addEventListener('click', () => setCategory('policy'))
+    ?.addEventListener('click', () => setDimension('policy'))
 
   updateToggle()
   filterIndicators()
