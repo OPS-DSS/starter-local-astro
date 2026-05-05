@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
+import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
 import { downloadChartImage } from '@/lib/downloadChartImage'
 
@@ -159,21 +160,79 @@ interface StratifiedLineChartProps {
   data: StratifiedRow[]
   yAxisLabel?: string
   csvPath?: string
+  geojsonUrls?: Record<number, string>
 }
 
 export const StratifiedLineChart = ({
   data,
   yAxisLabel = 'Valor',
   csvPath,
+  geojsonUrls,
 }: StratifiedLineChartProps) => {
   const [stratifier, setStratifier] = useState<Stratifier>('total')
   const [view, setView] = useState<'chart' | 'table'>('chart')
+  const [mapView, setMapView] = useState<'map' | 'table'>('map')
+  const [mapTableData, setMapTableData] = useState<
+    { name: string; value: number | null }[]
+  >([])
+  const [mapTableLoading, setMapTableLoading] = useState(false)
   const chartRef = useRef<HTMLDivElement>(null)
+
+  // ── Year selection (shared between chart highlight and map) ───────────────
+  const availableYears = useMemo(() => {
+    if (!data || data.length === 0) return []
+    return [...new Set(data.map((r) => r.anio))].sort((a, b) => b - a)
+  }, [data])
+
+  const lastYear = availableYears[0] ?? null
+  const [selectedYear, setSelectedYear] = useState<number | null>(null)
+  const effectiveYear: number | null = selectedYear ?? lastYear
+
+  const activeGeojsonUrl =
+    geojsonUrls && effectiveYear !== null
+      ? geojsonUrls[effectiveYear]
+      : undefined
+
+  const fetchMapTableData = (url: string) => {
+    setMapTableLoading(true)
+    fetch(url)
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        return res.json()
+      })
+      .then((geojson) => {
+        const rows = (geojson.features ?? [])
+          .map(
+            (f: { properties: { NAME_2?: string; value?: number } }) => ({
+              name: f.properties.NAME_2 ?? '',
+              value: f.properties.value ?? null,
+            }),
+          )
+          .sort(
+            (
+              a: { name: string; value: number | null },
+              b: { name: string; value: number | null },
+            ) => a.name.localeCompare(b.name),
+          )
+        setMapTableData(rows)
+        setMapTableLoading(false)
+      })
+      .catch(() => setMapTableLoading(false))
+  }
+
+  const handleMapViewChange = (next: 'map' | 'table') => {
+    setMapView(next)
+    if (next === 'table' && activeGeojsonUrl) {
+      fetchMapTableData(activeGeojsonUrl)
+    }
+  }
 
   const { chartData, lines, keys } = useMemo(
     () => pivotData(data, stratifier),
     [data, stratifier],
   )
+
+  const hasMap = geojsonUrls && Object.keys(geojsonUrls).length > 0
 
   if (!data || data.length === 0) {
     return (
@@ -192,6 +251,42 @@ export const StratifiedLineChart = ({
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
+      {/* ── Year selector ───────────────────────────────────────────────────── */}
+      {availableYears.length > 1 && (
+        <div className="flex items-center gap-3 flex-wrap mb-4">
+          <span className="text-sm font-medium text-gray-700 shrink-0">
+            Año seleccionado:
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {availableYears.map((yr) => {
+              const isActive = yr === effectiveYear
+              return (
+                <button
+                  key={yr}
+                  type="button"
+                  onClick={() => {
+                    const next = yr === lastYear ? null : yr
+                    setSelectedYear(next)
+                    if (mapView === 'table' && hasMap) {
+                      const url =
+                        geojsonUrls![yr === lastYear ? lastYear! : yr]
+                      if (url) fetchMapTableData(url)
+                    }
+                  }}
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    isActive
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {yr}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Stratifier selector ─────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 mb-4">
         <div className="flex items-center gap-3 flex-wrap">
@@ -304,6 +399,7 @@ export const StratifiedLineChart = ({
             height={400}
             xAxisLabel="Año"
             yAxisLabel={yAxisLabel}
+            highlightX={effectiveYear ?? undefined}
           />
         </div>
       ) : (
@@ -341,6 +437,126 @@ export const StratifiedLineChart = ({
             </tbody>
           </table>
         </div>
+      )}
+
+      {/* ── Map section ─────────────────────────────────────────────────────── */}
+      {hasMap && (
+        <section className="flex flex-col gap-4 border rounded-lg p-4 mt-6">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h2 className="text-lg font-semibold text-gray-800">
+              Distribución territorial
+              {effectiveYear !== null ? ` — ${effectiveYear}` : ''}
+            </h2>
+            <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+              <button
+                type="button"
+                onClick={() => handleMapViewChange('map')}
+                className={`px-4 py-1.5 transition-colors ${
+                  mapView === 'map'
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Mapa
+              </button>
+              <button
+                type="button"
+                onClick={() => handleMapViewChange('table')}
+                className={`px-4 py-1.5 transition-colors ${
+                  mapView === 'table'
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                Tabla
+              </button>
+            </div>
+          </div>
+
+          {mapView === 'map' && (
+            <>
+              <DSChoroplethMap
+                geojsonUrl={activeGeojsonUrl}
+                center={[2.3, -75.7]}
+                zoom={8}
+                height="30em"
+                nameProperty="NAME_2"
+                valueProperty="value"
+                valueName={yAxisLabel}
+              />
+              <div className="flex flex-col gap-2 text-sm">
+                <span className="font-medium text-gray-700">Leyenda:</span>
+                <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-500 text-xs w-28 shrink-0">
+                      {yAxisLabel}
+                    </span>
+                    <span className="text-gray-600 text-xs">Menor</span>
+                    <div
+                      style={{
+                        width: 120,
+                        height: 14,
+                        background:
+                          'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
+                        border: '1px solid #9ca3af',
+                        borderRadius: 3,
+                      }}
+                    />
+                    <span className="text-gray-600 text-xs">Mayor</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      style={{
+                        width: 14,
+                        height: 14,
+                        background: '#CCCCCC',
+                        border: '1px solid #9ca3af',
+                        borderRadius: 3,
+                        flexShrink: 0,
+                      }}
+                    />
+                    <span className="text-gray-600 text-xs">Sin datos</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {mapView === 'table' &&
+            (mapTableLoading ? (
+              <p className="text-gray-500 italic py-8 text-center">
+                Cargando datos…
+              </p>
+            ) : (
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">Barrio</th>
+                      <th className="px-4 py-3 font-medium">{yAxisLabel}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {mapTableData.map((row) => (
+                      <tr
+                        key={row.name}
+                        className="bg-white hover:bg-gray-50 transition-colors"
+                      >
+                        <td className="px-4 py-3 font-medium text-gray-900">
+                          {row.name}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600">
+                          {row.value != null && Number.isFinite(row.value)
+                            ? row.value.toFixed(2)
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ))}
+        </section>
       )}
     </div>
   )

@@ -10,10 +10,19 @@ interface Props {
   data: StratifiedRow[]
   yAxisLabel?: string
   csvPath?: string
+  geojsonUrls?: Record<number, string>
 }
 
-const { title, dimension, subdimension, text, data, yAxisLabel, csvPath } =
-  Astro.props
+const {
+  title,
+  dimension,
+  subdimension,
+  text,
+  data,
+  yAxisLabel,
+  csvPath,
+  geojsonUrls,
+} = Astro.props
 ---
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
@@ -34,10 +43,11 @@ const { title, dimension, subdimension, text, data, yAxisLabel, csvPath } =
     <p class="text-gray-700">{text}</p>
 
     <StratifiedLineChart
-      client:load
+      client:only="react"
       data={data}
       yAxisLabel={yAxisLabel}
       csvPath={csvPath}
+      geojsonUrls={geojsonUrls}
     />
   </div>
 </div>
