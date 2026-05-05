@@ -1,8 +1,6 @@
 import {
   readParquet,
   dataPath,
-  filterEducationRows,
-  filterAnalyticsRows,
   filterMaternalMortalityRateRows,
   filterForestPlotRows,
   filterAnalyticsMaternalRows,
@@ -12,10 +10,6 @@ import {
 import { maternalMortalityIndicators } from '@/data/indicators'
 
 import type {
-  EducationRow,
-  EducationDataRow,
-  AnalyticsRow,
-  AnalyticsDataRow,
   MaternalMortalityRateRawRow,
   MaternalMortalityRateRow,
   ForestPlotRawRow,
@@ -31,9 +25,6 @@ import type {
 // ─── Loaded datasets ─────────────────────────────────────────────────────────
 
 export interface PageDatasets {
-  educationData: EducationDataRow[]
-  educationRawRows: EducationRow[]
-  analyticsData: AnalyticsDataRow[]
   forestPlotData: ForestPlotDataRow[]
   analyticsMaternalData: AnalyticsMaternalRow[]
   scatterMaternalData: ScatterMaternalRow[]
@@ -46,25 +37,6 @@ export interface PageDatasets {
 }
 
 export async function loadAllDatasets(): Promise<PageDatasets> {
-  let educationRawRows: EducationRow[] = []
-  let educationData: EducationDataRow[] = []
-  try {
-    educationRawRows = await readParquet<EducationRow>(
-      dataPath('education.parquet'),
-    )
-    educationData = filterEducationRows(educationRawRows)
-  } catch (e) {
-    console.error('[loadAllDatasets] education:', e)
-  }
-
-  let analyticsData: AnalyticsDataRow[] = []
-  try {
-    const rows = await readParquet<AnalyticsRow>(dataPath('analytics.parquet'))
-    analyticsData = filterAnalyticsRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] analytics:', e)
-  }
-
   let forestPlotData: ForestPlotDataRow[] = []
   try {
     const rows = await readParquet<ForestPlotRawRow>(
@@ -156,9 +128,6 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
   }
 
   return {
-    educationData,
-    educationRawRows,
-    analyticsData,
     forestPlotData,
     analyticsMaternalData,
     scatterMaternalData,
@@ -179,7 +148,7 @@ export interface PageDefinition {
   text: string
   date: string
   navbar: boolean
-  data?: EducationDataRow[] | AnalyticsDataRow[] | MaternalMortalityRateRow[]
+  data?: MaternalMortalityRateRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
   scatterMaternalData?: ScatterMaternalRow[]
@@ -264,7 +233,6 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       subdimension: ind.subdimension,
       date: ind.date,
       navbar: false,
-      ...(ind.slug === 'educacion' ? { data: datasets.educationData } : {}),
       ...(ind.slug === 'traslado'
         ? { trasladoData: datasets.trasladoData }
         : {}),
