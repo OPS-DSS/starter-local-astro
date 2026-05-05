@@ -417,6 +417,26 @@ export const AnalyticsPageContent = ({
 
           {/* ── Map section ── */}
           <section className="flex flex-col gap-4 border rounded-lg p-4">
+            <h2 className="text-xl font-bold text-gray-900">
+              Mapa:{' '}
+              {isBivariate ? (
+                <>
+                  <span style={{ color: selectedMeta.color }}>
+                    {selectedMeta.label}
+                  </span>{' '}
+                  vs{' '}
+                  <span>
+                    {dssSecondaryMeta ? dssSecondaryMeta.label : MATERNAL_LABEL}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span style={{ color: selectedMeta.color }}>
+                    Solo Mortalidad Materna
+                  </span>
+                </>
+              )}
+            </h2>
             {/* Controls bar */}
             <div className="flex items-center justify-between gap-2 flex-wrap">
               {/* Bivariate / solo toggle + DSS indicator selector */}
