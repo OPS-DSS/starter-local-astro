@@ -386,7 +386,7 @@ export const AnalyticsPageContent = ({
           )}
         </div>
 
-        <div className="flex flex-col md:basis-1/2 gap-4 flex-1 h-screen">
+        <div className="flex flex-col md:basis-1/2 gap-4 flex-1">
           {/* ── Scatter chart ── */}
           {scatterPoints.length > 0 && (
             <ExpandablePanel className="relative border rounded-lg p-4 flex flex-col gap-4">
