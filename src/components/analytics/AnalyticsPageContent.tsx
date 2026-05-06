@@ -316,18 +316,15 @@ export const AnalyticsPageContent = ({
     <div className="flex flex-col gap-4 mb-10">
       {/* ── Year selector ── */}
       {availableYears.length > 1 && (
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm font-medium text-gray-700 shrink-0">
-            Año seleccionado:
-          </span>
-          <div className="flex flex-wrap gap-1.5">
+        <div className="flex">
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
             {availableYears.map((yr) => {
               const isActive = yr === effectiveYear
               return (
                 <button
                   key={yr}
                   onClick={() => setSelectedYear(yr === lastYear ? null : yr)}
-                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  className={`px-3 py-1 text-sm transition-colors ${
                     isActive
                       ? 'bg-gray-800 text-white border-gray-800'
                       : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'

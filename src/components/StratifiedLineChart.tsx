@@ -2,7 +2,6 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
-import { downloadChartImage } from '@/lib/downloadChartImage'
 
 // ── Canonical aggregate labels (must match R stratified_indicator_mock.R) ─────
 const TOTAL_SEXO = 'Todos/as'
@@ -49,24 +48,6 @@ const DownloadIcon = () => (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="7 10 12 15 17 10" />
     <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
-
-const ImageIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
   </svg>
 )
 
@@ -202,12 +183,10 @@ export const StratifiedLineChart = ({
       })
       .then((geojson) => {
         const rows = (geojson.features ?? [])
-          .map(
-            (f: { properties: { NAME_2?: string; value?: number } }) => ({
-              name: f.properties.NAME_2 ?? '',
-              value: f.properties.value ?? null,
-            }),
-          )
+          .map((f: { properties: { NAME_2?: string; value?: number } }) => ({
+            name: f.properties.NAME_2 ?? '',
+            value: f.properties.value ?? null,
+          }))
           .sort(
             (
               a: { name: string; value: number | null },
@@ -251,147 +230,65 @@ export const StratifiedLineChart = ({
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
-      {/* ── Year selector ───────────────────────────────────────────────────── */}
-      {availableYears.length > 1 && (
-        <div className="flex items-center gap-3 flex-wrap mb-4">
-          <span className="text-sm font-medium text-gray-700 shrink-0">
-            Año seleccionado:
-          </span>
-          <div className="flex flex-wrap gap-1.5">
-            {availableYears.map((yr) => {
-              const isActive = yr === effectiveYear
-              return (
-                <button
-                  key={yr}
-                  type="button"
-                  onClick={() => {
-                    const next = yr === lastYear ? null : yr
-                    setSelectedYear(next)
-                    if (mapView === 'table' && hasMap) {
-                      const url =
-                        geojsonUrls![yr === lastYear ? lastYear! : yr]
-                      if (url) fetchMapTableData(url)
-                    }
-                  }}
-                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
-                    isActive
-                      ? 'bg-gray-800 text-white border-gray-800'
-                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                  }`}
-                >
-                  {yr}
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      )}
-
       {/* ── Stratifier selector ─────────────────────────────────────────────── */}
-      <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm text-gray-600 font-medium">Ver por:</span>
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-            {STRATIFIER_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setStratifier(value)}
-                className={`px-4 py-1.5 transition-colors ${
-                  stratifier === value
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
+      <div className="flex flex-wrap justify-between gap-1 mb-4">
+        <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+          <button
+            type="button"
+            onClick={() => setView('chart')}
+            className={`px-4 py-1.5 transition-colors ${
+              view === 'chart'
+                ? 'bg-gray-800 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Gráfico
+          </button>
+          <button
+            type="button"
+            onClick={() => setView('table')}
+            className={`px-4 py-1.5 transition-colors ${
+              view === 'table'
+                ? 'bg-gray-800 text-white'
+                : 'bg-white text-gray-600 hover:bg-gray-50'
+            }`}
+          >
+            Tabla
+          </button>
         </div>
 
-        {/* ── View toggle + download ──────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+        <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+          {STRATIFIER_OPTIONS.map(({ value, label }) => (
             <button
+              key={value}
               type="button"
-              onClick={() => setView('chart')}
+              onClick={() => setStratifier(value)}
               className={`px-4 py-1.5 transition-colors ${
-                view === 'chart'
+                stratifier === value
                   ? 'bg-gray-800 text-white'
                   : 'bg-white text-gray-600 hover:bg-gray-50'
               }`}
             >
-              Gráfico
+              {label}
             </button>
-            <button
-              type="button"
-              onClick={() => setView('table')}
-              className={`px-4 py-1.5 transition-colors ${
-                view === 'table'
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
-            >
-              Tabla
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {view === 'chart' && (
-              <button
-                type="button"
-                onClick={() => downloadChartImage(chartRef.current, 'grafico')}
-                className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <ImageIcon />
-                Descargar imagen
-              </button>
-            )}
-            {csvPath && (
-              <a
-                href={csvPath}
-                download
-                className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-              >
-                <DownloadIcon />
-                Descargar tabla
-              </a>
-            )}
-          </div>
+          ))}
         </div>
+
+        {csvPath && (
+          <a
+            href={csvPath}
+            download
+            className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+          >
+            <DownloadIcon />
+            Descargar tabla
+          </a>
+        )}
       </div>
-
-      {/* ── Context label ──────────────────────────────────────────────────── */}
-      <p className="text-xs text-gray-500 mb-3">
-        {stratifier === 'total' && (
-          <>
-            Mostrando el promedio general (todos los sexos · todas las edades ·
-            todas las zonas).
-          </>
-        )}
-        {stratifier === 'sexo' && (
-          <>
-            Mostrando por <strong>sexo</strong> · todas las edades · todas las
-            zonas.
-          </>
-        )}
-        {stratifier === 'grupo_edad' && (
-          <>
-            Mostrando por <strong>grupo de edad</strong> · todos los sexos ·
-            todas las zonas.
-          </>
-        )}
-        {stratifier === 'zona' && (
-          <>
-            Mostrando por <strong>zona</strong> · todos los sexos · todas las
-            edades.
-          </>
-        )}
-      </p>
 
       {/* ── Chart or Table ─────────────────────────────────────────────────── */}
       {view === 'chart' ? (
-        <div ref={chartRef}>
+        <div ref={chartRef} className="border rounded-lg px-4 pt-6">
           <DSLineChart
             data={chartData}
             xAxisKey="anio"
@@ -441,12 +338,38 @@ export const StratifiedLineChart = ({
 
       {/* ── Map section ─────────────────────────────────────────────────────── */}
       {hasMap && (
-        <section className="flex flex-col gap-4 border rounded-lg p-4 mt-6">
+        <section className="flex flex-col gap-4 mt-6">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            <h2 className="text-lg font-semibold text-gray-800">
-              Distribución territorial
-              {effectiveYear !== null ? ` — ${effectiveYear}` : ''}
-            </h2>
+            {/* ── Year selector ───────────────────────────────────────────────────── */}
+            {availableYears.length > 1 && (
+              <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+                {availableYears.map((yr) => {
+                  const isActive = yr === effectiveYear
+                  return (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => {
+                        const next = yr === lastYear ? null : yr
+                        setSelectedYear(next)
+                        if (mapView === 'table' && hasMap) {
+                          const url =
+                            geojsonUrls![yr === lastYear ? lastYear! : yr]
+                          if (url) fetchMapTableData(url)
+                        }
+                      }}
+                      className={`py-1.5 px-3 text-sm transition-colors ${
+                        isActive
+                          ? 'bg-gray-800 text-white border-gray-800'
+                          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                      }`}
+                    >
+                      {yr}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
             <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
               <button
                 type="button"
@@ -474,7 +397,7 @@ export const StratifiedLineChart = ({
           </div>
 
           {mapView === 'map' && (
-            <>
+            <div className="border rounded-lg p-4">
               <DSChoroplethMap
                 geojsonUrl={activeGeojsonUrl}
                 center={[2.3, -75.7]}
@@ -519,7 +442,7 @@ export const StratifiedLineChart = ({
                   </div>
                 </div>
               </div>
-            </>
+            </div>
           )}
 
           {mapView === 'table' &&

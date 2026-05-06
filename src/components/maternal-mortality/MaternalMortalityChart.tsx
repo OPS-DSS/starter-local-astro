@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { MaternalMortalityRateRow } from '@/lib/parquet'
-import { downloadChartImage } from '@/lib/downloadChartImage'
 
 // ── Aggregate label constants (must match R mock script) ──────────────────────
 const TOTAL_EDAD = 'Todas las edades'
@@ -172,30 +171,8 @@ export const MaternalMortalityChart = ({
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
-      {/* ── Stratifier selector ──────────────────────────────────────────────── */}
       <div className="flex flex-col gap-3 mb-4">
-        <div className="flex items-center gap-3 flex-wrap">
-          <span className="text-sm text-gray-600 font-medium">Ver por:</span>
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-            {STRATIFIER_OPTIONS.map(({ value, label }) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setStratifier(value)}
-                className={`px-4 py-1.5 transition-colors ${
-                  stratifier === value
-                    ? 'bg-gray-800 text-white'
-                    : 'bg-white text-gray-600 hover:bg-gray-50'
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* ── View toggle + download ──────────────────────────────────────── */}
-        <div className="flex items-center justify-between gap-2 flex-wrap">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
             <button
               type="button"
@@ -221,17 +198,25 @@ export const MaternalMortalityChart = ({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
-            {view === 'chart' && (
+          {/* ── Stratifier selector ──────────────────────────────────────────────── */}
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+            {STRATIFIER_OPTIONS.map(({ value, label }) => (
               <button
+                key={value}
                 type="button"
-                onClick={() => downloadChartImage(chartRef.current, 'grafico')}
-                className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+                onClick={() => setStratifier(value)}
+                className={`px-4 py-1.5 transition-colors ${
+                  stratifier === value
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
               >
-                <ImageIcon />
-                Descargar imagen
+                {label}
               </button>
-            )}
+            ))}
+          </div>
+
+          <div className="flex items-center gap-2">
             {csvPath && (
               <a
                 href={csvPath}
@@ -245,23 +230,6 @@ export const MaternalMortalityChart = ({
           </div>
         </div>
       </div>
-
-      {/* ── Context label ──────────────────────────────────────────────────── */}
-      <p className="text-xs text-gray-500 mb-3">
-        {stratifier === 'total' && (
-          <>Mostrando la tasa de mortalidad materna total para San Martín del Valle.</>
-        )}
-        {stratifier === 'grupo_edad' && (
-          <>
-            Mostrando por <strong>grupo de edad</strong> · todas las zonas.
-          </>
-        )}
-        {stratifier === 'zona' && (
-          <>
-            Mostrando por <strong>zona</strong> · todas las edades.
-          </>
-        )}
-      </p>
 
       {/* ── Chart or Table ─────────────────────────────────────────────────── */}
       {view === 'chart' ? (
