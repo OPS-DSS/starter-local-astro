@@ -429,6 +429,16 @@ export const AnalyticsPageContent = ({
                     {dssSecondaryMeta ? dssSecondaryMeta.label : MATERNAL_LABEL}
                   </span>
                 </>
+              ) : isDssBivariate ? (
+                <>
+                  <span style={{ color: selectedMeta.color }}>
+                    {selectedMeta.label}
+                  </span>{' '}
+                  vs{' '}
+                  <span>
+                    {dssSecondaryMeta ? dssSecondaryMeta.label : MATERNAL_LABEL}
+                  </span>
+                </>
               ) : (
                 <>
                   <span style={{ color: selectedMeta.color }}>
@@ -484,7 +494,7 @@ export const AnalyticsPageContent = ({
                         : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <option value="">— Seleccionar indicador —</option>
+                    <option value="">Seleccionar indicador</option>
                     {dssOptions.map(([key, meta]) => (
                       <option key={key} value={key}>
                         {meta.label}

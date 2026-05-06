@@ -46,9 +46,6 @@ export const AnalyticsDualChart = ({
       </h2>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-semibold text-center text-gray-600">
-            Mortalidad materna (×100.000 NV)
-          </p>
           <DSLineChart
             data={mortalityData}
             xAxisKey="anio"
@@ -66,12 +63,6 @@ export const AnalyticsDualChart = ({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <p
-            className="text-sm font-semibold text-center"
-            style={{ color: indicatorMeta.color }}
-          >
-            {indicatorMeta.label}
-          </p>
           <DSLineChart
             data={indicatorData}
             xAxisKey="anio"
