@@ -9,6 +9,7 @@ interface AnalyticsDualChartProps {
   data: AnalyticsMaternalRow[]
   selectedIndicator?: AnalyticsIndicatorKey
   selectedYear?: number | null
+  isFullscreen?: boolean
 }
 
 /**
@@ -20,7 +21,11 @@ export const AnalyticsDualChart = ({
   data,
   selectedIndicator = 'traslado',
   selectedYear,
+  isFullscreen = false,
 }: AnalyticsDualChartProps) => {
+  const chartHeight = isFullscreen
+    ? Math.max(180, Math.floor((window.innerHeight - 260) / 2))
+    : 320
   if (!data || data.length === 0) {
     return (
       <p className="text-gray-500 italic py-8 text-center">
@@ -41,7 +46,7 @@ export const AnalyticsDualChart = ({
 
   return (
     <div className="flex flex-col gap-4">
-      <h2 className="text-lg font-semibold text-gray-800">
+      <h2 className="text-xl font-bold text-gray-900 mr-8">
         Tendencias temporales
       </h2>
       <div className="flex flex-col gap-6">
@@ -56,7 +61,7 @@ export const AnalyticsDualChart = ({
                 color: '#e11d48',
               },
             ]}
-            height={320}
+            height={chartHeight}
             xAxisLabel="Año"
             yAxisLabel="Tasa (×100.000 NV)"
             highlightX={selectedYear ?? undefined}
@@ -73,7 +78,7 @@ export const AnalyticsDualChart = ({
                 color: indicatorMeta.color,
               },
             ]}
-            height={320}
+            height={chartHeight}
             xAxisLabel="Año"
             yAxisLabel="Porcentaje (%)"
             highlightX={selectedYear ?? undefined}

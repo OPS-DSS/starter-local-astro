@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { MaternalMortalityRateRow } from '@/lib/parquet'
+import { ExpandablePanel } from '@/components/ExpandablePanel'
 
 // ── Aggregate label constants (must match R mock script) ──────────────────────
 const TOTAL_EDAD = 'Todas las edades'
@@ -233,16 +234,20 @@ export const MaternalMortalityChart = ({
 
       {/* ── Chart or Table ─────────────────────────────────────────────────── */}
       {view === 'chart' ? (
-        <div ref={chartRef}>
-          <DSLineChart
-            data={chartData}
-            xAxisKey="anio"
-            lines={lines}
-            height={400}
-            xAxisLabel="Año"
-            yAxisLabel="Tasa (×100.000 NV)"
-          />
-        </div>
+        <ExpandablePanel className="relative border rounded-lg px-4 pt-6">
+          {(isFullscreen) => (
+            <div ref={chartRef}>
+              <DSLineChart
+                data={chartData}
+                xAxisKey="anio"
+                lines={lines}
+                height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
+                xAxisLabel="Año"
+                yAxisLabel="Tasa (×100.000 NV)"
+              />
+            </div>
+          )}
+        </ExpandablePanel>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full text-sm text-left">

@@ -2,6 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
+import { ExpandablePanel } from './ExpandablePanel'
 
 // ── Canonical aggregate labels (must match R stratified_indicator_mock.R) ─────
 const TOTAL_SEXO = 'Todos/as'
@@ -288,17 +289,21 @@ export const StratifiedLineChart = ({
 
       {/* ── Chart or Table ─────────────────────────────────────────────────── */}
       {view === 'chart' ? (
-        <div ref={chartRef} className="border rounded-lg px-4 pt-6">
-          <DSLineChart
-            data={chartData}
-            xAxisKey="anio"
-            lines={lines}
-            height={400}
-            xAxisLabel="Año"
-            yAxisLabel={yAxisLabel}
-            highlightX={effectiveYear ?? undefined}
-          />
-        </div>
+        <ExpandablePanel className="relative border rounded-lg px-4 pt-6">
+          {(isFullscreen) => (
+            <div ref={chartRef}>
+              <DSLineChart
+                data={chartData}
+                xAxisKey="anio"
+                lines={lines}
+                height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
+                xAxisLabel="Año"
+                yAxisLabel={yAxisLabel}
+                highlightX={effectiveYear ?? undefined}
+              />
+            </div>
+          )}
+        </ExpandablePanel>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-gray-200">
           <table className="w-full text-sm text-left">
@@ -397,12 +402,16 @@ export const StratifiedLineChart = ({
           </div>
 
           {mapView === 'map' && (
-            <div className="border rounded-lg p-4">
-              <DSChoroplethMap
+            <ExpandablePanel
+              className="relative border rounded-lg p-4"
+              positionToBottom={true}
+            >
+              {(isFullscreen) => (
+              <><DSChoroplethMap
                 geojsonUrl={activeGeojsonUrl}
                 center={[2.3, -75.7]}
                 zoom={8}
-                height="30em"
+                height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
                 nameProperty="NAME_2"
                 valueProperty="value"
                 valueName={yAxisLabel}
@@ -442,7 +451,8 @@ export const StratifiedLineChart = ({
                   </div>
                 </div>
               </div>
-            </div>
+              </>)}
+            </ExpandablePanel>
           )}
 
           {mapView === 'table' &&
