@@ -158,7 +158,7 @@ export interface PageDefinition {
   empleoInformalData?: StratifiedRow[]
   coberturaProgramaData?: StratifiedRow[]
   dimension?: string
-  subdimension?: string
+  subdimensions?: string[]
   description?: string
   category?: string
   priority?: boolean
@@ -230,7 +230,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       title: ind.title,
       text: ind.text,
       dimension: ind.dimension,
-      subdimension: ind.subdimension,
+      subdimensions: ind.subdimensions,
       date: ind.date,
       navbar: false,
       ...(ind.slug === 'traslado'

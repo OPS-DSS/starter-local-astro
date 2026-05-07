@@ -5,7 +5,7 @@ export type IndicatorMeta = {
   description: string
   date: string
   dimension: string
-  subdimension: string
+  subdimensions: string[]
   priority: boolean
 }
 
@@ -19,7 +19,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Permite identificar barreras territoriales de acceso a servicios que afectan la oportunidad y continuidad de la atención durante el embarazo.',
     date: '2026-04-10',
     dimension: 'dss',
-    subdimension: 'territorial',
+    subdimensions: ['territorial'],
     priority: true,
   },
   {
@@ -31,7 +31,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Da cuenta de condiciones laborales que limitan el acceso a controles, licencias y apoyos durante el embarazo.',
     date: '2026-04-10',
     dimension: 'dss',
-    subdimension: 'empleo',
+    subdimensions: ['empleo'],
     priority: true,
   },
   {
@@ -43,7 +43,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Permite monitorear desigualdades en la organización del cuidado que dificultan el acceso oportuno a servicios y apoyos.',
     date: '2026-04-10',
     dimension: 'dss',
-    subdimension: 'cuidados',
+    subdimensions: ['cuidados'],
     priority: true,
   },
   {
@@ -55,7 +55,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Permite evaluar el alcance territorial de las políticas sociales dirigidas a mujeres embarazadas en contextos de mayor vulnerabilidad.',
     date: '2026-04-10',
     dimension: 'policy',
-    subdimension: 'programas sociales',
+    subdimensions: ['programas sociales'],
     priority: true,
   },
   {
@@ -67,7 +67,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Da cuenta de la adecuación de las políticas de transporte a las necesidades de acceso a servicios de salud materna.',
     date: '2026-04-10',
     dimension: 'policy',
-    subdimension: 'transporte',
+    subdimensions: ['transporte'],
     priority: true,
   },
   /* {
@@ -79,7 +79,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
     date: '2026-04-10',
     dimension: 'policy',
-    subdimension: 'apoyo infantil',
+    subdimensions: ['apoyo infantil'],
     priority: true,
   }, */
 ]

@@ -19,7 +19,7 @@ export interface PageProps {
   title: string
   text: string
   dimension?: string
-  subdimension?: string
+  subdimensions?: string[]
   pages: unknown[]
   slug: string | undefined
   date: Date
@@ -168,13 +168,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   traslado: {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimension, trasladoData },
+      { title, text, dimension, subdimensions, trasladoData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
-      subdimension,
+      subdimensions: subdimensions ?? [],
       data: trasladoData ?? [],
       yAxisLabel: 'Minutos promedio',
       csvPath: base(baseUrl, 'journey_time.csv'),
@@ -189,13 +189,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'frecuencia-transporte': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimension, frecuenciaTransporteData },
+      { title, text, dimension, subdimensions, frecuenciaTransporteData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
-      subdimension,
+      subdimensions: subdimensions ?? [],
       data: frecuenciaTransporteData ?? [],
       yAxisLabel: 'Buses por hora',
       csvPath: base(baseUrl, 'transport_frequency.csv'),
@@ -210,13 +210,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'sobrecarga-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimension, sobrecargaCuidadosData },
+      { title, text, dimension, subdimensions, sobrecargaCuidadosData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
-      subdimension,
+      subdimensions: subdimensions ?? [],
       data: sobrecargaCuidadosData ?? [],
       yAxisLabel: '% mujeres embarazadas',
       csvPath: base(baseUrl, 'care_overload.csv'),
@@ -231,13 +231,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'embarazadas-empleo-informal': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimension, empleoInformalData },
+      { title, text, dimension, subdimensions, empleoInformalData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
-      subdimension,
+      subdimensions: subdimensions ?? [],
       data: empleoInformalData ?? [],
       yAxisLabel: '% mujeres embarazadas',
       csvPath: base(baseUrl, 'informal_employment.csv'),
@@ -252,13 +252,13 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'apoyo-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimension, coberturaProgramaData },
+      { title, text, dimension, subdimensions, coberturaProgramaData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
-      subdimension,
+      subdimensions: subdimensions ?? [],
       data: coberturaProgramaData ?? [],
       yAxisLabel: '% de embarazadas',
       csvPath: base(baseUrl, 'program_cover.csv'),

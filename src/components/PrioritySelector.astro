@@ -97,8 +97,8 @@ const showDimensionToggle = section === 'determinantes-de-la-salud'
   showDimensionToggle && (
     <script>
       const _params = new URLSearchParams(window.location.search)
-      const _cat = _params.get('dimension')
-      let selectedDimension: string = _cat === 'dss' || _cat === 'policy' ? _cat : 'dss'
+      const _d = _params.get('dimension')
+      let selectedDimension: string = _d === 'dss' || _d === 'policy' ? _d : 'dss'
 
       function updateLinks() {
         document.querySelectorAll<HTMLAnchorElement>('[data-base-href]').forEach((link) => {
