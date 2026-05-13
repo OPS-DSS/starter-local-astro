@@ -4,22 +4,18 @@ import type { MaternalMortalityRateRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
 
 // ── Aggregate label constants (must match R mock script) ──────────────────────
-const TOTAL_EDAD = 'Todas las edades'
+const TOTAL_ETNIA = 'Total'
 const TOTAL_ZONA = 'Total'
 const SMV = 'San Martín del Valle'
 
 // ── Stratifier type ───────────────────────────────────────────────────────────
-type Stratifier = 'total' | 'grupo_edad' | 'zona'
+type Stratifier = 'total' | 'etnia' | 'zona'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
-const AGE_COLORS = [
-  '#3b82f6',
-  '#10b981',
-  '#f59e0b',
-  '#ef4444',
-  '#8b5cf6',
-  '#14b8a6',
-]
+const ETNIA_COLORS: Record<string, string> = {
+  'Indígena': '#8b5cf6',
+  'No indígena': '#06b6d4',
+}
 const ZONA_COLORS: Record<string, string> = {
   urbano: '#22c55e',
   periurbano: '#f59e0b',
@@ -28,7 +24,7 @@ const ZONA_COLORS: Record<string, string> = {
 
 // Explicit ordering for consistent legend/table display across renders
 const ZONA_ORDER = ['urbano', 'periurbano', 'rural']
-const AGE_ORDER = ['10-14', '15-19', '20-34', '35-49']
+const ETNIA_ORDER = ['Indígena', 'No indígena']
 const TOTAL_COLOR = '#6b7280'
 
 // ── Icons ─────────────────────────────────────────────────────────────────────
@@ -78,15 +74,15 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
 
   if (stratifier === 'total') {
     filtered = smvRows.filter(
-      (r) => r.grupo_edad === TOTAL_EDAD && r.zona === TOTAL_ZONA,
+      (r) => r.etnia === TOTAL_ETNIA && r.zona === TOTAL_ZONA,
     )
-  } else if (stratifier === 'grupo_edad') {
+  } else if (stratifier === 'etnia') {
     filtered = smvRows.filter(
-      (r) => r.zona === TOTAL_ZONA && r.grupo_edad !== TOTAL_EDAD,
+      (r) => r.zona === TOTAL_ZONA && r.etnia !== TOTAL_ETNIA,
     )
   } else {
     filtered = smvRows.filter(
-      (r) => r.grupo_edad === TOTAL_EDAD && r.zona !== TOTAL_ZONA,
+      (r) => r.etnia === TOTAL_ETNIA && r.zona !== TOTAL_ZONA,
     )
   }
 
@@ -97,8 +93,8 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
     const key =
       stratifier === 'total'
         ? SMV
-        : stratifier === 'grupo_edad'
-          ? row.grupo_edad
+        : stratifier === 'etnia'
+          ? row.etnia
           : row.zona
 
     keySet.add(key)
@@ -113,8 +109,8 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
   const orderArray =
     stratifier === 'zona'
       ? ZONA_ORDER
-      : stratifier === 'grupo_edad'
-        ? AGE_ORDER
+      : stratifier === 'etnia'
+        ? ETNIA_ORDER
         : null
 
   const keys = Array.from(keySet).sort((a, b) => {
@@ -122,15 +118,15 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
     return a.localeCompare(b, 'es')
   })
 
-  const lines = keys.map((key, i) => ({
+  const lines = keys.map((key) => ({
     dataKey: key,
     name: key,
     color:
       stratifier === 'total'
         ? TOTAL_COLOR
         : stratifier === 'zona'
-          ? (ZONA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
-          : AGE_COLORS[i % AGE_COLORS.length],
+          ? (ZONA_COLORS[key] ?? '#6b7280')
+          : (ETNIA_COLORS[key] ?? '#6b7280'),
   }))
 
   return { chartData, lines, keys }
@@ -145,7 +141,7 @@ interface MaternalMortalityChartProps {
 
 const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
   { value: 'total', label: 'Total' },
-  { value: 'grupo_edad', label: 'Grupo de Edad' },
+  { value: 'etnia', label: 'Etnia' },
   { value: 'zona', label: 'Zona' },
 ]
 

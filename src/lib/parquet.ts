@@ -104,14 +104,14 @@ export async function readParquetAsObjects<T = Record<string, unknown>>(
 
 /**
  * Row from maternal_mortality_rate.parquet (mock SMV data)
- * Columns (by index): iso3[0], NAME_2[1], anio[2], grupo_edad[3], zona[4], valor[5]
+ * Columns (by index): iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
  */
 export type MaternalMortalityRateRawRow = unknown[]
 
 export type MaternalMortalityRateRow = {
   territorio: string
   anio: number
-  grupo_edad: string
+  etnia: string
   zona: string
   valor: number
 }
@@ -122,12 +122,12 @@ export function filterMaternalMortalityRateRows(
   const result: MaternalMortalityRateRow[] = []
   for (const row of rows) {
     const territorio = String(row[1])
-    const anio = Number(row[2])
-    const grupo_edad = String(row[3])
-    const zona = String(row[4])
-    const valor = Number(row[5])
+    const anio = Number(row[3])
+    const zona = String(row[5])
+    const etnia = String(row[6])
+    const valor = Number(row[7])
     if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ territorio, anio, grupo_edad, zona, valor })
+    result.push({ territorio, anio, etnia, zona, valor })
   }
   return result.sort((a, b) => a.anio - b.anio)
 }
@@ -316,26 +316,43 @@ export type ForestPlotDataRow = {
 }
 
 // ── Shared stratified indicator data types ────────────────────────────────────
-// Used by: traslado, frecuencia_transporte, sobrecarga_cuidados,
-//          empleo_informal, cobertura_programa (and any future stratified DSS indicator)
 //
-// Parquet columns (by index, matching R stratified_indicator_mock.R select order):
-//   anio[0], valor[1], sexo[2], grupo_edad[3], zona[4]
+// Four parquet formats are used across indicators:
 //
-// Standardised aggregate labels written by the R mock script:
-//   sexo      → "Todos/as"
-//   grupo_edad → "Todas las edades"
-//   zona       → "Todas las zonas"
+// Simulation — etnia stratifier (transport_frequency, care_overload_municipal):
+//   iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
+//   Aggregate sentinels: zona="Total", etnia="Total"
+//   → filterEtniaStratifiedRows — keeps NAME_2=="San Martín del Valle" only
+//
+// Simulation — sexo + etnia stratifier (journey_time):
+//   iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
+//   Aggregate sentinels: zona="Total", etnia="Total", sexo="Mujeres" always
+//   → filterJourneyTimeStratifiedRows — keeps NAME_2=="San Martín del Valle" only
+//
+// Simulation — sexo-only stratifier (informal_employment):
+//   iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
+//   Aggregate sentinels: zona="Total", sexo="Total"
+//   → filterSexoOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only
+//
+// Simulation — zona-only stratifier (program_cover):
+//   iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], valor[5]
+//   Aggregate sentinels: zona="Total"
+//   → filterZonaOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only;
+//   translates sentinels to legacy chart format ("Total" → "Todas las zonas")
+
 export type StratifiedRawRow = unknown[]
 
+/** Unified row type — legacy fields (sexo, grupo_edad) are optional. */
 export type StratifiedRow = {
   anio: number
   valor: number
-  sexo: string
-  grupo_edad: string
   zona: string
+  sexo?: string
+  grupo_edad?: string
+  etnia?: string
 }
 
+/** Legacy filter: anio[0], valor[1], sexo[2], grupo_edad[3], zona[4] */
 export function filterStratifiedRows(
   rows: StratifiedRawRow[],
 ): StratifiedRow[] {
@@ -347,15 +364,104 @@ export function filterStratifiedRows(
     const grupo_edad = String(row[3])
     const zona = String(row[4] ?? 'Todas las zonas')
     if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ anio, valor, sexo, grupo_edad, zona })
+    result.push({ anio, valor, zona, sexo, grupo_edad })
   }
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-// Backward-compatible aliases (traslado was the first stratified indicator)
+/**
+ * Simulation-format filter: iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
+ * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ */
+export function filterEtniaStratifiedRows(
+  rows: StratifiedRawRow[],
+): StratifiedRow[] {
+  const result: StratifiedRow[] = []
+  for (const row of rows) {
+    if (String(row[1]) !== 'San Martín del Valle') continue
+    const anio = Number(row[3])
+    const zona = String(row[4])
+    const etnia = String(row[5])
+    const valor = Number(row[6])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({ anio, valor, zona, etnia })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+/**
+ * Simulation-format filter for journey_time (sexo + etnia stratifiers).
+ * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
+ * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ */
+export function filterJourneyTimeStratifiedRows(
+  rows: StratifiedRawRow[],
+): StratifiedRow[] {
+  const result: StratifiedRow[] = []
+  for (const row of rows) {
+    if (String(row[1]) !== 'San Martín del Valle') continue
+    const anio = Number(row[3])
+    const zona = String(row[5])
+    const etnia = String(row[6])
+    const valor = Number(row[7])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    result.push({ anio, valor, zona, etnia })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+/**
+ * Simulation-format filter for informal_employment (sexo-only stratifier).
+ * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
+ * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Translates sentinels to legacy chart format: "Total" → "Todos/as" / "Todas las zonas".
+ */
+export function filterSexoOnlyStratifiedRows(
+  rows: StratifiedRawRow[],
+): StratifiedRow[] {
+  const result: StratifiedRow[] = []
+  for (const row of rows) {
+    if (String(row[1]) !== 'San Martín del Valle') continue
+    const anio = Number(row[3])
+    const rawSexo = String(row[4])
+    const rawZona = String(row[5])
+    const valor = Number(row[6])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    const sexo = rawSexo === 'Total' ? 'Todos/as' : rawSexo
+    const zona = rawZona === 'Total' ? 'Todas las zonas' : rawZona
+    result.push({ anio, valor, zona, sexo, grupo_edad: 'Todas las edades' })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+/**
+ * Simulation-format filter for zona-only indicators (program_cover).
+ * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], valor[5]
+ * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Skips NA rows (2016-2018, when programme did not exist).
+ * Translates "Total" → "Todas las zonas" for the legacy chart path.
+ */
+export function filterZonaOnlyStratifiedRows(
+  rows: StratifiedRawRow[],
+): StratifiedRow[] {
+  const result: StratifiedRow[] = []
+  for (const row of rows) {
+    if (String(row[1]) !== 'San Martín del Valle') continue
+    const anio = Number(row[3])
+    const rawZona = String(row[4])
+    if (row[5] == null) continue
+    const valor = Number(row[5])
+    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
+    const zona = rawZona === 'Total' ? 'Todas las zonas' : rawZona
+    result.push({ anio, valor, zona, sexo: 'Todos/as', grupo_edad: 'Todas las edades' })
+  }
+  return result.sort((a, b) => a.anio - b.anio)
+}
+
+// Backward-compatible aliases
 export type TrasladoRawRow = StratifiedRawRow
 export type TrasladoRow = StratifiedRow
-export const filterTrasladoRows = filterStratifiedRows
+export const filterTrasladoRows = filterJourneyTimeStratifiedRows
 
 export function filterForestPlotRows(
   rows: ForestPlotRawRow[],

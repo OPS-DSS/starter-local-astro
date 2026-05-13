@@ -2,15 +2,20 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
+import type { IndicatorStratifier } from '@/data/indicators'
 import { ExpandablePanel } from './ExpandablePanel'
 
-// ── Canonical aggregate labels (must match R stratified_indicator_mock.R) ─────
+// ── Canonical aggregate labels ────────────────────────────────────────────────
+// Legacy format (Excel mocks): sexo/grupo_edad/zona
 const TOTAL_SEXO = 'Todos/as'
 const TOTAL_EDAD = 'Todas las edades'
-const TOTAL_ZONA = 'Todas las zonas'
+const TOTAL_ZONA_LEGACY = 'Todas las zonas'
+// Simulation format (etnia-based): zona/etnia
+const TOTAL_ETNIA = 'Total'
+const TOTAL_ZONA_SIM = 'Total'
 
 // ── Stratifier type ───────────────────────────────────────────────────────────
-type Stratifier = 'total' | 'sexo' | 'grupo_edad' | 'zona'
+type Stratifier = 'total' | 'sexo' | 'grupo_edad' | 'zona' | 'etnia'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
 const SEX_COLORS: Record<string, string> = {
@@ -18,8 +23,16 @@ const SEX_COLORS: Record<string, string> = {
   Mujer: '#ec4899',
 }
 const ZONA_COLORS: Record<string, string> = {
+  urbano: '#22c55e',
+  periurbano: '#f59e0b',
+  rural: '#ef4444',
   Urbano: '#22c55e',
-  Rural: '#f59e0b',
+  Periurbano: '#f59e0b',
+  Rural: '#ef4444',
+}
+const ETNIA_COLORS: Record<string, string> = {
+  'Indígena': '#8b5cf6',
+  'No indígena': '#06b6d4',
 }
 const AGE_COLORS = [
   '#3b82f6',
@@ -54,40 +67,55 @@ const DownloadIcon = () => (
 
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
+/**
+ * Detect whether the data uses the simulation format (etnia/Total sentinels)
+ * or the legacy Excel format (sexo/Todos/as sentinels).
+ */
+function isSimFormat(rows: StratifiedRow[]): boolean {
+  return rows.length > 0 && rows[0].etnia !== undefined
+}
+
 function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
   let filtered: StratifiedRow[]
+  const sim = isSimFormat(rows)
 
   if (stratifier === 'total') {
+    filtered = sim
+      ? rows.filter((r) => r.etnia === TOTAL_ETNIA && r.zona === TOTAL_ZONA_SIM)
+      : rows.filter(
+          (r) =>
+            r.sexo === TOTAL_SEXO &&
+            r.grupo_edad === TOTAL_EDAD &&
+            r.zona === TOTAL_ZONA_LEGACY,
+        )
+  } else if (stratifier === 'etnia') {
     filtered = rows.filter(
-      (r) =>
-        r.sexo === TOTAL_SEXO &&
-        r.grupo_edad === TOTAL_EDAD &&
-        r.zona === TOTAL_ZONA,
+      (r) => r.zona === TOTAL_ZONA_SIM && r.etnia !== TOTAL_ETNIA,
     )
   } else if (stratifier === 'sexo') {
-    // Lines per sex — keep edad and zona at aggregate
     filtered = rows.filter(
       (r) =>
         r.grupo_edad === TOTAL_EDAD &&
-        r.zona === TOTAL_ZONA &&
+        r.zona === TOTAL_ZONA_LEGACY &&
         r.sexo !== TOTAL_SEXO,
     )
   } else if (stratifier === 'grupo_edad') {
-    // Lines per age group — keep sexo and zona at aggregate
     filtered = rows.filter(
       (r) =>
         r.sexo === TOTAL_SEXO &&
-        r.zona === TOTAL_ZONA &&
+        r.zona === TOTAL_ZONA_LEGACY &&
         r.grupo_edad !== TOTAL_EDAD,
     )
   } else {
-    // Lines per zona — keep sexo and edad at aggregate
-    filtered = rows.filter(
-      (r) =>
-        r.sexo === TOTAL_SEXO &&
-        r.grupo_edad === TOTAL_EDAD &&
-        r.zona !== TOTAL_ZONA,
-    )
+    // zona
+    filtered = sim
+      ? rows.filter((r) => r.etnia === TOTAL_ETNIA && r.zona !== TOTAL_ZONA_SIM)
+      : rows.filter(
+          (r) =>
+            r.sexo === TOTAL_SEXO &&
+            r.grupo_edad === TOTAL_EDAD &&
+            r.zona !== TOTAL_ZONA_LEGACY,
+        )
   }
 
   const byYear = new Map<number, Record<string, number>>()
@@ -97,11 +125,13 @@ function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
     const key =
       stratifier === 'total'
         ? 'Total'
-        : stratifier === 'sexo'
-          ? row.sexo
-          : stratifier === 'grupo_edad'
-            ? row.grupo_edad
-            : row.zona
+        : stratifier === 'etnia'
+          ? (row.etnia ?? '')
+          : stratifier === 'sexo'
+            ? (row.sexo ?? '')
+            : stratifier === 'grupo_edad'
+              ? (row.grupo_edad ?? '')
+              : row.zona
 
     keySet.add(key)
     if (!byYear.has(row.anio)) byYear.set(row.anio, { anio: row.anio })
@@ -112,7 +142,7 @@ function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
     .sort(([a], [b]) => a - b)
     .map(([anio, vals]) => ({ anio, ...vals }))
 
-  // Sort keys: for age groups sort numerically; otherwise alphabetically
+  // Sort keys: age groups numerically, others alphabetically
   const keys = Array.from(keySet).sort((a, b) => {
     const na = parseInt(a)
     const nb = parseInt(b)
@@ -126,11 +156,13 @@ function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
     color:
       stratifier === 'total'
         ? TOTAL_COLOR
-        : stratifier === 'sexo'
-          ? (SEX_COLORS[key] ?? '#8b5cf6')
-          : stratifier === 'zona'
-            ? (ZONA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
-            : AGE_COLORS[i % AGE_COLORS.length],
+        : stratifier === 'etnia'
+          ? (ETNIA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
+          : stratifier === 'sexo'
+            ? (SEX_COLORS[key] ?? '#8b5cf6')
+            : stratifier === 'zona'
+              ? (ZONA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
+              : AGE_COLORS[i % AGE_COLORS.length],
   }))
 
   return { chartData, lines, keys }
@@ -140,6 +172,7 @@ function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
 
 interface StratifiedLineChartProps {
   data: StratifiedRow[]
+  stratifiers?: IndicatorStratifier[]
   yAxisLabel?: string
   csvPath?: string
   geojsonUrls?: Record<number, string>
@@ -147,6 +180,7 @@ interface StratifiedLineChartProps {
 
 export const StratifiedLineChart = ({
   data,
+  stratifiers,
   yAxisLabel = 'Valor',
   csvPath,
   geojsonUrls,
@@ -222,12 +256,19 @@ export const StratifiedLineChart = ({
     )
   }
 
-  const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
+  const ALL_STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
     { value: 'total', label: 'Total' },
+    { value: 'zona', label: 'Zona' },
+    { value: 'etnia', label: 'Etnia' },
     { value: 'sexo', label: 'Sexo' },
     { value: 'grupo_edad', label: 'Grupo de Edad' },
-    { value: 'zona', label: 'Zona' },
   ]
+
+  const STRATIFIER_OPTIONS = stratifiers
+    ? ALL_STRATIFIER_OPTIONS.filter(
+        (opt) => opt.value === 'total' || (stratifiers as string[]).includes(opt.value),
+      )
+    : ALL_STRATIFIER_OPTIONS
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>

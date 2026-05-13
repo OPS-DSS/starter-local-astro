@@ -14,6 +14,7 @@ import type {
   ScatterMaternalRow,
   StratifiedRow,
 } from '@/lib/parquet'
+import type { IndicatorStratifier } from '@/data/indicators'
 
 export interface PageProps {
   title: string
@@ -33,6 +34,7 @@ export interface PageProps {
   empleoInformalData?: StratifiedRow[]
   coberturaProgramaData?: StratifiedRow[]
   controlesPrenatalData?: StratifiedRow[]
+  stratifiers?: IndicatorStratifier[]
 }
 
 type PropsResolver = (
@@ -168,15 +170,16 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   traslado: {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, trasladoData },
+      { title, text, dimension, subdimensions, stratifiers, trasladoData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
       subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
       data: trasladoData ?? [],
-      yAxisLabel: 'Minutos promedio',
+      yAxisLabel: '% embarazadas a >1h del centro de salud',
       csvPath: base(baseUrl, 'journey_time.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -189,15 +192,16 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'frecuencia-transporte': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, frecuenciaTransporteData },
+      { title, text, dimension, subdimensions, stratifiers, frecuenciaTransporteData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
       subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
       data: frecuenciaTransporteData ?? [],
-      yAxisLabel: 'Buses por hora',
+      yAxisLabel: '% con acceso a transporte subsidiado',
       csvPath: base(baseUrl, 'transport_frequency.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -210,16 +214,17 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'sobrecarga-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, sobrecargaCuidadosData },
+      { title, text, dimension, subdimensions, stratifiers, sobrecargaCuidadosData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
       subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
       data: sobrecargaCuidadosData ?? [],
       yAxisLabel: '% mujeres embarazadas',
-      csvPath: base(baseUrl, 'care_overload.csv'),
+      csvPath: base(baseUrl, 'care_overload_municipal.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
@@ -231,15 +236,16 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'embarazadas-empleo-informal': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, empleoInformalData },
+      { title, text, dimension, subdimensions, stratifiers, empleoInformalData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
       subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
       data: empleoInformalData ?? [],
-      yAxisLabel: '% mujeres embarazadas',
+      yAxisLabel: '% personas con empleo informal',
       csvPath: base(baseUrl, 'informal_employment.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -252,13 +258,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'apoyo-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, coberturaProgramaData },
+      { title, text, dimension, subdimensions, stratifiers, coberturaProgramaData },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
       subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
       data: coberturaProgramaData ?? [],
       yAxisLabel: '% de embarazadas',
       csvPath: base(baseUrl, 'program_cover.csv'),

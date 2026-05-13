@@ -1,3 +1,9 @@
+/**
+ * Stratifier dimensions available for StratifiedLineChart.
+ * Each indicator declares which ones apply to its data.
+ */
+export type IndicatorStratifier = 'zona' | 'etnia' | 'sexo' | 'grupo_edad'
+
 export type IndicatorMeta = {
   slug: string
   title: string
@@ -7,6 +13,8 @@ export type IndicatorMeta = {
   dimension: string
   subdimensions: string[]
   priority: boolean
+  /** Stratifier buttons shown in the chart (always includes implicit "total"). */
+  stratifiers: IndicatorStratifier[]
 }
 
 export const maternalMortalityIndicators: IndicatorMeta[] = [
@@ -21,6 +29,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'dss',
     subdimensions: ['territorial'],
     priority: true,
+    stratifiers: ['zona', 'etnia'],
   },
   {
     slug: 'embarazadas-empleo-informal',
@@ -33,6 +42,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'dss',
     subdimensions: ['empleo'],
     priority: true,
+    stratifiers: ['zona', 'sexo'],
   },
   {
     slug: 'sobrecarga-embarazadas',
@@ -45,6 +55,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'dss',
     subdimensions: ['cuidados'],
     priority: true,
+    stratifiers: ['zona', 'etnia'],
   },
   {
     slug: 'apoyo-embarazadas',
@@ -57,6 +68,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'policy',
     subdimensions: ['programas sociales'],
     priority: true,
+    stratifiers: ['zona'],
   },
   {
     slug: 'frecuencia-transporte',
@@ -69,17 +81,6 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'policy',
     subdimensions: ['transporte'],
     priority: true,
+    stratifiers: ['zona', 'etnia'],
   },
-  /* {
-    slug: 'apoyo-infantil',
-    title:
-      'Cobertura del programa municipal de apoyo al cuidado infantil "Cuidar en Comunidad" en mujeres embarazadas que residen en barrios periféricos del Municipio de San Martin del Valle',
-    text: 'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
-    description:
-      'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
-    date: '2026-04-10',
-    dimension: 'policy',
-    subdimensions: ['apoyo infantil'],
-    priority: true,
-  }, */
 ]
