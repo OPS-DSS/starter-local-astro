@@ -10,8 +10,8 @@ import {
   filterZonaOnlyStratifiedRows,
   filterEtniaStratifiedRows,
 } from './parquet'
-import { maternalMortalityIndicators } from '@/data/indicators'
-import type { IndicatorStratifier } from '@/data/indicators'
+import { maternalMortalityIndicators } from '@/lib/indicators'
+import type { IndicatorStratifier } from '@/lib/indicators'
 
 import type {
   MaternalMortalityRateRawRow,
@@ -38,6 +38,7 @@ export interface PageDatasets {
   sobrecargaCuidadosData: StratifiedRow[]
   empleoInformalData: StratifiedRow[]
   coberturaProgramaData: StratifiedRow[]
+  apoyoInfantilData: StratifiedRow[]
 }
 
 export async function loadAllDatasets(): Promise<PageDatasets> {
@@ -131,6 +132,16 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     console.error('[loadAllDatasets] cobertura_programa:', e)
   }
 
+  let apoyoInfantilData: StratifiedRow[] = []
+  try {
+    const rows = await readParquet<StratifiedRawRow>(
+      dataPath('infant_care_support.parquet'),
+    )
+    apoyoInfantilData = filterZonaOnlyStratifiedRows(rows)
+  } catch (e) {
+    console.error('[loadAllDatasets] apoyo_infantil:', e)
+  }
+
   return {
     forestPlotData,
     analyticsMaternalData,
@@ -141,6 +152,7 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     sobrecargaCuidadosData,
     empleoInformalData,
     coberturaProgramaData,
+    apoyoInfantilData,
   }
 }
 
@@ -253,6 +265,9 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
         : {}),
       ...(ind.slug === 'apoyo-embarazadas'
         ? { coberturaProgramaData: datasets.coberturaProgramaData }
+        : {}),
+      ...(ind.slug === 'apoyo-infantil'
+        ? { apoyoInfantilData: datasets.apoyoInfantilData }
         : {}),
     }),
   )

@@ -15,6 +15,7 @@ export type IndicatorMeta = {
   priority: boolean
   /** Stratifier buttons shown in the chart (always includes implicit "total"). */
   stratifiers: IndicatorStratifier[]
+  source: string
 }
 
 export const maternalMortalityIndicators: IndicatorMeta[] = [
@@ -30,11 +31,13 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     subdimensions: ['territorial'],
     priority: true,
     stratifiers: ['zona', 'etnia'],
+    source:
+      'Registros territoriales de acceso a servicios + mapas de localización de servicios y equipamiento urbano',
   },
   {
     slug: 'embarazadas-empleo-informal',
     title:
-      'Proporción personas con empleo informal o sin protección social, por barrio',
+      'Proporción de personas con empleo informal o sin protección social, por barrio',
     text: 'Da cuenta de condiciones laborales que limitan el acceso a controles, licencias y apoyos durante el embarazo.',
     description:
       'Da cuenta de condiciones laborales que limitan el acceso a controles, licencias y apoyos durante el embarazo.',
@@ -43,6 +46,8 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     subdimensions: ['empleo'],
     priority: true,
     stratifiers: ['zona', 'sexo'],
+    source:
+      'Encuesta nacional de hogares + encuesta local de condiciones de vida',
   },
   {
     slug: 'sobrecarga-embarazadas',
@@ -56,6 +61,8 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     subdimensions: ['cuidados'],
     priority: true,
     stratifiers: ['zona', 'etnia'],
+    source:
+      'Encuesta local de condiciones de vida + registros sociales municipales',
   },
   {
     slug: 'apoyo-embarazadas',
@@ -69,6 +76,8 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     subdimensions: ['programas sociales'],
     priority: true,
     stratifiers: ['zona'],
+    source:
+      'Base de datos del programa municipal de apoyo a mujeres embarazadas',
   },
   {
     slug: 'frecuencia-transporte',
@@ -82,5 +91,22 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     subdimensions: ['transporte'],
     priority: true,
     stratifiers: ['zona', 'etnia'],
+    source:
+      'Registros del sector transporte sobre recorridos, frecuencias y horarios',
+  },
+  {
+    slug: 'apoyo-infanti',
+    title:
+      'Cobertura del programa municipal de apoyo al cuidado infantil “Cuidar en Comunidad” en mujeres embarazadas que residen en barrios periféricos del Municipio de San Martín del Valle',
+    text: 'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
+    description:
+      'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
+    date: '2026-05-10',
+    dimension: 'policy',
+    subdimensions: ['programas sociales'],
+    priority: true,
+    stratifiers: ['zona'],
+    source:
+      'Registros administrativos del sistema municipal de cuidados / Programa “Cuidar en Comunidad”',
   },
 ]

@@ -9,8 +9,9 @@ export type PriorityMeta = {
 export const priorities: PriorityMeta[] = [
   {
     slug: 'mortalidad-materna',
-    title: 'Mortalidad Materna',
-    description: 'La mortalidad materna es un indicador clave.',
+    title: 'Razón de Mortalidad Materna',
+    description:
+      'Registros locales de mortalidad materna / Estadísticas Vitales Municipales',
     date: '2026-03-01',
     category: 'comunidad',
   },

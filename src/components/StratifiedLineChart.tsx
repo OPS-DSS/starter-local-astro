@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
-import type { IndicatorStratifier } from '@/data/indicators'
+import type { IndicatorStratifier } from '@/lib/indicators'
 import { ExpandablePanel } from './ExpandablePanel'
 
 // ── Canonical aggregate labels ────────────────────────────────────────────────
@@ -19,8 +19,8 @@ type Stratifier = 'total' | 'sexo' | 'grupo_edad' | 'zona' | 'etnia'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
 const SEX_COLORS: Record<string, string> = {
-  Hombre: '#3b82f6',
-  Mujer: '#ec4899',
+  Hombres: '#3b82f6',
+  Mujeres: '#ec4899',
 }
 const ZONA_COLORS: Record<string, string> = {
   urbano: '#22c55e',
@@ -31,7 +31,7 @@ const ZONA_COLORS: Record<string, string> = {
   Rural: '#ef4444',
 }
 const ETNIA_COLORS: Record<string, string> = {
-  'Indígena': '#8b5cf6',
+  Indígena: '#8b5cf6',
   'No indígena': '#06b6d4',
 }
 const AGE_COLORS = [
@@ -266,7 +266,9 @@ export const StratifiedLineChart = ({
 
   const STRATIFIER_OPTIONS = stratifiers
     ? ALL_STRATIFIER_OPTIONS.filter(
-        (opt) => opt.value === 'total' || (stratifiers as string[]).includes(opt.value),
+        (opt) =>
+          opt.value === 'total' ||
+          (stratifiers as string[]).includes(opt.value),
       )
     : ALL_STRATIFIER_OPTIONS
 
@@ -337,7 +339,9 @@ export const StratifiedLineChart = ({
                 data={chartData}
                 xAxisKey="anio"
                 lines={lines}
-                height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
+                height={
+                  isFullscreen ? Math.max(300, window.innerHeight - 200) : 400
+                }
                 xAxisLabel="Año"
                 yAxisLabel={yAxisLabel}
                 highlightX={effectiveYear ?? undefined}
@@ -448,51 +452,53 @@ export const StratifiedLineChart = ({
               positionToBottom={true}
             >
               {(isFullscreen) => (
-              <><DSChoroplethMap
-                geojsonUrl={activeGeojsonUrl}
-                center={[2.3, -75.7]}
-                zoom={8}
-                height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
-                nameProperty="NAME_2"
-                valueProperty="value"
-                valueName={yAxisLabel}
-              />
-              <div className="flex flex-col gap-2 text-sm">
-                <span className="font-medium text-gray-700">Leyenda:</span>
-                <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-500 text-xs w-28 shrink-0">
-                      {yAxisLabel}
-                    </span>
-                    <span className="text-gray-600 text-xs">Menor</span>
-                    <div
-                      style={{
-                        width: 120,
-                        height: 14,
-                        background:
-                          'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
-                        border: '1px solid #9ca3af',
-                        borderRadius: 3,
-                      }}
-                    />
-                    <span className="text-gray-600 text-xs">Mayor</span>
+                <>
+                  <DSChoroplethMap
+                    geojsonUrl={activeGeojsonUrl}
+                    center={[2.3, -75.7]}
+                    zoom={8}
+                    height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
+                    nameProperty="NAME_2"
+                    valueProperty="value"
+                    valueName={yAxisLabel}
+                  />
+                  <div className="flex flex-col gap-2 text-sm">
+                    <span className="font-medium text-gray-700">Leyenda:</span>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
+                      <div className="flex items-center gap-2">
+                        <span className="text-gray-500 text-xs w-28 shrink-0">
+                          {yAxisLabel}
+                        </span>
+                        <span className="text-gray-600 text-xs">Menor</span>
+                        <div
+                          style={{
+                            width: 120,
+                            height: 14,
+                            background:
+                              'linear-gradient(to right, #FFFFB2, #FECC5C, #FD8D3C, #F03B20, #BD0026)',
+                            border: '1px solid #9ca3af',
+                            borderRadius: 3,
+                          }}
+                        />
+                        <span className="text-gray-600 text-xs">Mayor</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          style={{
+                            width: 14,
+                            height: 14,
+                            background: '#CCCCCC',
+                            border: '1px solid #9ca3af',
+                            borderRadius: 3,
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span className="text-gray-600 text-xs">Sin datos</span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <div
-                      style={{
-                        width: 14,
-                        height: 14,
-                        background: '#CCCCCC',
-                        border: '1px solid #9ca3af',
-                        borderRadius: 3,
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span className="text-gray-600 text-xs">Sin datos</span>
-                  </div>
-                </div>
-              </div>
-              </>)}
+                </>
+              )}
             </ExpandablePanel>
           )}
 

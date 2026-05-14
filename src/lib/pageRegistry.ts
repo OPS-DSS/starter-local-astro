@@ -14,7 +14,7 @@ import type {
   ScatterMaternalRow,
   StratifiedRow,
 } from '@/lib/parquet'
-import type { IndicatorStratifier } from '@/data/indicators'
+import type { IndicatorStratifier } from '@/lib/indicators'
 
 export interface PageProps {
   title: string
@@ -192,7 +192,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'frecuencia-transporte': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, stratifiers, frecuenciaTransporteData },
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        frecuenciaTransporteData,
+      },
       baseUrl,
     ) => ({
       title,
@@ -214,7 +221,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'sobrecarga-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, stratifiers, sobrecargaCuidadosData },
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        sobrecargaCuidadosData,
+      },
       baseUrl,
     ) => ({
       title,
@@ -236,7 +250,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'embarazadas-empleo-informal': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, stratifiers, empleoInformalData },
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        empleoInformalData,
+      },
       baseUrl,
     ) => ({
       title,
@@ -258,7 +279,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   'apoyo-embarazadas': {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, stratifiers, coberturaProgramaData },
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        coberturaProgramaData,
+      },
       baseUrl,
     ) => ({
       title,
