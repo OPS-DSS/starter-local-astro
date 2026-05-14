@@ -222,7 +222,7 @@ export function filterMaternalMortalityGapsRows(
 
 // ── Maternal mortality analytics: temporal data (MM rate + mock DSS avg) ──────
 // Parquet columns: anio[0], valor[1], traslado[2], empleo_informal[3],
-//   sobrecarga[4], cobertura_programa[5], transporte[6]
+//   sobrecarga[4], cobertura_programa[5], transporte[6], cuidar_comunidad[7]
 export type AnalyticsMaternalRawRow = unknown[]
 
 export type AnalyticsMaternalRow = {
@@ -233,6 +233,7 @@ export type AnalyticsMaternalRow = {
   sobrecarga: number
   cobertura_programa: number
   transporte: number
+  cuidar_comunidad: number
 }
 
 export function filterAnalyticsMaternalRows(
@@ -251,6 +252,7 @@ export function filterAnalyticsMaternalRows(
       sobrecarga: row[4] == null ? NaN : Number(row[4]),
       cobertura_programa: row[5] == null ? NaN : Number(row[5]),
       transporte: row[6] == null ? NaN : Number(row[6]),
+      cuidar_comunidad: row[7] == null ? NaN : Number(row[7]),
     })
   }
   return result.sort((a, b) => a.anio - b.anio)
@@ -259,7 +261,7 @@ export function filterAnalyticsMaternalRows(
 // ── Maternal mortality scatter: cross-sectional barrio data ───────────────────
 // Parquet columns: anio[0], territorio[1], valor[2], traslado[3],
 //   empleo_informal[4], sobrecarga[5], cobertura_programa[6],
-//   transporte[7], nacimientos[8]
+//   transporte[7], cuidar_comunidad[8], nacimientos[9]
 export type ScatterMaternalRawRow = unknown[]
 
 export type ScatterMaternalRow = {
@@ -271,6 +273,7 @@ export type ScatterMaternalRow = {
   sobrecarga: number
   cobertura_programa: number
   transporte: number
+  cuidar_comunidad: number
   nacimientos: number
 }
 
@@ -292,7 +295,8 @@ export function filterScatterMaternalRows(
       sobrecarga: row[5] == null ? NaN : Number(row[5]),
       cobertura_programa: row[6] == null ? NaN : Number(row[6]),
       transporte: row[7] == null ? NaN : Number(row[7]),
-      nacimientos: row[8] == null ? NaN : Number(row[8]),
+      cuidar_comunidad: row[8] == null ? NaN : Number(row[8]),
+      nacimientos: row[9] == null ? NaN : Number(row[9]),
     })
   }
   return result
@@ -372,6 +376,7 @@ export function filterStratifiedRows(
 /**
  * Simulation-format filter: iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
  * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Skips NA rows (e.g. years before a programme existed).
  */
 export function filterEtniaStratifiedRows(
   rows: StratifiedRawRow[],
@@ -382,6 +387,7 @@ export function filterEtniaStratifiedRows(
     const anio = Number(row[3])
     const zona = String(row[4])
     const etnia = String(row[5])
+    if (row[6] == null) continue
     const valor = Number(row[6])
     if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
     result.push({ anio, valor, zona, etnia })

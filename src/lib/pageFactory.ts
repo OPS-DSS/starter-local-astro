@@ -137,7 +137,7 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     const rows = await readParquet<StratifiedRawRow>(
       dataPath('infant_care_support.parquet'),
     )
-    apoyoInfantilData = filterZonaOnlyStratifiedRows(rows)
+    apoyoInfantilData = filterEtniaStratifiedRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] apoyo_infantil:', e)
   }
@@ -173,6 +173,7 @@ export interface PageDefinition {
   sobrecargaCuidadosData?: StratifiedRow[]
   empleoInformalData?: StratifiedRow[]
   coberturaProgramaData?: StratifiedRow[]
+  apoyoInfantilData?: StratifiedRow[]
   dimension?: string
   subdimensions?: string[]
   description?: string

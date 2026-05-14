@@ -34,6 +34,7 @@ export interface PageProps {
   empleoInformalData?: StratifiedRow[]
   coberturaProgramaData?: StratifiedRow[]
   controlesPrenatalData?: StratifiedRow[]
+  apoyoInfantilData?: StratifiedRow[]
   stratifiers?: IndicatorStratifier[]
 }
 
@@ -113,6 +114,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         'sobrecarga',
         'cobertura_programa',
         'transporte',
+        'cuidar_comunidad',
       ] as const
 
       const geojsonUrls = Object.fromEntries(
@@ -301,6 +303,35 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
           base(baseUrl, `mock_cobertura_programa_${yr}.geojson`),
+        ]),
+      ),
+    }),
+  },
+  'apoyo-infantil': {
+    component: StratifiedIndicator,
+    resolveProps: (
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        apoyoInfantilData,
+      },
+      baseUrl,
+    ) => ({
+      title,
+      text,
+      dimension,
+      subdimensions: subdimensions ?? [],
+      stratifiers: stratifiers ?? [],
+      data: apoyoInfantilData ?? [],
+      yAxisLabel: '% de embarazadas con cobertura',
+      csvPath: base(baseUrl, 'infant_care_support.csv'),
+      geojsonUrls: Object.fromEntries(
+        STRATIFIED_MOCK_YEARS.map((yr) => [
+          yr,
+          base(baseUrl, `mock_cuidar_comunidad_${yr}.geojson`),
         ]),
       ),
     }),

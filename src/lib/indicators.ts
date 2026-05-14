@@ -95,7 +95,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
       'Registros del sector transporte sobre recorridos, frecuencias y horarios',
   },
   {
-    slug: 'apoyo-infanti',
+    slug: 'apoyo-infantil',
     title:
       'Cobertura del programa municipal de apoyo al cuidado infantil “Cuidar en Comunidad” en mujeres embarazadas que residen en barrios periféricos del Municipio de San Martín del Valle',
     text: 'Permite monitorear el acceso efectivo a apoyos de cuidado que reducen la sobrecarga y facilitan el acceso a servicios durante el embarazo.',
@@ -105,7 +105,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
     dimension: 'policy',
     subdimensions: ['programas sociales'],
     priority: true,
-    stratifiers: ['zona'],
+    stratifiers: ['zona', 'etnia'],
     source:
       'Registros administrativos del sistema municipal de cuidados / Programa “Cuidar en Comunidad”',
   },
