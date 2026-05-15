@@ -12,6 +12,8 @@ import {
 } from './parquet'
 import { maternalMortalityIndicators } from '@/lib/indicators'
 import type { IndicatorStratifier } from '@/lib/indicators'
+import { priorities } from '@/lib/priority'
+import type { PriorityMeta } from '@/lib/priority'
 
 import type {
   MaternalMortalityRateRawRow,
@@ -164,6 +166,7 @@ export interface PageDefinition {
   text: string
   date: string
   navbar: boolean
+  source?: string
   data?: MaternalMortalityRateRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
@@ -199,26 +202,11 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       navbar: true,
     },
     {
-      slug: 'analisis-de-inequidad/mortalidad-materna',
-      title: 'Mortalidad Materna',
-      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
-      date: '2026-01-01',
-      navbar: false,
-      data: datasets.maternalMortalityRateData,
-    },
-    {
       slug: 'determinantes-de-la-salud',
       title: 'Determinantes Sociales de la Salud',
       text: 'Factores que influyen en la salud de la población',
       date: '2026-01-01',
       navbar: true,
-    },
-    {
-      slug: 'determinantes-de-la-salud/mortalidad-materna',
-      title: 'Mortalidad Materna',
-      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
-      date: '2026-01-01',
-      navbar: false,
     },
     {
       slug: 'analisis',
@@ -242,6 +230,30 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     },
   ]
 
+  const priorityPages: PageDefinition[] = priorities.flatMap(
+    (priority: PriorityMeta) => [
+      {
+        slug: `analisis-de-inequidad/${priority.slug}`,
+        title: priority.title,
+        text: priority.description,
+        date: priority.date,
+        category: priority.category,
+        source: priority.source,
+        navbar: false,
+        data: datasets.maternalMortalityRateData,
+      },
+      {
+        slug: `determinantes-de-la-salud/${priority.slug}`,
+        title: priority.title,
+        text: priority.description,
+        date: priority.date,
+        source: priority.source,
+        category: priority.category,
+        navbar: false,
+      },
+    ],
+  )
+
   const indicatorPages: PageDefinition[] = maternalMortalityIndicators.map(
     (ind) => ({
       slug: ind.slug,
@@ -252,6 +264,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       date: ind.date,
       navbar: false,
       stratifiers: ind.stratifiers,
+      source: ind.source,
       ...(ind.slug === 'traslado'
         ? { trasladoData: datasets.trasladoData }
         : {}),
@@ -273,7 +286,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     }),
   )
 
-  return [...staticPages, ...indicatorPages]
+  return [...staticPages, ...indicatorPages, ...priorityPages]
 }
 
 // ─── Static path factory ──────────────────────────────────────────────────────
@@ -282,7 +295,7 @@ export async function buildStaticPaths() {
   const datasets = await loadAllDatasets()
   const pages = buildPages(datasets)
 
-  return pages.map(({ slug, title, text, date, navbar, ...rest }) => ({
+  return pages.map(({ slug, title, text, date, navbar, source, ...rest }) => ({
     params: { slug },
     props: {
       title,
@@ -290,6 +303,7 @@ export async function buildStaticPaths() {
       slug,
       date: new Date(date),
       navbar,
+      source,
       pages,
       ...rest,
     },

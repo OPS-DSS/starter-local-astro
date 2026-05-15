@@ -4,6 +4,7 @@ export type PriorityMeta = {
   description: string
   date: string
   category: string
+  source: string
 }
 
 export const priorities: PriorityMeta[] = [
@@ -14,5 +15,7 @@ export const priorities: PriorityMeta[] = [
       'Registros locales de mortalidad materna / Estadísticas Vitales Municipales',
     date: '2026-03-01',
     category: 'comunidad',
+    source:
+      'Registros locales de mortalidad materna / Estadísticas Vitales Municipales',
   },
 ]

@@ -24,6 +24,7 @@ export interface PageProps {
   pages: unknown[]
   slug: string | undefined
   date: Date
+  source?: string
   data?: MaternalMortalityRateRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsMaternalData?: AnalyticsMaternalRow[]
@@ -83,10 +84,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   },
   'analisis-de-inequidad/mortalidad-materna': {
     component: MaternalMortalityInequity,
-    resolveProps: ({ title, text, data }, baseUrl) => ({
+    resolveProps: ({ title, text, data, source }, baseUrl) => ({
       title,
       text,
       data,
+      source,
       csvPath: base(baseUrl, 'maternal_mortality_rate.csv'),
     }),
   },
@@ -172,12 +174,21 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
   traslado: {
     component: StratifiedIndicator,
     resolveProps: (
-      { title, text, dimension, subdimensions, stratifiers, trasladoData },
+      {
+        title,
+        text,
+        dimension,
+        subdimensions,
+        stratifiers,
+        trasladoData,
+        source,
+      },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: trasladoData ?? [],
@@ -201,12 +212,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         subdimensions,
         stratifiers,
         frecuenciaTransporteData,
+        source,
       },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: frecuenciaTransporteData ?? [],
@@ -230,12 +243,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         subdimensions,
         stratifiers,
         sobrecargaCuidadosData,
+        source,
       },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: sobrecargaCuidadosData ?? [],
@@ -259,12 +274,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         subdimensions,
         stratifiers,
         empleoInformalData,
+        source,
       },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: empleoInformalData ?? [],
@@ -288,12 +305,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         subdimensions,
         stratifiers,
         coberturaProgramaData,
+        source,
       },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: coberturaProgramaData ?? [],
@@ -317,12 +336,14 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         subdimensions,
         stratifiers,
         apoyoInfantilData,
+        source,
       },
       baseUrl,
     ) => ({
       title,
       text,
       dimension,
+      source,
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: apoyoInfantilData ?? [],

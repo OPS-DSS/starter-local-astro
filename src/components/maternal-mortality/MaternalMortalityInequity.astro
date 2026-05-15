@@ -7,9 +7,10 @@ interface Props {
   text: string
   data: MaternalMortalityRateRow[] | undefined
   csvPath?: string
+  source: string
 }
 
-const { title, text, data, csvPath } = Astro.props
+const { title, text, data, csvPath, source } = Astro.props
 ---
 
 <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-10">
@@ -21,5 +22,6 @@ const { title, text, data, csvPath } = Astro.props
         <MaternalMortalityPanel data={data} csvPath={csvPath} client:load />
       )
     }
+    <p class="text-sm text-gray-500">Fuente: {source}</p>
   </div>
 </div>
