@@ -104,7 +104,7 @@ export async function readParquetAsObjects<T = Record<string, unknown>>(
 
 /**
  * Row from maternal_mortality_rate.parquet (mock SMV data)
- * Columns (by index): iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
+ * Columns (by index): iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
  */
 export type MaternalMortalityRateRawRow = unknown[]
 
@@ -324,22 +324,22 @@ export type ForestPlotDataRow = {
 // Four parquet formats are used across indicators:
 //
 // Simulation — etnia stratifier (transport_frequency, care_overload_municipal):
-//   iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
+//   iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
 //   Aggregate sentinels: zona="Total", etnia="Total"
 //   → filterEtniaStratifiedRows — keeps NAME_2=="San Martín del Valle" only
 //
 // Simulation — sexo + etnia stratifier (journey_time):
-//   iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
+//   iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
 //   Aggregate sentinels: zona="Total", etnia="Total", sexo="Mujeres" always
 //   → filterJourneyTimeStratifiedRows — keeps NAME_2=="San Martín del Valle" only
 //
 // Simulation — sexo-only stratifier (informal_employment):
-//   iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
+//   iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
 //   Aggregate sentinels: zona="Total", sexo="Total"
 //   → filterSexoOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only
 //
 // Simulation — zona-only stratifier (program_cover):
-//   iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], valor[5]
+//   iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], valor[5]
 //   Aggregate sentinels: zona="Total"
 //   → filterZonaOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only;
 //   translates sentinels to legacy chart format ("Total" → "Todas las zonas")
@@ -374,8 +374,8 @@ export function filterStratifiedRows(
 }
 
 /**
- * Simulation-format filter: iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
- * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Simulation-format filter: iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
+ * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
  * Skips NA rows (e.g. years before a programme existed).
  */
 export function filterEtniaStratifiedRows(
@@ -397,8 +397,8 @@ export function filterEtniaStratifiedRows(
 
 /**
  * Simulation-format filter for journey_time (sexo + etnia stratifiers).
- * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
- * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
+ * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
  */
 export function filterJourneyTimeStratifiedRows(
   rows: StratifiedRawRow[],
@@ -418,8 +418,8 @@ export function filterJourneyTimeStratifiedRows(
 
 /**
  * Simulation-format filter for informal_employment (sexo-only stratifier).
- * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
- * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
+ * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
  * Translates sentinels to legacy chart format: "Total" → "Todos/as" / "Todas las zonas".
  */
 export function filterSexoOnlyStratifiedRows(
@@ -442,8 +442,8 @@ export function filterSexoOnlyStratifiedRows(
 
 /**
  * Simulation-format filter for zona-only indicators (program_cover).
- * Columns: iso3[0], NAME_2[1], cod_local[2], anio[3], zona[4], valor[5]
- * Keeps only NAME_2 == "San Martín del Valle" (global/municipio rows).
+ * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], valor[5]
+ * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
  * Skips NA rows (2016-2018, when programme did not exist).
  * Translates "Total" → "Todas las zonas" for the legacy chart path.
  */

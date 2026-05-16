@@ -218,8 +218,8 @@ export const StratifiedLineChart = ({
       })
       .then((geojson) => {
         const rows = (geojson.features ?? [])
-          .map((f: { properties: { NAME_2?: string; value?: number } }) => ({
-            name: f.properties.NAME_2 ?? '',
+          .map((f: { properties: { Territorio?: string; value?: number } }) => ({
+            name: f.properties.Territorio ?? '',
             value: f.properties.value ?? null,
           }))
           .sort(
@@ -458,7 +458,7 @@ export const StratifiedLineChart = ({
                     center={[2.3, -75.7]}
                     zoom={8}
                     height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
-                    nameProperty="NAME_2"
+                    nameProperty="Territorio"
                     valueProperty="value"
                     valueName={yAxisLabel}
                   />

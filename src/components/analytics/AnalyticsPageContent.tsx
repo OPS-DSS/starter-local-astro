@@ -248,8 +248,8 @@ export const AnalyticsPageContent = ({
       })
       .then((geojson) => {
         const rows: TableRow[] = (geojson.features ?? [])
-          .map((f: { properties: { NAME_2?: string; value?: number } }) => ({
-            name: f.properties.NAME_2 ?? '',
+          .map((f: { properties: { Territorio?: string; value?: number } }) => ({
+            name: f.properties.Territorio ?? '',
             value: f.properties.value ?? null,
           }))
           .sort((a: TableRow, b: TableRow) => a.name.localeCompare(b.name))
@@ -565,7 +565,7 @@ export const AnalyticsPageContent = ({
                   center={[2.3, -75.7]}
                   zoom={8}
                   height={isFullscreen ? 'calc(100vh - 280px)' : '30em'}
-                  nameProperty="NAME_2"
+                  nameProperty="Territorio"
                   valueProperty="value"
                   valueName={mapValueName}
                   secondaryValueProperty={
