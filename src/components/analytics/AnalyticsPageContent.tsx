@@ -317,8 +317,8 @@ export const AnalyticsPageContent = ({
     <div className="flex flex-col gap-4 mb-10">
       {/* ── Year selector ── */}
       {availableYears.length > 1 && (
-        <div className="flex">
-          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm py-2 border-b border-gray-100 -mx-2 px-2 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 overflow-x-auto">
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm w-fit">
             {availableYears.map((yr) => {
               const isActive = yr === effectiveYear
               return (
