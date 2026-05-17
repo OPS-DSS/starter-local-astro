@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { MaternalMortalityRateRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
@@ -43,24 +43,6 @@ const DownloadIcon = () => (
     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
     <polyline points="7 10 12 15 17 10" />
     <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
-
-const ImageIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
   </svg>
 )
 
@@ -137,6 +119,7 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
 interface MaternalMortalityChartProps {
   data: MaternalMortalityRateRow[]
   csvPath?: string
+  highlightYear?: number
 }
 
 const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
@@ -148,10 +131,10 @@ const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
 export const MaternalMortalityChart = ({
   data,
   csvPath,
+  highlightYear,
 }: MaternalMortalityChartProps) => {
   const [stratifier, setStratifier] = useState<Stratifier>('total')
   const [view, setView] = useState<'chart' | 'table'>('chart')
-  const chartRef = useRef<HTMLDivElement>(null)
 
   const { chartData, lines, keys } = useMemo(
     () => pivotData(data, stratifier),
@@ -232,7 +215,7 @@ export const MaternalMortalityChart = ({
       {view === 'chart' ? (
         <ExpandablePanel className="relative border rounded-lg px-4 pt-6">
           {(isFullscreen) => (
-            <div ref={chartRef}>
+            <div>
               <DSLineChart
                 data={chartData}
                 xAxisKey="anio"
@@ -240,6 +223,7 @@ export const MaternalMortalityChart = ({
                 height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
                 xAxisLabel="Año"
                 yAxisLabel="Tasa (×100.000 NV)"
+                highlightX={highlightYear}
               />
             </div>
           )}

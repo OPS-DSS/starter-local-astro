@@ -1,11 +1,10 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo } from 'react'
 import { DSQuintilBarChart } from '@ops-dss/charts/quintil-bar-chart'
 import { DSCILineChart } from '@ops-dss/charts/ci-line-chart'
 import type {
   MaternalMortalityQuintilRow,
   MaternalMortalityGapsRow,
 } from '@/lib/parquet'
-import { downloadChartImage } from '@/lib/downloadChartImage'
 
 interface MaternalMortalityGapsChartProps {
   quintilData: MaternalMortalityQuintilRow[]
@@ -43,35 +42,6 @@ const DownloadButton = ({ href }: { href: string }) => (
     </svg>
     Descargar tabla
   </a>
-)
-
-const ImageIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-    <circle cx="8.5" cy="8.5" r="1.5" />
-    <polyline points="21 15 16 10 5 21" />
-  </svg>
-)
-
-const ImageButton = ({ onClick }: { onClick: () => void }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-  >
-    <ImageIcon />
-    Descargar imagen
-  </button>
 )
 
 // ── View toggle ────────────────────────────────────────────────────────────────
@@ -145,9 +115,6 @@ export const MaternalMortalityGapsChart = ({
 }: MaternalMortalityGapsChartProps) => {
   const [quintilView, setQuintilView] = useState<ViewMode>('chart')
   const [gapsView, setGapsView] = useState<ViewMode>('chart')
-  const quintilChartRef = useRef<HTMLDivElement>(null)
-  const gapsChartRef = useRef<HTMLDivElement>(null)
-
   // Latest year for the quintil bar chart
   const lastYear = useMemo(
     () => (quintilData.length > 0 ? Math.max(...quintilData.map((r) => r.anio)) : null),
@@ -201,13 +168,6 @@ export const MaternalMortalityGapsChart = ({
         <div className="flex items-center justify-between mb-4 gap-2 flex-wrap">
           <ViewToggle view={quintilView} onChange={setQuintilView} />
           <div className="flex items-center gap-2">
-            {quintilView === 'chart' && hasQuintilData && (
-              <ImageButton
-                onClick={() =>
-                  downloadChartImage(quintilChartRef.current, 'quintiles')
-                }
-              />
-            )}
             {quintilCsvPath && <DownloadButton href={quintilCsvPath} />}
           </div>
         </div>
@@ -217,7 +177,7 @@ export const MaternalMortalityGapsChart = ({
             No hay datos disponibles.
           </p>
         ) : quintilView === 'chart' ? (
-          <div ref={quintilChartRef}>
+          <div>
             <DSQuintilBarChart
               data={quintilChartData}
               height={400}
@@ -284,13 +244,6 @@ export const MaternalMortalityGapsChart = ({
             <MetricToggle metric={metric} onChange={onMetricChange} />
           </div>
           <div className="flex items-center gap-2">
-            {gapsView === 'chart' && hasGapsData && (
-              <ImageButton
-                onClick={() =>
-                  downloadChartImage(gapsChartRef.current, 'brecha')
-                }
-              />
-            )}
             {gapsCsvPath && <DownloadButton href={gapsCsvPath} />}
           </div>
         </div>
@@ -300,7 +253,7 @@ export const MaternalMortalityGapsChart = ({
             No hay datos disponibles.
           </p>
         ) : gapsView === 'chart' ? (
-          <div ref={gapsChartRef}>
+          <div>
             <DSCILineChart
               data={gapsChartData.map((d) => ({
                 x: d.anio,

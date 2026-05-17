@@ -274,6 +274,38 @@ export const StratifiedLineChart = ({
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>
+      {/* ── Sticky year selector ─────────────────────────────────────────────── */}
+      {availableYears.length > 1 && (
+        <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm py-2 border-b border-gray-100 -mx-2 px-2 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 overflow-x-auto mb-4">
+          <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm w-fit">
+            {availableYears.map((yr) => {
+              const isActive = yr === effectiveYear
+              return (
+                <button
+                  key={yr}
+                  type="button"
+                  onClick={() => {
+                    const next = yr === lastYear ? null : yr
+                    setSelectedYear(next)
+                    if (mapView === 'table' && hasMap) {
+                      const url = geojsonUrls![yr === lastYear ? lastYear! : yr]
+                      if (url) fetchMapTableData(url)
+                    }
+                  }}
+                  className={`px-3 py-1 text-sm transition-colors ${
+                    isActive
+                      ? 'bg-gray-800 text-white border-gray-800'
+                      : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {yr}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Stratifier selector ─────────────────────────────────────────────── */}
       <div className="flex flex-wrap justify-between gap-1 mb-4">
         <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
@@ -390,36 +422,6 @@ export const StratifiedLineChart = ({
       {hasMap && (
         <section className="flex flex-col gap-4 mt-6">
           <div className="flex items-center justify-between gap-2 flex-wrap">
-            {/* ── Year selector ───────────────────────────────────────────────────── */}
-            {availableYears.length > 1 && (
-              <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-                {availableYears.map((yr) => {
-                  const isActive = yr === effectiveYear
-                  return (
-                    <button
-                      key={yr}
-                      type="button"
-                      onClick={() => {
-                        const next = yr === lastYear ? null : yr
-                        setSelectedYear(next)
-                        if (mapView === 'table' && hasMap) {
-                          const url =
-                            geojsonUrls![yr === lastYear ? lastYear! : yr]
-                          if (url) fetchMapTableData(url)
-                        }
-                      }}
-                      className={`py-1.5 px-3 text-sm transition-colors ${
-                        isActive
-                          ? 'bg-gray-800 text-white border-gray-800'
-                          : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'
-                      }`}
-                    >
-                      {yr}
-                    </button>
-                  )
-                })}
-              </div>
-            )}
             <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
               <button
                 type="button"
