@@ -223,6 +223,7 @@ export const MaternalMortalityChart = ({
                 height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
                 xAxisLabel="Año"
                 yAxisLabel="Tasa (×100.000 NV)"
+                yAxisDomain={[0, 100]}
                 highlightX={highlightYear}
               />
             </div>

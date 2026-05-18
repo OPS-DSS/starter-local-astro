@@ -135,7 +135,7 @@ function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
 
     keySet.add(key)
     if (!byYear.has(row.anio)) byYear.set(row.anio, { anio: row.anio })
-    byYear.get(row.anio)![key] = row.valor
+    byYear.get(row.anio)![key] = row.valor * 100
   }
 
   const chartData = Array.from(byYear.entries())
@@ -376,6 +376,7 @@ export const StratifiedLineChart = ({
                 }
                 xAxisLabel="Año"
                 yAxisLabel={yAxisLabel}
+                yAxisDomain={[0, 100]}
                 highlightX={effectiveYear ?? undefined}
               />
             </div>
@@ -463,6 +464,7 @@ export const StratifiedLineChart = ({
                     nameProperty="Territorio"
                     valueProperty="value"
                     valueName={yAxisLabel}
+                    valueFormatter={(v) => (v * 100).toFixed(1) + '%'}
                   />
                   <div className="flex flex-col gap-2 text-sm">
                     <span className="font-medium text-gray-700">Leyenda:</span>
@@ -529,7 +531,7 @@ export const StratifiedLineChart = ({
                         </td>
                         <td className="px-4 py-3 text-gray-600">
                           {row.value != null && Number.isFinite(row.value)
-                            ? row.value.toFixed(2)
+                            ? (row.value * 100).toFixed(1) + '%'
                             : '—'}
                         </td>
                       </tr>

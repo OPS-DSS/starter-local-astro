@@ -189,7 +189,7 @@ export const AnalyticsPageContent = ({
       ? scatterMaternalData
           .filter((r) => r.anio === effectiveYear)
           .map((r) => ({
-            x: r[selectedIndicator] as number,
+            x: (r[selectedIndicator] as number) * 100,
             y: r.valor,
             label: r.territorio,
             size: r.nacimientos,
@@ -228,6 +228,15 @@ export const AnalyticsPageContent = ({
 
   const tableColumnLabel =
     isDssBivariate || isBivariate ? selectedMeta.label : MATERNAL_LABEL
+
+  // DSS indicator values in GeoJSON are in 0-1 range; display as percentages
+  const isDssValue = isBivariate || isDssBivariate
+  const mapValueFormatter = isDssValue
+    ? (v: number) => (v * 100).toFixed(1) + '%'
+    : undefined
+  const formatTableValue = isDssValue
+    ? (v: number) => (v * 100).toFixed(1) + '%'
+    : (v: number) => v.toFixed(2)
 
   // All indicator options except the currently selected one (for the DSS selector)
   const dssOptions = (
@@ -572,6 +581,7 @@ export const AnalyticsPageContent = ({
                     isDssBivariate || isBivariate ? 'maternal_value' : undefined
                   }
                   secondaryValueName={mapSecondaryValueName}
+                  valueFormatter={mapValueFormatter}
                 />
 
                 {/* Legend */}
@@ -668,7 +678,7 @@ export const AnalyticsPageContent = ({
                           </td>
                           <td className="px-4 py-3 text-gray-600">
                             {row.value != null && Number.isFinite(row.value)
-                              ? row.value.toFixed(2)
+                              ? formatTableValue(row.value)
                               : '—'}
                           </td>
                         </tr>

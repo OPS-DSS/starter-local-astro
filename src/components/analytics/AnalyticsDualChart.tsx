@@ -39,10 +39,13 @@ export const AnalyticsDualChart = ({
     anio: row.anio,
     valor: row.valor,
   }))
-  const indicatorData = data.map((row) => ({
-    anio: row.anio,
-    [selectedIndicator]: row[selectedIndicator],
-  }))
+  const indicatorData = data.map((row) => {
+    const raw = row[selectedIndicator]
+    return {
+      anio: row.anio,
+      [selectedIndicator]: raw != null ? (raw as number) * 100 : null,
+    }
+  })
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,6 +67,7 @@ export const AnalyticsDualChart = ({
             height={chartHeight}
             xAxisLabel="Año"
             yAxisLabel="Tasa (×100.000 NV)"
+            yAxisDomain={[0, 100]}
             highlightX={selectedYear ?? undefined}
           />
         </div>
@@ -81,6 +85,7 @@ export const AnalyticsDualChart = ({
             height={chartHeight}
             xAxisLabel="Año"
             yAxisLabel="Porcentaje (%)"
+            yAxisDomain={[0, 100]}
             highlightX={selectedYear ?? undefined}
           />
         </div>
