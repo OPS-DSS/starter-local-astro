@@ -66,7 +66,7 @@ export const AnalyticsDualChart = ({
             ]}
             height={chartHeight}
             xAxisLabel="Año"
-            yAxisLabel="Tasa (×100.000 NV)"
+            yAxisLabel="Mortalidad materna (×100k NV)"
             yAxisDomain={[0, 100]}
             highlightX={selectedYear ?? undefined}
           />
@@ -84,7 +84,7 @@ export const AnalyticsDualChart = ({
             ]}
             height={chartHeight}
             xAxisLabel="Año"
-            yAxisLabel="Porcentaje (%)"
+            yAxisLabel={indicatorMeta.axisLabel}
             yAxisDomain={[0, 100]}
             highlightX={selectedYear ?? undefined}
           />

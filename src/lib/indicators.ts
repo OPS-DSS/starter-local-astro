@@ -22,7 +22,7 @@ export const maternalMortalityIndicators: IndicatorMeta[] = [
   {
     slug: 'traslado',
     title:
-      'Proporción de embarazadas que viven a más de una hora del centro de salud más cercano, por barrio',
+      'Proporción de mujeres embarazadas que viven a más de una hora del centro de salud más cercano, por barrio',
     text: 'Permite identificar barreras territoriales de acceso a servicios que afectan la oportunidad y continuidad de la atención durante el embarazo.',
     description:
       'Permite identificar barreras territoriales de acceso a servicios que afectan la oportunidad y continuidad de la atención durante el embarazo.',

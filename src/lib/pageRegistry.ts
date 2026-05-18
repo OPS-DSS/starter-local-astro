@@ -192,7 +192,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: trasladoData ?? [],
-      yAxisLabel: '% embarazadas a >1h del centro de salud',
+      yAxisLabel: '% mujeres embarazadas',
       csvPath: base(baseUrl, 'journey_time.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -223,7 +223,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: frecuenciaTransporteData ?? [],
-      yAxisLabel: '% con acceso a transporte subsidiado',
+      yAxisLabel: '% población con acceso',
       csvPath: base(baseUrl, 'transport_frequency.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -316,7 +316,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: coberturaProgramaData ?? [],
-      yAxisLabel: '% de embarazadas',
+      yAxisLabel: '% mujeres embarazadas',
       csvPath: base(baseUrl, 'program_cover.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
@@ -347,7 +347,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       subdimensions: subdimensions ?? [],
       stratifiers: stratifiers ?? [],
       data: apoyoInfantilData ?? [],
-      yAxisLabel: '% de embarazadas con cobertura',
+      yAxisLabel: '% mujeres embarazadas',
       csvPath: base(baseUrl, 'infant_care_support.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
