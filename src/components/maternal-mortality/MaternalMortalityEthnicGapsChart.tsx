@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { DSComboChart } from '@ops-dss/charts/combo-chart'
+import { DSGapBarChart } from '@ops-dss/charts/gap-bar-chart'
 import type { MaternalMortalityRateRow } from '@/lib/parquet'
 
 const SMV = 'San Martín del Valle'
@@ -81,9 +81,7 @@ function interpretacionBR(br: number): string {
   return 'No se observaron diferencias relativas entre grupos étnicos.'
 }
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
-
-function downloadCsv(rows: GapRow[], filename = 'brechas-etnicas') {
+function downloadCsvBA(rows: GapRow[], filename = 'brecha-absoluta') {
   const header = [
     'anio',
     'rmm_indigena',
@@ -91,24 +89,29 @@ function downloadCsv(rows: GapRow[], filename = 'brechas-etnicas') {
     'brecha_absoluta',
     'ic_inf_ba',
     'ic_sup_ba',
+  ].join(',')
+  const lines = rows.map((r) =>
+    [r.anio, r.rmm_indigena, r.rmm_no_indigena, r.brecha_absoluta, r.ic_inf_ba, r.ic_sup_ba].join(','),
+  )
+  triggerDownload([header, ...lines].join('\n'), filename)
+}
+
+function downloadCsvBR(rows: GapRow[], filename = 'brecha-relativa') {
+  const header = [
+    'anio',
+    'rmm_indigena',
+    'rmm_no_indigena',
     'brecha_relativa',
     'ic_inf_br',
     'ic_sup_br',
   ].join(',')
   const lines = rows.map((r) =>
-    [
-      r.anio,
-      r.rmm_indigena,
-      r.rmm_no_indigena,
-      r.brecha_absoluta,
-      r.ic_inf_ba,
-      r.ic_sup_ba,
-      r.brecha_relativa,
-      r.ic_inf_br,
-      r.ic_sup_br,
-    ].join(','),
+    [r.anio, r.rmm_indigena, r.rmm_no_indigena, r.brecha_relativa, r.ic_inf_br, r.ic_sup_br].join(','),
   )
-  const csv = [header, ...lines].join('\n')
+  triggerDownload([header, ...lines].join('\n'), filename)
+}
+
+function triggerDownload(csv: string, filename: string) {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -136,6 +139,43 @@ const DownloadIcon = () => (
   </svg>
 )
 
+type ViewMode = 'chart' | 'table'
+
+function ViewToggle({
+  view,
+  onChange,
+  sectionLabel,
+}: {
+  view: ViewMode
+  onChange: (v: ViewMode) => void
+  sectionLabel: string
+}) {
+  return (
+    <div
+      role="group"
+      aria-label={`Vista para ${sectionLabel}`}
+      className="flex rounded-lg overflow-hidden border border-gray-200 text-sm"
+    >
+      {(['chart', 'table'] as const).map((v) => (
+        <button
+          key={v}
+          type="button"
+          onClick={() => onChange(v)}
+          aria-pressed={view === v}
+          aria-label={`${v === 'chart' ? 'Gráfico' : 'Tabla'} — ${sectionLabel}`}
+          className={`px-4 py-1.5 transition-colors ${
+            view === v
+              ? 'bg-gray-800 text-white'
+              : 'bg-white text-gray-600 hover:bg-gray-50'
+          }`}
+        >
+          {v === 'chart' ? 'Gráfico' : 'Tabla'}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface Props {
@@ -143,15 +183,14 @@ interface Props {
   selectedYear?: number | null
 }
 
-type ViewMode = 'chart' | 'table'
-
 export const MaternalMortalityEthnicGapsChart = ({
   data,
   selectedYear,
 }: Props) => {
   const gapsData = useMemo(() => computeGaps(data), [data])
 
-  const [view, setView] = useState<ViewMode>('chart')
+  const [viewBA, setViewBA] = useState<ViewMode>('chart')
+  const [viewBR, setViewBR] = useState<ViewMode>('chart')
 
   const effectiveYear = selectedYear ?? (gapsData.length > 0 ? gapsData[gapsData.length - 1].anio : null)
 
@@ -160,10 +199,18 @@ export const MaternalMortalityEthnicGapsChart = ({
     [gapsData, effectiveYear],
   )
 
-  const chartData = gapsData.map((row) => ({
+  const baData = gapsData.map((row) => ({
     anio: row.anio,
-    'Brecha absoluta': row.brecha_absoluta,
-    'Brecha relativa': row.brecha_relativa,
+    value: row.brecha_absoluta,
+    ic_inf: row.ic_inf_ba,
+    ic_sup: row.ic_sup_ba,
+  }))
+
+  const brData = gapsData.map((row) => ({
+    anio: row.anio,
+    value: row.brecha_relativa,
+    ic_inf: row.ic_inf_br,
+    ic_sup: row.ic_sup_br,
   }))
 
   if (gapsData.length === 0) {
@@ -175,122 +222,76 @@ export const MaternalMortalityEthnicGapsChart = ({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {/* ── Controls ────────────────────────────────────────────────────────── */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-          {(['chart', 'table'] as const).map((v) => (
+    <div className="flex flex-col gap-8">
+
+      {/* ── Brecha Absoluta ───────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-3 h-3 rounded-sm bg-purple-500" />
+            <h3 className="text-sm font-semibold text-gray-700">Brecha absoluta (muertes por 100.000 NV)</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <ViewToggle view={viewBA} onChange={setViewBA} sectionLabel="brecha absoluta" />
             <button
-              key={v}
               type="button"
-              onClick={() => setView(v)}
-              className={`px-4 py-1.5 transition-colors ${
-                view === v
-                  ? 'bg-gray-800 text-white'
-                  : 'bg-white text-gray-600 hover:bg-gray-50'
-              }`}
+              onClick={() => downloadCsvBA(gapsData)}
+              className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              {v === 'chart' ? 'Gráfico' : 'Tabla'}
+              <DownloadIcon />
+              Descargar tabla
             </button>
-          ))}
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => downloadCsv(gapsData)}
-          className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <DownloadIcon />
-          Descargar tabla
-        </button>
-      </div>
-
-      {/* ── Chart or Table ───────────────────────────────────────────────────── */}
-      {view === 'chart' ? (
-        <div className="rounded-lg border border-gray-200 px-4 pt-6 pb-2">
-          <DSComboChart
-            data={chartData}
-            xAxisKey="anio"
-            bars={[
-              {
-                dataKey: 'Brecha absoluta',
-                name: 'Brecha absoluta (×100.000 NV)',
-                color: '#8b5cf6',
-                yAxisId: 'right',
-              },
-            ]}
-            lines={[
-              {
-                dataKey: 'Brecha relativa',
-                name: 'Brecha relativa',
-                color: '#06b6d4',
-                yAxisId: 'left',
-              },
-            ]}
-            height={380}
-            highlightX={effectiveYear ?? undefined}
-            showRightAxis
-          />
-        </div>
-      ) : (
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
-              <tr>
-                <th className="px-4 py-3 font-medium">Año</th>
-                <th className="px-4 py-3 font-medium">RMM Indígena</th>
-                <th className="px-4 py-3 font-medium">RMM No indígena</th>
-                <th className="px-4 py-3 font-medium">
-                  Brecha absoluta
-                </th>
-                <th className="px-4 py-3 font-medium">IC 95% BA</th>
-                <th className="px-4 py-3 font-medium">
-                  Brecha relativa
-                </th>
-                <th className="px-4 py-3 font-medium">IC 95% BR</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {gapsData.map((row) => (
-                <tr
-                  key={row.anio}
-                  className={`transition-colors ${
-                    row.anio === effectiveYear
-                      ? 'bg-gray-100 font-semibold'
-                      : 'bg-white hover:bg-gray-50'
-                  }`}
-                >
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    {row.anio}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {row.rmm_indigena.toFixed(1)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {row.rmm_no_indigena.toFixed(1)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {row.brecha_absoluta.toFixed(1)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                    ({row.ic_inf_ba.toFixed(1)} – {row.ic_sup_ba.toFixed(1)})
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {row.brecha_relativa.toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                    ({row.ic_inf_br.toFixed(2)} – {row.ic_sup_br.toFixed(2)})
-                  </td>
+        {viewBA === 'chart' ? (
+          <div className="rounded-lg border border-gray-200 px-4 pt-6 pb-2">
+            <DSGapBarChart
+              data={baData}
+              color="#8b5cf6"
+              highlightYear={effectiveYear ?? undefined}
+              name="Brecha absoluta"
+              decimalPlaces={1}
+              height={320}
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Año</th>
+                  <th className="px-4 py-3 font-medium">RMM Indígena</th>
+                  <th className="px-4 py-3 font-medium">RMM No indígena</th>
+                  <th className="px-4 py-3 font-medium">Brecha absoluta</th>
+                  <th className="px-4 py-3 font-medium">IC 95%</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {gapsData.map((row) => (
+                  <tr
+                    key={row.anio}
+                    className={`transition-colors ${
+                      row.anio === effectiveYear
+                        ? 'bg-purple-50 font-semibold'
+                        : 'bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-medium text-gray-900">{row.anio}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.rmm_indigena.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.rmm_no_indigena.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.brecha_absoluta.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      ({row.ic_inf_ba.toFixed(1)} – {row.ic_sup_ba.toFixed(1)})
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
 
-      {/* ── Interpretation cards for selected year ───────────────────────────── */}
-      {selectedRow && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {selectedRow && (
           <div className="rounded-lg border border-purple-200 p-4 bg-purple-50">
             <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 mb-1">
               Brecha absoluta — {effectiveYear}
@@ -299,14 +300,84 @@ export const MaternalMortalityEthnicGapsChart = ({
               {selectedRow.brecha_absoluta.toFixed(1)}
             </p>
             <p className="text-xs text-gray-500 mb-3">
-              IC 95%: ({selectedRow.ic_inf_ba.toFixed(1)} –{' '}
-              {selectedRow.ic_sup_ba.toFixed(1)}) muertes por 100.000 NV
+              IC 95%: ({selectedRow.ic_inf_ba.toFixed(1)} – {selectedRow.ic_sup_ba.toFixed(1)}) muertes por 100.000 NV
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
               {interpretacionBA(selectedRow.brecha_absoluta)}
             </p>
           </div>
+        )}
+      </div>
 
+      {/* ── Brecha Relativa ───────────────────────────────────────────────────── */}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-3 h-3 rounded-sm bg-cyan-500" />
+            <h3 className="text-sm font-semibold text-gray-700">Brecha relativa (razón)</h3>
+          </div>
+          <div className="flex items-center gap-2">
+            <ViewToggle view={viewBR} onChange={setViewBR} sectionLabel="brecha relativa" />
+            <button
+              type="button"
+              onClick={() => downloadCsvBR(gapsData)}
+              className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              <DownloadIcon />
+              Descargar tabla
+            </button>
+          </div>
+        </div>
+
+        {viewBR === 'chart' ? (
+          <div className="rounded-lg border border-gray-200 px-4 pt-6 pb-2">
+            <DSGapBarChart
+              data={brData}
+              color="#06b6d4"
+              highlightYear={effectiveYear ?? undefined}
+              name="Brecha relativa"
+              decimalPlaces={2}
+              referenceLine={1}
+              height={320}
+            />
+          </div>
+        ) : (
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
+                <tr>
+                  <th className="px-4 py-3 font-medium">Año</th>
+                  <th className="px-4 py-3 font-medium">RMM Indígena</th>
+                  <th className="px-4 py-3 font-medium">RMM No indígena</th>
+                  <th className="px-4 py-3 font-medium">Brecha relativa</th>
+                  <th className="px-4 py-3 font-medium">IC 95%</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {gapsData.map((row) => (
+                  <tr
+                    key={row.anio}
+                    className={`transition-colors ${
+                      row.anio === effectiveYear
+                        ? 'bg-cyan-50 font-semibold'
+                        : 'bg-white hover:bg-gray-50'
+                    }`}
+                  >
+                    <td className="px-4 py-3 font-medium text-gray-900">{row.anio}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.rmm_indigena.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.rmm_no_indigena.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-gray-600">{row.brecha_relativa.toFixed(2)}</td>
+                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                      ({row.ic_inf_br.toFixed(2)} – {row.ic_sup_br.toFixed(2)})
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {selectedRow && (
           <div className="rounded-lg border border-cyan-200 p-4 bg-cyan-50">
             <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 mb-1">
               Brecha relativa — {effectiveYear}
@@ -315,15 +386,15 @@ export const MaternalMortalityEthnicGapsChart = ({
               {selectedRow.brecha_relativa.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 mb-3">
-              IC 95%: ({selectedRow.ic_inf_br.toFixed(2)} –{' '}
-              {selectedRow.ic_sup_br.toFixed(2)})
+              IC 95%: ({selectedRow.ic_inf_br.toFixed(2)} – {selectedRow.ic_sup_br.toFixed(2)})
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
               {interpretacionBR(selectedRow.brecha_relativa)}
             </p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
+
     </div>
   )
 }
