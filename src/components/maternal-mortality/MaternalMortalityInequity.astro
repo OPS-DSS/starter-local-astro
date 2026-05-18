@@ -22,6 +22,22 @@ const { title, text, data, csvPath, source } = Astro.props
         <MaternalMortalityPanel data={data} csvPath={csvPath} client:load />
       )
     }
+    <hr class="my-4" />
     <p class="text-sm text-gray-500">Fuente: {source}</p>
+    <p class="text-sm text-gray-500 text-justify">
+      Las métricas de desigualdad implementadas se basan en el marco
+      metodológico del Cuantificador de Desigualdades en Salud, desarrollado
+      conjuntamente por la Organización Panamericana de la Salud (OPS/OMS) y el
+      Centro Nacional de Epidemiología, Prevención y Control de Enfermedades del
+      Ministerio de Salud del Perú (CDC-Perú). Disponible en:
+      <a
+        href="https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="text-amber-600 hover:underline"
+      >
+        https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud
+      </a>
+    </p>
   </div>
 </div>
