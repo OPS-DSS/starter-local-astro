@@ -2,7 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import { MaternalMortalityChart } from './MaternalMortalityChart'
+import type { Stratifier } from './MaternalMortalityChart'
 import { MaternalMortalityEthnicGapsChart } from './MaternalMortalityEthnicGapsChart'
+import { MaternalMortalityZoneGapsChart } from './MaternalMortalityZoneGapsChart'
 import type { MaternalMortalityRateRow } from '@/lib/parquet'
 
 const SMV = 'San Martín del Valle'
@@ -29,6 +31,8 @@ export const MaternalMortalityPanel = ({
   const lastYear = availableYears[0] ?? null
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const effectiveYear = selectedYear ?? lastYear
+
+  const [stratifier, setStratifier] = useState<Stratifier>('total')
 
   return (
     <div className="flex flex-col gap-10">
@@ -59,23 +63,44 @@ export const MaternalMortalityPanel = ({
         data={data}
         csvPath={csvPath}
         highlightYear={effectiveYear ?? undefined}
+        stratifier={stratifier}
+        onStratifierChange={setStratifier}
       />
 
       {/* ── Gaps analysis chart ────────────────────────────────────────────────── */}
-      <section className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-xl font-bold">
-            Análisis de brechas étnicas en mortalidad materna
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Brecha absoluta y relativa entre población indígena y no indígena.
-          </p>
-        </div>
-        <MaternalMortalityEthnicGapsChart
-          data={data}
-          selectedYear={effectiveYear}
-        />
-      </section>
+      {stratifier === 'etnia' && (
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-xl font-bold">
+              Análisis de brechas étnicas en mortalidad materna
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Brecha absoluta y relativa entre población indígena y no indígena.
+            </p>
+          </div>
+          <MaternalMortalityEthnicGapsChart
+            data={data}
+            selectedYear={effectiveYear}
+          />
+        </section>
+      )}
+
+      {stratifier === 'zona' && (
+        <section className="flex flex-col gap-4">
+          <div>
+            <h2 className="text-xl font-bold">
+              Análisis de brechas territoriales en mortalidad materna
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+              Brecha absoluta y relativa entre zonas geográficas.
+            </p>
+          </div>
+          <MaternalMortalityZoneGapsChart
+            data={data}
+            selectedYear={effectiveYear}
+          />
+        </section>
+      )}
     </div>
   )
 }

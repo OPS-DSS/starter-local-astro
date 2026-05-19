@@ -9,7 +9,7 @@ const TOTAL_ZONA = 'Total'
 const SMV = 'San Martín del Valle'
 
 // ── Stratifier type ───────────────────────────────────────────────────────────
-type Stratifier = 'total' | 'etnia' | 'zona'
+export type Stratifier = 'total' | 'etnia' | 'zona'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
 const ETNIA_COLORS: Record<string, string> = {
@@ -120,6 +120,8 @@ interface MaternalMortalityChartProps {
   data: MaternalMortalityRateRow[]
   csvPath?: string
   highlightYear?: number
+  stratifier: Stratifier
+  onStratifierChange: (s: Stratifier) => void
 }
 
 const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
@@ -132,8 +134,9 @@ export const MaternalMortalityChart = ({
   data,
   csvPath,
   highlightYear,
+  stratifier,
+  onStratifierChange: setStratifier,
 }: MaternalMortalityChartProps) => {
-  const [stratifier, setStratifier] = useState<Stratifier>('total')
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   const { chartData, lines, keys } = useMemo(
