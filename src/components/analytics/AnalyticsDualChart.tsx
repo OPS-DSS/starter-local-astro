@@ -1,4 +1,5 @@
 import { DSLineChart } from '@ops-dss/charts/line-chart'
+import type { LineChartData } from '@ops-dss/charts/line-chart'
 import type { AnalyticsMaternalRow } from '@/lib/parquet'
 import {
   ANALYTICS_INDICATORS,
@@ -39,12 +40,17 @@ export const AnalyticsDualChart = ({
     anio: row.anio,
     valor: row.valor,
   }))
-  const indicatorData = data.map((row) => {
+  const indicatorData: LineChartData[] = data.flatMap((row) => {
     const raw = row[selectedIndicator]
-    return {
-      anio: row.anio,
-      [selectedIndicator]: raw != null ? (raw as number) * 100 : null,
-    }
+
+    return raw == null
+      ? []
+      : [
+          {
+            anio: row.anio,
+            [selectedIndicator]: raw * 100,
+          },
+        ]
   })
 
   return (
