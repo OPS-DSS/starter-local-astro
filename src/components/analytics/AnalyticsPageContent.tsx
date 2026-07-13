@@ -602,10 +602,10 @@ export const AnalyticsPageContent = ({
                       {isDssBivariate || isBivariate ? (
                         <div className="flex items-start gap-6 flex-wrap">
                           <BivariateLegend
-                            indLabel={`${selectedMeta.axisLabel} →`}
+                            indLabel={`${selectedMeta.label} →`}
                             yAxisLabel={
                               isDssBivariate
-                                ? dssSecondaryMeta!.axisLabel
+                                ? dssSecondaryMeta!.label
                                 : MATERNAL_LABEL
                             }
                           />
