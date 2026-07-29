@@ -221,20 +221,27 @@ export function filterMaternalMortalityGapsRows(
 }
 
 // ── Maternal mortality analytics: temporal data (MM rate + mock DSS avg) ──────
-// Parquet columns: anio[0], valor[1], traslado[2], empleo_informal[3],
-//   sobrecarga[4], cobertura_programa[5], transporte[6], cuidar_comunidad[7]
+// Parquet columns: anio[0], valor[1], traslado[2], embarazadas-empleo-informal[3],
+//   sobrecarga-embarazadas[4], apoyo-embarazadas[5], frecuencia-transporte[6],
+//   apoyo-infantil[7]
 export type AnalyticsMaternalRawRow = unknown[]
 
 export type AnalyticsMaternalRow = {
   anio: number
   valor: number
   traslado: number
-  empleo_informal: number
-  sobrecarga: number
-  cobertura_programa: number
-  transporte: number
-  cuidar_comunidad: number
+  'embarazadas-empleo-informal': number
+  'sobrecarga-embarazadas': number
+  'apoyo-embarazadas': number
+  'frecuencia-transporte': number
+  'apoyo-infantil': number
 }
+
+// Indicator slugs used as data-row keys across the analytics dashboard.
+export type AnalyticsIndicatorKey = Exclude<
+  keyof AnalyticsMaternalRow,
+  'anio' | 'valor'
+>
 
 export function filterAnalyticsMaternalRows(
   rows: AnalyticsMaternalRawRow[],
@@ -248,11 +255,11 @@ export function filterAnalyticsMaternalRows(
       anio,
       valor,
       traslado: row[2] == null ? NaN : Number(row[2]),
-      empleo_informal: row[3] == null ? NaN : Number(row[3]),
-      sobrecarga: row[4] == null ? NaN : Number(row[4]),
-      cobertura_programa: row[5] == null ? NaN : Number(row[5]),
-      transporte: row[6] == null ? NaN : Number(row[6]),
-      cuidar_comunidad: row[7] == null ? NaN : Number(row[7]),
+      'embarazadas-empleo-informal': row[3] == null ? NaN : Number(row[3]),
+      'sobrecarga-embarazadas': row[4] == null ? NaN : Number(row[4]),
+      'apoyo-embarazadas': row[5] == null ? NaN : Number(row[5]),
+      'frecuencia-transporte': row[6] == null ? NaN : Number(row[6]),
+      'apoyo-infantil': row[7] == null ? NaN : Number(row[7]),
     })
   }
   return result.sort((a, b) => a.anio - b.anio)
@@ -260,8 +267,9 @@ export function filterAnalyticsMaternalRows(
 
 // ── Maternal mortality scatter: cross-sectional barrio data ───────────────────
 // Parquet columns: anio[0], territorio[1], valor[2], traslado[3],
-//   empleo_informal[4], sobrecarga[5], cobertura_programa[6],
-//   transporte[7], cuidar_comunidad[8], nacimientos[9]
+//   embarazadas-empleo-informal[4], sobrecarga-embarazadas[5],
+//   apoyo-embarazadas[6], frecuencia-transporte[7], apoyo-infantil[8],
+//   nacimientos[9]
 export type ScatterMaternalRawRow = unknown[]
 
 export type ScatterMaternalRow = {
@@ -269,11 +277,11 @@ export type ScatterMaternalRow = {
   territorio: string
   valor: number
   traslado: number
-  empleo_informal: number
-  sobrecarga: number
-  cobertura_programa: number
-  transporte: number
-  cuidar_comunidad: number
+  'embarazadas-empleo-informal': number
+  'sobrecarga-embarazadas': number
+  'apoyo-embarazadas': number
+  'frecuencia-transporte': number
+  'apoyo-infantil': number
   nacimientos: number
 }
 
@@ -291,11 +299,11 @@ export function filterScatterMaternalRows(
       territorio,
       valor,
       traslado: row[3] == null ? NaN : Number(row[3]),
-      empleo_informal: row[4] == null ? NaN : Number(row[4]),
-      sobrecarga: row[5] == null ? NaN : Number(row[5]),
-      cobertura_programa: row[6] == null ? NaN : Number(row[6]),
-      transporte: row[7] == null ? NaN : Number(row[7]),
-      cuidar_comunidad: row[8] == null ? NaN : Number(row[8]),
+      'embarazadas-empleo-informal': row[4] == null ? NaN : Number(row[4]),
+      'sobrecarga-embarazadas': row[5] == null ? NaN : Number(row[5]),
+      'apoyo-embarazadas': row[6] == null ? NaN : Number(row[6]),
+      'frecuencia-transporte': row[7] == null ? NaN : Number(row[7]),
+      'apoyo-infantil': row[8] == null ? NaN : Number(row[8]),
       nacimientos: row[9] == null ? NaN : Number(row[9]),
     })
   }

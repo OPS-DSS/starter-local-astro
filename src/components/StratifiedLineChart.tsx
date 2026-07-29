@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
-import type { IndicatorStratifier } from '@/lib/indicators'
+import type { IndicatorStratifier } from '@/config/general'
 import { ExpandablePanel } from './ExpandablePanel'
 
 // ── Canonical aggregate labels ────────────────────────────────────────────────
@@ -13,9 +13,6 @@ const TOTAL_ZONA_LEGACY = 'Todas las zonas'
 // Simulation format (etnia-based): zona/etnia
 const TOTAL_ETNIA = 'Total'
 const TOTAL_ZONA_SIM = 'Total'
-
-// ── Stratifier type ───────────────────────────────────────────────────────────
-type Stratifier = 'total' | 'sexo' | 'grupo_edad' | 'zona' | 'etnia'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
 const SEX_COLORS: Record<string, string> = {
@@ -75,7 +72,7 @@ function isSimFormat(rows: StratifiedRow[]): boolean {
   return rows.length > 0 && rows[0].etnia !== undefined
 }
 
-function pivotData(rows: StratifiedRow[], stratifier: Stratifier) {
+function pivotData(rows: StratifiedRow[], stratifier: IndicatorStratifier) {
   let filtered: StratifiedRow[]
   const sim = isSimFormat(rows)
 
@@ -185,7 +182,7 @@ export const StratifiedLineChart = ({
   csvPath,
   geojsonUrls,
 }: StratifiedLineChartProps) => {
-  const [stratifier, setStratifier] = useState<Stratifier>('total')
+  const [stratifier, setStratifier] = useState<IndicatorStratifier>('total')
   const [view, setView] = useState<'chart' | 'table'>('chart')
   const [mapView, setMapView] = useState<'map' | 'table'>('map')
   const [mapTableData, setMapTableData] = useState<
@@ -218,10 +215,12 @@ export const StratifiedLineChart = ({
       })
       .then((geojson) => {
         const rows = (geojson.features ?? [])
-          .map((f: { properties: { Territorio?: string; value?: number } }) => ({
-            name: f.properties.Territorio ?? '',
-            value: f.properties.value ?? null,
-          }))
+          .map(
+            (f: { properties: { Territorio?: string; value?: number } }) => ({
+              name: f.properties.Territorio ?? '',
+              value: f.properties.value ?? null,
+            }),
+          )
           .sort(
             (
               a: { name: string; value: number | null },
@@ -256,7 +255,10 @@ export const StratifiedLineChart = ({
     )
   }
 
-  const ALL_STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
+  const ALL_STRATIFIER_OPTIONS: {
+    value: IndicatorStratifier
+    label: string
+  }[] = [
     { value: 'total', label: 'Total' },
     { value: 'zona', label: 'Zona' },
     { value: 'etnia', label: 'Etnia' },

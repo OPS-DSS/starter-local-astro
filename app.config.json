@@ -1,5 +1,5 @@
 {
-  "local": "Suaza",
+  "local": "San Martín del Valle",
   "subnational": "Huila",
   "national": "Colombia",
   "indicators": [
@@ -9,9 +9,14 @@
       "description": "Registros locales de mortalidad materna / Estadísticas Vitales Municipales",
       "date": "2026-03-01",
       "category": "comunidad",
+      "dimension": "dss",
+      "subdimensions": ["salud"],
       "source": "Registros locales de mortalidad materna / Estadísticas Vitales Municipales",
       "related_priorities": [],
-      "priority": true
+      "priority": true,
+      "label": "Razón de Mortalidad Materna",
+      "axisLabel": "RMM (por 100.000 nacidos vivos)",
+      "color": "#ef4444"
     },
     {
       "slug": "traslado",
@@ -22,7 +27,9 @@
       "subdimensions": ["territorial"],
       "stratifiers": ["zona", "etnia"],
       "source": "Registros territoriales de acceso a servicios + mapas de localización de servicios y equipamiento urbano",
-      "priority": false
+      "label": "Tiempo de traslado (>1h al CS)",
+      "axisLabel": "% mujeres embarazadas",
+      "color": "#6366f1"
     },
     {
       "slug": "embarazadas-empleo-informal",
@@ -32,9 +39,11 @@
       "date": "2026-04-10",
       "dimension": "dss",
       "subdimensions": ["empleo"],
-      "priority": false,
       "stratifiers": ["zona", "sexo"],
-      "source": "Encuesta nacional de hogares + encuesta local de condiciones de vida"
+      "source": "Encuesta nacional de hogares + encuesta local de condiciones de vida",
+      "label": "Empleo informal",
+      "axisLabel": "% personas con empleo informal",
+      "color": "#8b5cf6"
     },
     {
       "slug": "sobrecarga-embarazadas",
@@ -44,9 +53,11 @@
       "date": "2026-04-10",
       "dimension": "dss",
       "subdimensions": ["cuidados"],
-      "priority": false,
       "stratifiers": ["zona", "etnia"],
-      "source": "Encuesta local de condiciones de vida + registros sociales municipales"
+      "source": "Encuesta local de condiciones de vida + registros sociales municipales",
+      "label": "Sobrecarga de cuidados",
+      "axisLabel": "% mujeres embarazadas",
+      "color": "#f59e0b"
     },
     {
       "slug": "apoyo-embarazadas",
@@ -56,9 +67,11 @@
       "date": "2026-04-10",
       "dimension": "policy",
       "subdimensions": ["programas sociales"],
-      "priority": false,
       "stratifiers": ["zona"],
-      "source": "Base de datos del programa municipal de apoyo a mujeres embarazadas"
+      "source": "Base de datos del programa municipal de apoyo a mujeres embarazadas",
+      "label": "Cobertura programa social",
+      "axisLabel": "% mujeres embarazadas",
+      "color": "#10b981"
     },
     {
       "slug": "frecuencia-transporte",
@@ -68,9 +81,11 @@
       "date": "2026-04-10",
       "dimension": "policy",
       "subdimensions": ["transporte"],
-      "priority": false,
       "stratifiers": ["zona", "etnia"],
-      "source": "Registros del sector transporte sobre recorridos, frecuencias y horarios"
+      "source": "Registros del sector transporte sobre recorridos, frecuencias y horarios",
+      "label": "Transporte subsidiado",
+      "axisLabel": "% población con acceso",
+      "color": "#3b82f6"
     },
     {
       "slug": "apoyo-infantil",
@@ -80,9 +95,11 @@
       "date": "2026-05-10",
       "dimension": "policy",
       "subdimensions": ["programas sociales"],
-      "priority": false,
       "stratifiers": ["zona", "etnia"],
-      "source": "Registros administrativos del sistema municipal de cuidados / Programa “Cuidar en Comunidad”"
+      "source": "Registros administrativos del sistema municipal de cuidados / Programa “Cuidar en Comunidad”",
+      "label": "Cuidar en Comunidad",
+      "axisLabel": "% mujeres embarazadas",
+      "color": "#ec4899"
     }
   ],
   "features": {

@@ -4,19 +4,22 @@ import { DSScatterChart } from '@ops-dss/charts/scatter-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import { AnalyticsDualChart } from './AnalyticsDualChart'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
-import {
-  ANALYTICS_INDICATORS,
-  type AnalyticsIndicatorKey,
-} from './mockIndicators'
+import { indicators } from '@/config/general'
+import type { IndicatorMeta } from '@/config/general'
 import type {
   ForestPlotDataRow,
   AnalyticsMaternalRow,
   ScatterMaternalRow,
+  AnalyticsIndicatorKey,
 } from '@/lib/parquet'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
 const MATERNAL_LABEL = 'Mortalidad materna (x100k NV)'
+
+const indicatorsBySlug = Object.fromEntries(
+  indicators.map((i) => [i.slug, i]),
+) as Record<AnalyticsIndicatorKey, IndicatorMeta>
 
 // Bivariate colour palette — BIVARIATE_COLORS[mmRow][indCol]
 // mmRow  0 = low MM … 2 = high MM
@@ -175,7 +178,7 @@ export const AnalyticsPageContent = ({
     (analyticsMaternalData && analyticsMaternalData.length > 0) ||
     (scatterMaternalData && scatterMaternalData.length > 0)
 
-  const selectedMeta = ANALYTICS_INDICATORS[selectedIndicator]
+  const selectedMeta = indicatorsBySlug[selectedIndicator]
 
   // Forest plot: filter to the selected year; rows without data for this year
   // are simply absent (the R script skips indicator-year combos with n < 4).
@@ -214,7 +217,7 @@ export const AnalyticsPageContent = ({
 
   const isDssBivariate = selectedDssIndicator !== null
   const dssSecondaryMeta = selectedDssIndicator
-    ? ANALYTICS_INDICATORS[selectedDssIndicator]
+    ? indicatorsBySlug[selectedDssIndicator]
     : null
 
   // For the map's valueName / secondaryValueName
@@ -240,10 +243,7 @@ export const AnalyticsPageContent = ({
 
   // All indicator options except the currently selected one (for the DSS selector)
   const dssOptions = (
-    Object.entries(ANALYTICS_INDICATORS) as [
-      AnalyticsIndicatorKey,
-      (typeof ANALYTICS_INDICATORS)[AnalyticsIndicatorKey],
-    ][]
+    Object.entries(indicatorsBySlug) as [AnalyticsIndicatorKey, IndicatorMeta][]
   ).filter(([key]) => key !== selectedIndicator)
 
   // ── Map / table handlers ───────────────────────────────────────────────────

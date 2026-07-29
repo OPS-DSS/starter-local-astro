@@ -1,10 +1,12 @@
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { LineChartData } from '@ops-dss/charts/line-chart'
-import type { AnalyticsMaternalRow } from '@/lib/parquet'
-import {
-  ANALYTICS_INDICATORS,
-  type AnalyticsIndicatorKey,
-} from './mockIndicators'
+import type { AnalyticsMaternalRow, AnalyticsIndicatorKey } from '@/lib/parquet'
+import { indicators } from '@/config/general'
+import type { IndicatorMeta } from '@/config/general'
+
+const indicatorsBySlug = Object.fromEntries(
+  indicators.map((i) => [i.slug, i]),
+) as Record<AnalyticsIndicatorKey, IndicatorMeta>
 
 interface AnalyticsDualChartProps {
   data: AnalyticsMaternalRow[]
@@ -35,7 +37,7 @@ export const AnalyticsDualChart = ({
     )
   }
 
-  const indicatorMeta = ANALYTICS_INDICATORS[selectedIndicator]
+  const indicatorMeta = indicatorsBySlug[selectedIndicator]
   const mortalityData = data.map((row) => ({
     anio: row.anio,
     valor: row.valor,

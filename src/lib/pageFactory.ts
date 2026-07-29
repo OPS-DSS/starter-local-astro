@@ -10,10 +10,8 @@ import {
   filterZonaOnlyStratifiedRows,
   filterEtniaStratifiedRows,
 } from './parquet'
-import { maternalMortalityIndicators } from '@/lib/indicators'
-import type { IndicatorStratifier } from '@/lib/indicators'
-import { priorities } from '@/lib/priority'
-import type { PriorityMeta } from '@/lib/priority'
+import { priorities, indicators } from '@/config/general'
+import type { IndicatorMeta, IndicatorStratifier } from '@/config/general'
 
 import type {
   MaternalMortalityRateRawRow,
@@ -163,7 +161,6 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
 export interface PageDefinition {
   slug: string | undefined
   title: string
-  text: string
   date: string
   navbar: boolean
   source?: string
@@ -190,35 +187,35 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     {
       slug: undefined,
       title: 'Inicio',
-      text: 'Bienvenidos al Observatorio de Determinantes Sociales de la Salud, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
+      description:
+        'Bienvenidos al Observatorio de Determinantes Sociales de la Salud, un espacio dedicado a la recopilación, análisis y visualización de datos relacionados con la salud. Nuestro objetivo es proporcionar información precisa y actualizada para apoyar la toma de decisiones informadas en el ámbito de la salud pública.',
       date: '2026-01-01',
       navbar: true,
     },
     {
       slug: 'analisis-de-inequidad',
       title: 'Análisis de Inequidad',
-      text: 'Problemas, gráficos de tendencias y mediciones de brechas',
+      description: 'Problemas, gráficos de tendencias y mediciones de brechas',
       date: '2026-01-01',
       navbar: true,
     },
     {
       slug: 'determinantes-de-la-salud',
       title: 'Determinantes Sociales de la Salud',
-      text: 'Factores que influyen en la salud de la población',
+      description: 'Factores que influyen en la salud de la población',
       date: '2026-01-01',
       navbar: true,
     },
     {
       slug: 'analisis',
       title: 'Análisis Avanzado',
-      text: 'Análisis de relaciones',
+      description: 'Análisis de relaciones',
       date: '2026-01-01',
       navbar: true,
     },
     {
       slug: 'analisis/mortalidad-materna',
       title: 'Análisis de Mortalidad Materna',
-      text: 'Análisis de relaciones',
       description: 'Indicadores de análisis de datos y visualización.',
       date: '2026-01-01',
       category: 'Tendencia',
@@ -231,7 +228,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
   ]
 
   const priorityPages: PageDefinition[] = priorities.flatMap(
-    (priority: PriorityMeta) => [
+    (priority: IndicatorMeta) => [
       {
         slug: `analisis-de-inequidad/${priority.slug}`,
         title: priority.title,
@@ -254,37 +251,33 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     ],
   )
 
-  const indicatorPages: PageDefinition[] = maternalMortalityIndicators.map(
-    (ind) => ({
-      slug: ind.slug,
-      title: ind.title,
-      text: ind.text,
-      dimension: ind.dimension,
-      subdimensions: ind.subdimensions,
-      date: ind.date,
-      navbar: false,
-      stratifiers: ind.stratifiers,
-      source: ind.source,
-      ...(ind.slug === 'traslado'
-        ? { trasladoData: datasets.trasladoData }
-        : {}),
-      ...(ind.slug === 'frecuencia-transporte'
-        ? { frecuenciaTransporteData: datasets.frecuenciaTransporteData }
-        : {}),
-      ...(ind.slug === 'sobrecarga-embarazadas'
-        ? { sobrecargaCuidadosData: datasets.sobrecargaCuidadosData }
-        : {}),
-      ...(ind.slug === 'embarazadas-empleo-informal'
-        ? { empleoInformalData: datasets.empleoInformalData }
-        : {}),
-      ...(ind.slug === 'apoyo-embarazadas'
-        ? { coberturaProgramaData: datasets.coberturaProgramaData }
-        : {}),
-      ...(ind.slug === 'apoyo-infantil'
-        ? { apoyoInfantilData: datasets.apoyoInfantilData }
-        : {}),
-    }),
-  )
+  const indicatorPages: PageDefinition[] = indicators.map((ind) => ({
+    slug: ind.slug,
+    title: ind.title,
+    description: ind.description,
+    dimension: ind.dimension,
+    subdimensions: ind.subdimensions,
+    date: ind.date,
+    navbar: false,
+    stratifiers: ind.stratifiers,
+    source: ind.source,
+    ...(ind.slug === 'traslado' ? { trasladoData: datasets.trasladoData } : {}),
+    ...(ind.slug === 'frecuencia-transporte'
+      ? { frecuenciaTransporteData: datasets.frecuenciaTransporteData }
+      : {}),
+    ...(ind.slug === 'sobrecarga-embarazadas'
+      ? { sobrecargaCuidadosData: datasets.sobrecargaCuidadosData }
+      : {}),
+    ...(ind.slug === 'embarazadas-empleo-informal'
+      ? { empleoInformalData: datasets.empleoInformalData }
+      : {}),
+    ...(ind.slug === 'apoyo-embarazadas'
+      ? { coberturaProgramaData: datasets.coberturaProgramaData }
+      : {}),
+    ...(ind.slug === 'apoyo-infantil'
+      ? { apoyoInfantilData: datasets.apoyoInfantilData }
+      : {}),
+  }))
 
   return [...staticPages, ...indicatorPages, ...priorityPages]
 }
@@ -295,17 +288,19 @@ export async function buildStaticPaths() {
   const datasets = await loadAllDatasets()
   const pages = buildPages(datasets)
 
-  return pages.map(({ slug, title, text, date, navbar, source, ...rest }) => ({
-    params: { slug },
-    props: {
-      title,
-      text,
-      slug,
-      date: new Date(date),
-      navbar,
-      source,
-      pages,
-      ...rest,
-    },
-  }))
+  return pages.map(
+    ({ slug, title, description, date, navbar, source, ...rest }) => ({
+      params: { slug },
+      props: {
+        title,
+        description,
+        slug,
+        date: new Date(date),
+        navbar,
+        source,
+        pages,
+        ...rest,
+      },
+    }),
+  )
 }
