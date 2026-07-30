@@ -1,11 +1,11 @@
 ---
 import { MaternalMortalityPanel } from './PriorityPanel'
-import type { MaternalMortalityRateRow } from '@/lib/parquet'
+import type { PriorityRow } from '@/lib/parquet'
 
 interface Props {
   title: string
   text: string
-  data: MaternalMortalityRateRow[] | undefined
+  data: PriorityRow[] | undefined
   csvPath?: string
   source: string
 }

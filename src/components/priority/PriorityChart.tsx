@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import type { MaternalMortalityRateRow } from '@/lib/parquet'
+import type { PriorityRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
+import { Icon } from '@iconify/react'
 
 // ── Aggregate label constants (must match R mock script) ──────────────────────
 const TOTAL_ETNIA = 'Total'
@@ -13,7 +14,7 @@ export type Stratifier = 'total' | 'etnia' | 'zona'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
 const ETNIA_COLORS: Record<string, string> = {
-  'Indígena': '#8b5cf6',
+  Indígena: '#8b5cf6',
   'No indígena': '#06b6d4',
 }
 const ZONA_COLORS: Record<string, string> = {
@@ -27,32 +28,13 @@ const ZONA_ORDER = ['urbano', 'periurbano', 'rural']
 const ETNIA_ORDER = ['Indígena', 'No indígena']
 const TOTAL_COLOR = '#6b7280'
 
-// ── Icons ─────────────────────────────────────────────────────────────────────
-const DownloadIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
-
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
-function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
+function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
   // Only municipality-level aggregates
   const smvRows = rows.filter((r) => r.territorio === SMV)
 
-  let filtered: MaternalMortalityRateRow[]
+  let filtered: PriorityRow[]
 
   if (stratifier === 'total') {
     filtered = smvRows.filter(
@@ -117,7 +99,7 @@ function pivotData(rows: MaternalMortalityRateRow[], stratifier: Stratifier) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 interface MaternalMortalityChartProps {
-  data: MaternalMortalityRateRow[]
+  data: PriorityRow[]
   csvPath?: string
   highlightYear?: number
   stratifier: Stratifier
@@ -206,7 +188,7 @@ export const MaternalMortalityChart = ({
                 download
                 className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
               >
-                <DownloadIcon />
+                <Icon icon="mdi:download" className="size-4 opacity-50" />
                 Descargar tabla
               </a>
             )}
@@ -223,7 +205,9 @@ export const MaternalMortalityChart = ({
                 data={chartData}
                 xAxisKey="anio"
                 lines={lines}
-                height={isFullscreen ? Math.max(300, window.innerHeight - 200) : 400}
+                height={
+                  isFullscreen ? Math.max(300, window.innerHeight - 200) : 400
+                }
                 xAxisLabel="Año"
                 yAxisLabel="Tasa (×100.000 NV)"
                 yAxisDomain={[0, 100]}

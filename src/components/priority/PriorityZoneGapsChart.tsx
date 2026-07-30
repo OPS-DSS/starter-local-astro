@@ -2,7 +2,8 @@
 
 import { useState, useMemo } from 'react'
 import { DSGapBarChart } from '@ops-dss/charts/gap-bar-chart'
-import type { MaternalMortalityRateRow } from '@/lib/parquet'
+import type { PriorityRow } from '@/lib/parquet'
+import { Icon } from '@iconify/react'
 
 const SMV = 'San Martín del Valle'
 
@@ -26,7 +27,7 @@ function r(v: number, d: number) {
 }
 
 function computeZoneGaps(
-  data: MaternalMortalityRateRow[],
+  data: PriorityRow[],
   comparison: ZoneComparison,
 ): ZoneGapRow[] {
   const zonaDesfavorecida =
@@ -148,24 +149,6 @@ function triggerDownload(csv: string, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000)
 }
 
-const DownloadIcon = () => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    width="14"
-    height="14"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-    <polyline points="7 10 12 15 17 10" />
-    <line x1="12" y1="15" x2="12" y2="3" />
-  </svg>
-)
-
 type ViewMode = 'chart' | 'table'
 
 function ViewToggle({
@@ -209,7 +192,7 @@ const COMPARISON_OPTIONS: { value: ZoneComparison; label: string }[] = [
 ]
 
 interface Props {
-  data: MaternalMortalityRateRow[]
+  data: PriorityRow[]
   selectedYear?: number | null
 }
 
@@ -310,7 +293,7 @@ export const PriorityZoneGapsChart = ({ data, selectedYear }: Props) => {
               }
               className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              <DownloadIcon />
+              <Icon icon="mdi:download" className="size-4 opacity-50" />
               Descargar tabla
             </button>
           </div>
@@ -424,7 +407,7 @@ export const PriorityZoneGapsChart = ({ data, selectedYear }: Props) => {
               }
               className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
             >
-              <DownloadIcon />
+              <Icon icon="mdi:download" className="size-4 opacity-50" />
               Descargar tabla
             </button>
           </div>

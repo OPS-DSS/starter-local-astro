@@ -23,14 +23,10 @@ export async function readParquet<T = Record<string, unknown>>(
         file,
         onComplete: (rows) => {
           try {
-            // rows is an array of row-arrays from hyparquet
-            // Each row is an array of column values
             if (!rows || rows.length === 0) {
               resolve([] as unknown as T[])
               return
             }
-            // parquetRead returns row-oriented arrays (each row is an array of values)
-            // We need column names from metadata to build objects
             resolve(rows as unknown as T[])
           } catch (err) {
             reject(err)
@@ -100,15 +96,9 @@ export async function readParquetAsObjects<T = Record<string, unknown>>(
   })
 }
 
-// ── Maternal Mortality data types ─────────────────────────────────────────────
+export type PriorityRawRow = unknown[]
 
-/**
- * Row from maternal_mortality_rate.parquet (mock SMV data)
- * Columns (by index): iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
- */
-export type MaternalMortalityRateRawRow = unknown[]
-
-export type MaternalMortalityRateRow = {
+export type PriorityRow = {
   territorio: string
   anio: number
   etnia: string
@@ -116,10 +106,8 @@ export type MaternalMortalityRateRow = {
   valor: number
 }
 
-export function filterMaternalMortalityRateRows(
-  rows: MaternalMortalityRateRawRow[],
-): MaternalMortalityRateRow[] {
-  const result: MaternalMortalityRateRow[] = []
+export function filterPriorityRows(rows: PriorityRawRow[]): PriorityRow[] {
+  const result: PriorityRow[] = []
   for (const row of rows) {
     const territorio = String(row[1])
     const anio = Number(row[3])
@@ -132,10 +120,6 @@ export function filterMaternalMortalityRateRows(
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-// ── Maternal mortality analytics: temporal data (MM rate + mock DSS avg) ──────
-// Parquet columns: anio[0], valor[1], traslado[2], embarazadas-empleo-informal[3],
-//   sobrecarga-embarazadas[4], apoyo-embarazadas[5], frecuencia-transporte[6],
-//   apoyo-infantil[7]
 export type AnalyticsRawRow = unknown[]
 
 export type AnalyticsRow = {
@@ -175,12 +159,7 @@ export function filterAnalyticsRows(rows: AnalyticsRawRow[]): AnalyticsRow[] {
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-// ── Maternal mortality scatter: cross-sectional barrio data ───────────────────
-// Parquet columns: anio[0], territorio[1], valor[2], traslado[3],
-//   embarazadas-empleo-informal[4], sobrecarga-embarazadas[5],
-//   apoyo-embarazadas[6], frecuencia-transporte[7], apoyo-infantil[8],
-//   nacimientos[9]
-export type ScatterMaternalRawRow = unknown[]
+export type ScatterRawRow = unknown[]
 
 export type ScatterRow = {
   anio: number
@@ -195,7 +174,7 @@ export type ScatterRow = {
   nacimientos: number
 }
 
-export function filterScatterRows(rows: ScatterMaternalRawRow[]): ScatterRow[] {
+export function filterScatterRows(rows: ScatterRawRow[]): ScatterRow[] {
   const result: ScatterRow[] = []
   for (const row of rows) {
     const anio = Number(row[0])

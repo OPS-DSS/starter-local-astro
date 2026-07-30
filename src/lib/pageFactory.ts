@@ -1,7 +1,7 @@
 import {
   readParquet,
   dataPath,
-  filterMaternalMortalityRateRows,
+  filterPriorityRows,
   filterForestPlotRows,
   filterAnalyticsRows,
   filterScatterRows,
@@ -14,13 +14,13 @@ import { priorities, indicators } from '@/config/general'
 import type { IndicatorMeta, IndicatorStratifier } from '@/config/general'
 
 import type {
-  MaternalMortalityRateRawRow,
-  MaternalMortalityRateRow,
+  PriorityRawRow,
+  PriorityRow,
   ForestPlotRawRow,
   ForestPlotDataRow,
   AnalyticsRawRow,
   AnalyticsRow,
-  ScatterMaternalRawRow,
+  ScatterRawRow,
   ScatterRow,
   StratifiedRawRow,
   StratifiedRow,
@@ -32,7 +32,7 @@ export interface PageDatasets {
   forestPlotData: ForestPlotDataRow[]
   analyticsData: AnalyticsRow[]
   scatterData: ScatterRow[]
-  maternalMortalityRateData: MaternalMortalityRateRow[]
+  maternalMortalityRateData: PriorityRow[]
   trasladoData: StratifiedRow[]
   frecuenciaTransporteData: StratifiedRow[]
   sobrecargaCuidadosData: StratifiedRow[]
@@ -64,20 +64,18 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
 
   let scatterData: ScatterRow[] = []
   try {
-    const rows = await readParquet<ScatterMaternalRawRow>(
-      dataPath('scatter.parquet'),
-    )
+    const rows = await readParquet<ScatterRawRow>(dataPath('scatter.parquet'))
     scatterData = filterScatterRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] scatter:', e)
   }
 
-  let maternalMortalityRateData: MaternalMortalityRateRow[] = []
+  let maternalMortalityRateData: PriorityRow[] = []
   try {
-    const rows = await readParquet<MaternalMortalityRateRawRow>(
+    const rows = await readParquet<PriorityRawRow>(
       dataPath('mortalidad-materna.parquet'),
     )
-    maternalMortalityRateData = filterMaternalMortalityRateRows(rows)
+    maternalMortalityRateData = filterPriorityRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] mortalidad-materna:', e)
   }
@@ -164,7 +162,7 @@ export interface PageDefinition {
   date: string
   navbar: boolean
   source?: string
-  data?: MaternalMortalityRateRow[]
+  data?: PriorityRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsData?: AnalyticsRow[]
   scatterData?: ScatterRow[]

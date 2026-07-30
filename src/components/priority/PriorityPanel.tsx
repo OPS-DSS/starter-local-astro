@@ -5,14 +5,14 @@ import { MaternalMortalityChart } from './PriorityChart'
 import type { Stratifier } from './PriorityChart'
 import { PriorityEthnicGapsChart } from './PriorityEthnicGapsChart'
 import { PriorityZoneGapsChart } from './PriorityZoneGapsChart'
-import type { MaternalMortalityRateRow } from '@/lib/parquet'
+import type { PriorityRow } from '@/lib/parquet'
 
 const SMV = 'San Martín del Valle'
 const TOTAL_ZONA = 'Total'
 const TOTAL_ETNIA = 'Total'
 
 interface MaternalMortalityPanelProps {
-  data: MaternalMortalityRateRow[]
+  data: PriorityRow[]
   csvPath?: string
 }
 

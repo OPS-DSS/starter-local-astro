@@ -8,7 +8,7 @@ import PrioritySelector from '@/components/PrioritySelector.astro'
 import StratifiedIndicator from '@/components/StratifiedIndicator.astro'
 
 import type {
-  MaternalMortalityRateRow,
+  PriorityRow,
   ForestPlotDataRow,
   AnalyticsRow,
   ScatterRow,
@@ -26,7 +26,7 @@ export interface PageProps {
   slug: string | undefined
   date: Date
   source?: string
-  data?: MaternalMortalityRateRow[]
+  data?: PriorityRow[]
   forestPlotData?: ForestPlotDataRow[]
   analyticsData?: AnalyticsRow[]
   scatterData?: ScatterRow[]
