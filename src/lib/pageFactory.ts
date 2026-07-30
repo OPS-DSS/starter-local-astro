@@ -3,8 +3,8 @@ import {
   dataPath,
   filterMaternalMortalityRateRows,
   filterForestPlotRows,
-  filterAnalyticsMaternalRows,
-  filterScatterMaternalRows,
+  filterAnalyticsRows,
+  filterScatterRows,
   filterJourneyTimeStratifiedRows,
   filterSexoOnlyStratifiedRows,
   filterZonaOnlyStratifiedRows,
@@ -18,10 +18,10 @@ import type {
   MaternalMortalityRateRow,
   ForestPlotRawRow,
   ForestPlotDataRow,
-  AnalyticsMaternalRawRow,
-  AnalyticsMaternalRow,
+  AnalyticsRawRow,
+  AnalyticsRow,
   ScatterMaternalRawRow,
-  ScatterMaternalRow,
+  ScatterRow,
   StratifiedRawRow,
   StratifiedRow,
 } from './parquet'
@@ -30,8 +30,8 @@ import type {
 
 export interface PageDatasets {
   forestPlotData: ForestPlotDataRow[]
-  analyticsMaternalData: AnalyticsMaternalRow[]
-  scatterMaternalData: ScatterMaternalRow[]
+  analyticsData: AnalyticsRow[]
+  scatterData: ScatterRow[]
   maternalMortalityRateData: MaternalMortalityRateRow[]
   trasladoData: StratifiedRow[]
   frecuenciaTransporteData: StratifiedRow[]
@@ -52,22 +52,22 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     console.error('[loadAllDatasets] forest-plot:', e)
   }
 
-  let analyticsMaternalData: AnalyticsMaternalRow[] = []
+  let analyticsData: AnalyticsRow[] = []
   try {
-    const rows = await readParquet<AnalyticsMaternalRawRow>(
+    const rows = await readParquet<AnalyticsRawRow>(
       dataPath('analytics.parquet'),
     )
-    analyticsMaternalData = filterAnalyticsMaternalRows(rows)
+    analyticsData = filterAnalyticsRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] analytics:', e)
   }
 
-  let scatterMaternalData: ScatterMaternalRow[] = []
+  let scatterData: ScatterRow[] = []
   try {
     const rows = await readParquet<ScatterMaternalRawRow>(
       dataPath('scatter.parquet'),
     )
-    scatterMaternalData = filterScatterMaternalRows(rows)
+    scatterData = filterScatterRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] scatter:', e)
   }
@@ -105,11 +105,11 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
   let sobrecargaCuidadosData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('sobrecarga-cuidados.parquet'),
+      dataPath('sobrecarga-embarazadas.parquet'),
     )
     sobrecargaCuidadosData = filterEtniaStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] sobrecarga-cuidados:', e)
+    console.error('[loadAllDatasets] sobrecarga-embarazadas:', e)
   }
 
   let empleoInformalData: StratifiedRow[] = []
@@ -144,8 +144,8 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
 
   return {
     forestPlotData,
-    analyticsMaternalData,
-    scatterMaternalData,
+    analyticsData,
+    scatterData,
     maternalMortalityRateData,
     trasladoData,
     frecuenciaTransporteData,
@@ -166,8 +166,8 @@ export interface PageDefinition {
   source?: string
   data?: MaternalMortalityRateRow[]
   forestPlotData?: ForestPlotDataRow[]
-  analyticsMaternalData?: AnalyticsMaternalRow[]
-  scatterMaternalData?: ScatterMaternalRow[]
+  analyticsData?: AnalyticsRow[]
+  scatterData?: ScatterRow[]
   trasladoData?: StratifiedRow[]
   frecuenciaTransporteData?: StratifiedRow[]
   sobrecargaCuidadosData?: StratifiedRow[]
@@ -222,8 +222,8 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       navbar: false,
       priority: false,
       forestPlotData: datasets.forestPlotData,
-      analyticsMaternalData: datasets.analyticsMaternalData,
-      scatterMaternalData: datasets.scatterMaternalData,
+      analyticsData: datasets.analyticsData,
+      scatterData: datasets.scatterData,
     },
   ]
 

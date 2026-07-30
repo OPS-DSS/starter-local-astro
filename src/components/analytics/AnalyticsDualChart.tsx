@@ -1,6 +1,6 @@
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { LineChartData } from '@ops-dss/charts/line-chart'
-import type { AnalyticsMaternalRow, AnalyticsIndicatorKey } from '@/lib/parquet'
+import type { AnalyticsRow, AnalyticsIndicatorKey } from '@/lib/parquet'
 import { indicators } from '@/config/general'
 import type { IndicatorMeta } from '@/config/general'
 
@@ -9,7 +9,7 @@ const indicatorsBySlug = Object.fromEntries(
 ) as Record<AnalyticsIndicatorKey, IndicatorMeta>
 
 interface AnalyticsDualChartProps {
-  data: AnalyticsMaternalRow[]
+  data: AnalyticsRow[]
   selectedIndicator?: AnalyticsIndicatorKey
   selectedYear?: number | null
   isFullscreen?: boolean

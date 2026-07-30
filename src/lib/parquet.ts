@@ -136,9 +136,9 @@ export function filterMaternalMortalityRateRows(
 // Parquet columns: anio[0], valor[1], traslado[2], embarazadas-empleo-informal[3],
 //   sobrecarga-embarazadas[4], apoyo-embarazadas[5], frecuencia-transporte[6],
 //   apoyo-infantil[7]
-export type AnalyticsMaternalRawRow = unknown[]
+export type AnalyticsRawRow = unknown[]
 
-export type AnalyticsMaternalRow = {
+export type AnalyticsRow = {
   anio: number
   valor: number
   traslado: number
@@ -151,14 +151,12 @@ export type AnalyticsMaternalRow = {
 
 // Indicator slugs used as data-row keys across the analytics dashboard.
 export type AnalyticsIndicatorKey = Exclude<
-  keyof AnalyticsMaternalRow,
+  keyof AnalyticsRow,
   'anio' | 'valor'
 >
 
-export function filterAnalyticsMaternalRows(
-  rows: AnalyticsMaternalRawRow[],
-): AnalyticsMaternalRow[] {
-  const result: AnalyticsMaternalRow[] = []
+export function filterAnalyticsRows(rows: AnalyticsRawRow[]): AnalyticsRow[] {
+  const result: AnalyticsRow[] = []
   for (const row of rows) {
     const anio = Number(row[0])
     const valor = Number(row[1])
@@ -184,7 +182,7 @@ export function filterAnalyticsMaternalRows(
 //   nacimientos[9]
 export type ScatterMaternalRawRow = unknown[]
 
-export type ScatterMaternalRow = {
+export type ScatterRow = {
   anio: number
   territorio: string
   valor: number
@@ -197,10 +195,8 @@ export type ScatterMaternalRow = {
   nacimientos: number
 }
 
-export function filterScatterMaternalRows(
-  rows: ScatterMaternalRawRow[],
-): ScatterMaternalRow[] {
-  const result: ScatterMaternalRow[] = []
+export function filterScatterRows(rows: ScatterMaternalRawRow[]): ScatterRow[] {
+  const result: ScatterRow[] = []
   for (const row of rows) {
     const anio = Number(row[0])
     const territorio = String(row[1])

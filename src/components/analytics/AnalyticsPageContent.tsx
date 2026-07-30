@@ -8,14 +8,12 @@ import { indicators } from '@/config/general'
 import type { IndicatorMeta } from '@/config/general'
 import type {
   ForestPlotDataRow,
-  AnalyticsMaternalRow,
-  ScatterMaternalRow,
+  AnalyticsRow,
+  ScatterRow,
   AnalyticsIndicatorKey,
 } from '@/lib/parquet'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
-
-const MATERNAL_LABEL = 'Mortalidad materna (x100k NV)'
 
 const indicatorsBySlug = Object.fromEntries(
   indicators.map((i) => [i.slug, i]),
@@ -35,11 +33,12 @@ const BIVARIATE_COLORS: string[][] = [
 type TableRow = { name: string; value: number | null }
 
 interface AnalyticsPageContentProps {
+  priority: IndicatorMeta
   forestPlotData?: ForestPlotDataRow[]
-  analyticsMaternalData?: AnalyticsMaternalRow[]
-  scatterMaternalData?: ScatterMaternalRow[]
+  analyticsData?: AnalyticsRow[]
+  scatterData?: ScatterRow[]
   geojsonUrls?: Record<AnalyticsIndicatorKey, Record<number, string>>
-  maternalGeojsonUrls?: Record<number, string>
+  priorityGeojsonUrls?: Record<number, string>
   dssBivariateGeojsonUrls?: Partial<
     Record<
       AnalyticsIndicatorKey,
@@ -128,11 +127,12 @@ function BivariateLegend({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export const AnalyticsPageContent = ({
+  priority,
   forestPlotData,
-  analyticsMaternalData,
-  scatterMaternalData,
+  analyticsData,
+  scatterData,
   geojsonUrls,
-  maternalGeojsonUrls,
+  priorityGeojsonUrls,
   dssBivariateGeojsonUrls,
   csvUrl,
 }: AnalyticsPageContentProps) => {
@@ -152,12 +152,12 @@ export const AnalyticsPageContent = ({
 
   // Derive available years from scatter data (sorted descending for display)
   const availableYears = useMemo(() => {
-    if (!scatterMaternalData || scatterMaternalData.length === 0) return []
-    const years = [...new Set(scatterMaternalData.map((r) => r.anio))].sort(
+    if (!scatterData || scatterData.length === 0) return []
+    const years = [...new Set(scatterData.map((r) => r.anio))].sort(
       (a, b) => b - a,
     )
     return years
-  }, [scatterMaternalData])
+  }, [scatterData])
 
   const lastYear = availableYears[0] ?? null
 
@@ -175,8 +175,8 @@ export const AnalyticsPageContent = ({
 
   const hasData =
     (forestPlotData && forestPlotData.length > 0) ||
-    (analyticsMaternalData && analyticsMaternalData.length > 0) ||
-    (scatterMaternalData && scatterMaternalData.length > 0)
+    (analyticsData && analyticsData.length > 0) ||
+    (scatterData && scatterData.length > 0)
 
   const selectedMeta = indicatorsBySlug[selectedIndicator]
 
@@ -188,8 +188,8 @@ export const AnalyticsPageContent = ({
   }, [forestPlotData, effectiveYear])
 
   const scatterPoints =
-    scatterMaternalData && effectiveYear !== null
-      ? scatterMaternalData
+    scatterData && effectiveYear !== null
+      ? scatterData
           .filter((r) => r.anio === effectiveYear)
           .map((r) => ({
             x: (r[selectedIndicator] as number) * 100,
@@ -212,7 +212,7 @@ export const AnalyticsPageContent = ({
           ]?.[effectiveYear]
         : isBivariate
           ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
-          : maternalGeojsonUrls?.[effectiveYear]
+          : priorityGeojsonUrls?.[effectiveYear]
       : undefined
 
   const isDssBivariate = selectedDssIndicator !== null
@@ -222,15 +222,15 @@ export const AnalyticsPageContent = ({
 
   // For the map's valueName / secondaryValueName
   const mapValueName =
-    !isBivariate && !isDssBivariate ? MATERNAL_LABEL : selectedMeta.label
+    !isBivariate && !isDssBivariate ? priority.axisLabel : selectedMeta.label
   const mapSecondaryValueName = isDssBivariate
     ? dssSecondaryMeta!.label
     : isBivariate
-      ? MATERNAL_LABEL
+      ? priority.axisLabel
       : undefined
 
   const tableColumnLabel =
-    isDssBivariate || isBivariate ? selectedMeta.label : MATERNAL_LABEL
+    isDssBivariate || isBivariate ? selectedMeta.label : priority.axisLabel
 
   // DSS indicator values in GeoJSON are in 0-1 range; display as percentages
   const isDssValue = isBivariate || isDssBivariate
@@ -291,7 +291,7 @@ export const AnalyticsPageContent = ({
         effectiveYear !== null
           ? next
             ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
-            : maternalGeojsonUrls?.[effectiveYear]
+            : priorityGeojsonUrls?.[effectiveYear]
           : undefined
       if (nextUrl) fetchTableData(nextUrl)
     }
@@ -308,7 +308,7 @@ export const AnalyticsPageContent = ({
               ]
             : isBivariate
               ? geojsonUrls?.[selectedIndicator]?.[effectiveYear]
-              : maternalGeojsonUrls?.[effectiveYear]
+              : priorityGeojsonUrls?.[effectiveYear]
           : undefined
       if (nextUrl) fetchTableData(nextUrl)
     }
@@ -383,11 +383,11 @@ export const AnalyticsPageContent = ({
           )}
 
           {/* ── Temporal trends ── */}
-          {analyticsMaternalData && analyticsMaternalData.length > 0 && (
+          {analyticsData && analyticsData.length > 0 && (
             <ExpandablePanel className="relative border rounded-lg p-4 flex flex-col gap-4">
               {(isFullscreen) => (
                 <AnalyticsDualChart
-                  data={analyticsMaternalData}
+                  data={analyticsData}
                   selectedIndicator={selectedIndicator}
                   selectedYear={effectiveYear}
                   isFullscreen={isFullscreen}
@@ -442,7 +442,7 @@ export const AnalyticsPageContent = ({
                       <span>
                         {dssSecondaryMeta
                           ? dssSecondaryMeta.title
-                          : MATERNAL_LABEL}
+                          : priority.axisLabel}
                       </span>
                     </>
                   ) : isDssBivariate ? (
@@ -454,7 +454,7 @@ export const AnalyticsPageContent = ({
                       <span>
                         {dssSecondaryMeta
                           ? dssSecondaryMeta.label
-                          : MATERNAL_LABEL}
+                          : priority.axisLabel}
                       </span>
                     </>
                   ) : (
@@ -606,7 +606,7 @@ export const AnalyticsPageContent = ({
                             yAxisLabel={
                               isDssBivariate
                                 ? dssSecondaryMeta!.label
-                                : MATERNAL_LABEL
+                                : priority.axisLabel
                             }
                           />
                           <div className="flex items-center gap-1.5 self-end">
