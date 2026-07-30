@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import { MaternalMortalityChart } from './PriorityChart'
+import { PriorityChart } from './PriorityChart'
 import type { Stratifier } from './PriorityChart'
 import { PriorityEthnicGapsChart } from './PriorityEthnicGapsChart'
 import { PriorityZoneGapsChart } from './PriorityZoneGapsChart'
@@ -11,15 +11,12 @@ const SMV = 'San Martín del Valle'
 const TOTAL_ZONA = 'Total'
 const TOTAL_ETNIA = 'Total'
 
-interface MaternalMortalityPanelProps {
+interface PriorityPanelProps {
   data: PriorityRow[]
   csvPath?: string
 }
 
-export const MaternalMortalityPanel = ({
-  data,
-  csvPath,
-}: MaternalMortalityPanelProps) => {
+export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
   const availableYears = useMemo(() => {
     const smvRows = data.filter(
       (r) =>
@@ -61,7 +58,7 @@ export const MaternalMortalityPanel = ({
       )}
 
       {/* ── Temporal trend chart ───────────────────────────────────────────────── */}
-      <MaternalMortalityChart
+      <PriorityChart
         data={data}
         csvPath={csvPath}
         highlightYear={effectiveYear ?? undefined}

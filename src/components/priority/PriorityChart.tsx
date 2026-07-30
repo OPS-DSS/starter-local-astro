@@ -98,7 +98,7 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-interface MaternalMortalityChartProps {
+interface PriorityChartProps {
   data: PriorityRow[]
   csvPath?: string
   highlightYear?: number
@@ -112,13 +112,13 @@ const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
   { value: 'zona', label: 'Zona' },
 ]
 
-export const MaternalMortalityChart = ({
+export const PriorityChart = ({
   data,
   csvPath,
   highlightYear,
   stratifier,
   onStratifierChange: setStratifier,
-}: MaternalMortalityChartProps) => {
+}: PriorityChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   const { chartData, lines, keys } = useMemo(
