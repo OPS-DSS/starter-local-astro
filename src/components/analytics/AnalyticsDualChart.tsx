@@ -9,22 +9,19 @@ const indicatorsBySlug = Object.fromEntries(
 ) as Record<AnalyticsIndicatorKey, IndicatorMeta>
 
 interface AnalyticsDualChartProps {
+  priority: IndicatorMeta
   data: AnalyticsRow[]
   selectedIndicator?: AnalyticsIndicatorKey
   selectedYear?: number | null
   isFullscreen?: boolean
 }
 
-/**
- * Two vertically stacked line charts:
- *   - Top: Mortalidad materna (San Martin del Valle, por 100.000 NV)
- *   - Bottom: Selected education indicator (San Martin del Valle weighted mean)
- */
 export const AnalyticsDualChart = ({
   data,
   selectedIndicator = 'traslado',
   selectedYear,
   isFullscreen = false,
+  priority,
 }: AnalyticsDualChartProps) => {
   const chartHeight = isFullscreen
     ? Math.max(180, Math.floor((window.innerHeight - 260) / 2))
@@ -38,7 +35,7 @@ export const AnalyticsDualChart = ({
   }
 
   const indicatorMeta = indicatorsBySlug[selectedIndicator]
-  const mortalityData = data.map((row) => ({
+  const priorityData = data.map((row) => ({
     anio: row.anio,
     valor: row.valor,
   }))
@@ -63,18 +60,18 @@ export const AnalyticsDualChart = ({
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
           <DSLineChart
-            data={mortalityData}
+            data={priorityData}
             xAxisKey="anio"
             lines={[
               {
                 dataKey: 'valor',
-                name: 'Mortalidad materna (×100k NV)',
+                name: `${priority.axisLabel}`,
                 color: '#e11d48',
               },
             ]}
             height={chartHeight}
             xAxisLabel="Año"
-            yAxisLabel="Mortalidad materna (×100k NV)"
+            yAxisLabel={priority.axisLabel}
             yAxisDomain={[0, 100]}
             highlightX={selectedYear ?? undefined}
           />

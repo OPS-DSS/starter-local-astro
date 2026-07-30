@@ -16,6 +16,16 @@ const Indicator = z.object({
   label: z.string(),
   axisLabel: z.string(),
   color: z.string(),
+  bivariateValue: z.string().optional(),
+  scheme: z
+    .array(
+      z.object({
+        name: z.string(),
+        type: z.string(),
+        index: z.number(),
+      }),
+    )
+    .optional(),
 })
 
 const Config = z.object({

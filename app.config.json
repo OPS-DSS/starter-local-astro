@@ -18,33 +18,34 @@
       "axisLabel": "RMM (por 100.000 nacidos vivos)",
       "color": "#ef4444",
       "stratifiers": ["zona", "etnia"],
+      "bivariateValue": "maternal_value",
       "scheme": [
         {
           "name": "territorio",
           "type": "string",
-          "index": "1"
+          "index": 1
         },
         {
           "name": "anio",
           "type": "number",
-          "index": "3"
+          "index": 3
         },
         {
           "name": "valor",
           "type": "number",
-          "index": "7"
+          "index": 7
         },
         {
           "name": "zona",
           "type": "string",
           "values": ["total", "urbano", "periurbano", "rural"],
-          "index": "5"
+          "index": 5
         },
         {
           "name": "etnia",
           "type": "string",
           "values": ["total", "indigena", "no indígena"],
-          "index": "6"
+          "index": 6
         }
       ]
     },

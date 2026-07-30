@@ -356,15 +356,15 @@ export const AnalyticsPageContent = ({
           {forestPlotData && forestPlotData.length > 0 && (
             <ExpandablePanel>
               <h2 className="text-xl font-bold text-gray-900 mr-8">
-                Correlaciones con mortalidad materna
+                Correlaciones con {priority.title}
               </h2>
               <p className="text-sm text-gray-500 mt-1">
-                Correlación de Spearman entre cada indicador y la mortalidad
-                materna (barrios de San Martín del Valle,{' '}
+                Correlación de Spearman entre cada indicador y la problemática
+                priorizada (barrios,{' '}
                 {effectiveYear !== null
-                  ? `año ${effectiveYear}`
+                  ? ` ${effectiveYear}`
                   : 'último año disponible'}
-                ). Haz clic en un indicador para explorar su relación.
+                ). Seleccione un indicador para explorar su relación.
               </p>
               {forestPlotForYear.length > 0 ? (
                 <DSForestPlot
@@ -387,6 +387,7 @@ export const AnalyticsPageContent = ({
             <ExpandablePanel className="relative border rounded-lg p-4 flex flex-col gap-4">
               {(isFullscreen) => (
                 <AnalyticsDualChart
+                  priority={priority}
                   data={analyticsData}
                   selectedIndicator={selectedIndicator}
                   selectedYear={effectiveYear}
@@ -407,7 +408,7 @@ export const AnalyticsPageContent = ({
                   <span style={{ color: selectedMeta.color }}>
                     {selectedMeta.title}
                   </span>{' '}
-                  vs Mortalidad materna (x100k NV)
+                  vs {priority.axisLabel}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
                   Cada punto es un barrio de San Martín del Valle (
@@ -421,7 +422,7 @@ export const AnalyticsPageContent = ({
               <DSScatterChart
                 data={scatterPoints}
                 xLabel={selectedMeta.axisLabel}
-                yLabel="Mortalidad materna (×100k NV)"
+                yLabel={priority.axisLabel}
                 width={800}
               />
             </ExpandablePanel>
@@ -460,7 +461,7 @@ export const AnalyticsPageContent = ({
                   ) : (
                     <>
                       <span style={{ color: selectedMeta.color }}>
-                        Solo Mortalidad Materna
+                        Solo {priority.title}
                       </span>
                     </>
                   )}
@@ -488,7 +489,7 @@ export const AnalyticsPageContent = ({
                             : 'bg-white text-gray-600 hover:bg-gray-50'
                         }`}
                       >
-                        Solo Mortalidad Materna
+                        Solo {priority.title}
                       </button>
                     </div>
 
@@ -586,7 +587,7 @@ export const AnalyticsPageContent = ({
                       valueName={mapValueName}
                       secondaryValueProperty={
                         isDssBivariate || isBivariate
-                          ? 'maternal_value'
+                          ? priority.bivariateValue
                           : undefined
                       }
                       secondaryValueName={mapSecondaryValueName}
@@ -629,7 +630,7 @@ export const AnalyticsPageContent = ({
                         <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">
                           <div className="flex items-center gap-2">
                             <span className="text-gray-500 text-xs w-36 shrink-0">
-                              Mortalidad Materna
+                              {priority.title}
                             </span>
                             <span className="text-gray-600 text-xs">Menor</span>
                             <div
