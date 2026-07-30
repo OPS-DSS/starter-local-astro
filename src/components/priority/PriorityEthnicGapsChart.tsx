@@ -4,9 +4,7 @@ import { useState, useMemo } from 'react'
 import { DSGapBarChart } from '@ops-dss/charts/gap-bar-chart'
 import type { PriorityRow } from '@/lib/parquet'
 import { Icon } from '@iconify/react'
-
-const SMV = 'San Martín del Valle'
-const TOTAL_ZONA = 'Total'
+import { app, type IndicatorMeta } from '@/config/general'
 
 interface GapRow {
   anio: number
@@ -27,7 +25,7 @@ function r(v: number, d: number) {
 
 function computeGaps(data: PriorityRow[]): GapRow[] {
   const smvRows = data.filter(
-    (row) => row.territorio === SMV && row.zona === TOTAL_ZONA,
+    (row) => row.territorio === app.local && row.zona === 'Total',
   )
   const indigenaByYear = new Map<number, number>()
   const noIndigenaByYear = new Map<number, number>()
@@ -71,20 +69,16 @@ function computeGaps(data: PriorityRow[]): GapRow[] {
     .filter((row): row is GapRow => row !== null)
 }
 
-function interpretacionBA(ba: number): string {
-  if (ba > 0)
-    return `La razón de mortalidad materna en población indígena fue ${Math.abs(ba).toFixed(1)} muertes por 100.000 nacidos vivos superior a la observada en población no indígena, evidenciando una desigualdad étnica desfavorable para la población indígena.`
-  if (ba < 0)
-    return `La razón de mortalidad materna en población no indígena fue ${Math.abs(ba).toFixed(1)} muertes por 100.000 nacidos vivos superior a la observada en población indígena.`
-  return 'No se observaron diferencias absolutas relevantes entre grupos étnicos.'
+function interpretacionBA(ba: number, priority: IndicatorMeta): string {
+  if (ba > 0) return priority.gaps?.ethnic?.absolute.above0 ?? ''
+  if (ba < 0) return priority.gaps?.ethnic?.absolute.below0 ?? ''
+  return 'No se observaron diferencias absolutas relevantes.'
 }
 
-function interpretacionBR(br: number): string {
-  if (br > 1)
-    return `La población indígena presentó una razón de mortalidad materna ${br.toFixed(2)} veces mayor que la población no indígena.`
-  if (br < 1 && br > 0)
-    return `La población no indígena presentó una razón de mortalidad materna ${(1 / br).toFixed(2)} veces mayor que la población indígena.`
-  return 'No se observaron diferencias relativas entre grupos étnicos.'
+function interpretacionBR(br: number, priority: IndicatorMeta): string {
+  if (br > 1) return priority.gaps?.ethnic?.relative.above1 ?? ''
+  if (br < 1 && br > 0) return priority.gaps?.ethnic?.relative.below1 ?? ''
+  return 'No se observaron diferencias relativas.'
 }
 
 function downloadCsvBA(rows: GapRow[], filename = 'brecha-absoluta') {
@@ -183,9 +177,14 @@ function ViewToggle({
 interface Props {
   data: PriorityRow[]
   selectedYear?: number | null
+  priority: IndicatorMeta
 }
 
-export const PriorityEthnicGapsChart = ({ data, selectedYear }: Props) => {
+export const PriorityEthnicGapsChart = ({
+  data,
+  selectedYear,
+  priority,
+}: Props) => {
   const gapsData = useMemo(() => computeGaps(data), [data])
 
   const [viewBA, setViewBA] = useState<ViewMode>('chart')
@@ -318,7 +317,7 @@ export const PriorityEthnicGapsChart = ({ data, selectedYear }: Props) => {
               {selectedRow.ic_sup_ba.toFixed(1)}) muertes por 100.000 NV
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {interpretacionBA(selectedRow.brecha_absoluta)}
+              {interpretacionBA(selectedRow.brecha_absoluta, priority)}
             </p>
           </div>
         )}
@@ -419,7 +418,7 @@ export const PriorityEthnicGapsChart = ({ data, selectedYear }: Props) => {
               {selectedRow.ic_sup_br.toFixed(2)})
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {interpretacionBR(selectedRow.brecha_relativa)}
+              {interpretacionBR(selectedRow.brecha_relativa, priority)}
             </p>
           </div>
         )}

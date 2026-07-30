@@ -4,8 +4,7 @@ import { useState, useMemo } from 'react'
 import { DSGapBarChart } from '@ops-dss/charts/gap-bar-chart'
 import type { PriorityRow } from '@/lib/parquet'
 import { Icon } from '@iconify/react'
-
-const SMV = 'San Martín del Valle'
+import { app, type IndicatorMeta } from '@/config/general'
 
 type ZoneComparison = 'rural_urbano' | 'periurbano_urbano'
 
@@ -35,7 +34,7 @@ function computeZoneGaps(
   const zonaFavorecida = 'urbano'
 
   const smvRows = data.filter(
-    (row) => row.territorio === SMV && row.etnia === 'Total',
+    (row) => row.territorio === app.local && row.etnia === 'Total',
   )
 
   const desfByYear = new Map<number, number>()
@@ -79,19 +78,37 @@ function computeZoneGaps(
     .filter((row): row is ZoneGapRow => row !== null)
 }
 
-function interpretacionBA(ba: number, desf: string, fav: string): string {
-  if (ba > 0)
-    return `La razón de mortalidad materna en zona ${desf} fue ${Math.abs(ba).toFixed(1)} muertes por 100.000 nacidos vivos superior a la zona ${fav}, evidenciando una desigualdad territorial desfavorable para la zona ${desf}.`
-  if (ba < 0)
-    return `La razón de mortalidad materna en zona ${fav} fue ${Math.abs(ba).toFixed(1)} muertes por 100.000 nacidos vivos superior a la zona ${desf}.`
+function interpretacionBA(
+  ba: number,
+  desf: string,
+  fav: string,
+  priority: IndicatorMeta,
+): string {
+  if (ba > 0 && desf === 'rural' && fav === 'urbano')
+    return priority.gaps?.zone?.rural_urban?.absolute?.below0 ?? ''
+  if (ba > 0 && desf === 'periurbano' && fav === 'urbano')
+    return priority.gaps?.zone?.periurban_urban?.absolute?.below0 ?? ''
+  if (ba < 0 && desf === 'periurbano' && fav === 'urbano')
+    return priority.gaps?.zone?.periurban_urban?.absolute?.above0 ?? ''
+  if (ba < 0 && desf === 'rural' && fav === 'urbano')
+    return priority.gaps?.zone?.rural_urban?.absolute?.above0 ?? ''
   return 'No se observaron diferencias absolutas relevantes entre zonas.'
 }
 
-function interpretacionBR(br: number, desf: string, fav: string): string {
-  if (br > 1)
-    return `La zona ${desf} presentó una razón de mortalidad materna ${br.toFixed(2)} veces mayor que la zona ${fav}.`
-  if (br < 1 && br > 0)
-    return `La zona ${fav} presentó una razón de mortalidad materna ${(1 / br).toFixed(2)} veces mayor que la zona ${desf}.`
+function interpretacionBR(
+  br: number,
+  desf: string,
+  fav: string,
+  priority: IndicatorMeta,
+): string {
+  if (br > 1 && desf === 'rural' && fav === 'urbano')
+    return priority.gaps?.zone?.rural_urban?.relative?.below1 ?? ''
+  if (br > 1 && desf === 'periurbano' && fav === 'urbano')
+    return priority.gaps?.zone?.periurban_urban?.relative?.below1 ?? ''
+  if (br < 1 && br > 0 && desf === 'periurbano' && fav === 'urbano')
+    return priority.gaps?.zone?.periurban_urban?.relative?.above1 ?? ''
+  if (br < 1 && br > 0 && desf === 'rural' && fav === 'urbano')
+    return priority.gaps?.zone?.rural_urban?.relative?.above1 ?? ''
   return 'No se observaron diferencias relativas entre zonas.'
 }
 
@@ -194,9 +211,14 @@ const COMPARISON_OPTIONS: { value: ZoneComparison; label: string }[] = [
 interface Props {
   data: PriorityRow[]
   selectedYear?: number | null
+  priority: IndicatorMeta
 }
 
-export const PriorityZoneGapsChart = ({ data, selectedYear }: Props) => {
+export const PriorityZoneGapsChart = ({
+  data,
+  selectedYear,
+  priority,
+}: Props) => {
   const [comparison, setComparison] = useState<ZoneComparison>('rural_urbano')
   const [viewBA, setViewBA] = useState<ViewMode>('chart')
   const [viewBR, setViewBR] = useState<ViewMode>('chart')
@@ -379,6 +401,7 @@ export const PriorityZoneGapsChart = ({ data, selectedYear }: Props) => {
                 selectedRow.brecha_absoluta,
                 zonaDesfavorecida,
                 zonaFavorecida,
+                priority,
               )}
             </p>
           </div>
@@ -494,6 +517,7 @@ export const PriorityZoneGapsChart = ({ data, selectedYear }: Props) => {
                 selectedRow.brecha_relativa,
                 zonaDesfavorecida,
                 zonaFavorecida,
+                priority,
               )}
             </p>
           </div>

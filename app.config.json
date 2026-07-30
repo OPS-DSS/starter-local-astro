@@ -48,7 +48,45 @@
           "index": 6
         }
       ],
-      "inequitySource": "Las métricas de desigualdad implementadas se basan en el marco metodológico del Cuantificador de Desigualdades en Salud, desarrollado conjuntamente por la Organización Panamericana de la Salud (OPS/OMS) y el Centro Nacional de Epidemiología, Prevención y Control de Enfermedades del Ministerio de Salud del Perú (CDC-Perú). Disponible en https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud"
+      "inequitySource": "Las métricas de desigualdad implementadas se basan en el marco metodológico del Cuantificador de Desigualdades en Salud, desarrollado conjuntamente por la Organización Panamericana de la Salud (OPS/OMS) y el Centro Nacional de Epidemiología, Prevención y Control de Enfermedades del Ministerio de Salud del Perú (CDC-Perú). Disponible en https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud",
+      "gaps": {
+        "ethnic": {
+          "absolute": {
+            "below0": "La razón de mortalidad materna en población no indígena fue superior a la observada en población indígena.",
+            "above0": "La razón de mortalidad materna en población indígena fue superior a la observada en población no indígena, evidenciando una desigualdad étnica desfavorable para la población indígena."
+          },
+          "relative": {
+            "below1": "La población no indígena presentó una razón de mortalidad materna mayor que la población indígena.",
+            "above1": "La población indígena presentó una razón de mortalidad materna mayor que la población no indígena."
+          }
+        },
+        "zone": {
+          "rural_urban": {
+            "tag1": "rural",
+            "tag2": "urbano",
+            "absolute": {
+              "below0": "La razón de mortalidad materna en población urbana fue superior a la observada en población rural.",
+              "above0": "La razón de mortalidad materna en población rural fue superior a la observada en población urbana, evidenciando una desigualdad territorial desfavorable para la población rural."
+            },
+            "relative": {
+              "below1": "La población urbana presentó una razón de mortalidad materna mayor que la población rural.",
+              "above1": "La población rural presentó una razón de mortalidad materna mayor que la población urbana."
+            }
+          },
+          "periurban_urban": {
+            "tag1": "periurbano",
+            "tag2": "urbano",
+            "absolute": {
+              "below0": "La razón de mortalidad materna en población urbana fue superior a la observada en población periurbana.",
+              "above0": "La razón de mortalidad materna en población periurbana fue superior a la observada en población urbana, evidenciando una desigualdad territorial desfavorable para la población periurbana."
+            },
+            "relative": {
+              "below1": "La población urbana presentó una razón de mortalidad materna mayor que la población periurbana.",
+              "above1": "La población periurbana presentó una razón de mortalidad materna mayor que la población urbana."
+            }
+          }
+        }
+      }
     },
     {
       "slug": "traslado",

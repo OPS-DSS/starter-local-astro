@@ -27,6 +27,46 @@ const Indicator = z.object({
       }),
     )
     .optional(),
+  gaps: z
+    .object({
+      ethnic: z
+        .object({
+          absolute: z.object({
+            below0: z.string(),
+            above0: z.string(),
+          }),
+          relative: z.object({
+            below1: z.string(),
+            above1: z.string(),
+          }),
+        })
+        .optional(),
+      zone: z
+        .object({
+          rural_urban: z.object({
+            absolute: z.object({
+              below0: z.string(),
+              above0: z.string(),
+            }),
+            relative: z.object({
+              below1: z.string(),
+              above1: z.string(),
+            }),
+          }),
+          periurban_urban: z.object({
+            absolute: z.object({
+              below0: z.string(),
+              above0: z.string(),
+            }),
+            relative: z.object({
+              below1: z.string(),
+              above1: z.string(),
+            }),
+          }),
+        })
+        .optional(),
+    })
+    .optional(),
 })
 
 const Config = z.object({

@@ -7,9 +7,7 @@ import { PriorityEthnicGapsChart } from './PriorityEthnicGapsChart'
 import { PriorityZoneGapsChart } from './PriorityZoneGapsChart'
 import type { PriorityRow } from '@/lib/parquet'
 import { app } from '@/config/general'
-
-const TOTAL_ZONA = 'Total'
-const TOTAL_ETNIA = 'Total'
+import { priorities } from '@/config/general'
 
 interface PriorityPanelProps {
   data: PriorityRow[]
@@ -18,13 +16,11 @@ interface PriorityPanelProps {
 
 export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
   const availableYears = useMemo(() => {
-    const smvRows = data.filter(
+    const rows = data.filter(
       (r) =>
-        r.territorio === app.local &&
-        r.zona === TOTAL_ZONA &&
-        r.etnia === TOTAL_ETNIA,
+        r.territorio === app.local && r.zona === 'Total' && r.etnia === 'Total',
     )
-    return [...new Set(smvRows.map((r) => r.anio))].sort((a, b) => b - a)
+    return [...new Set(rows.map((r) => r.anio))].sort((a, b) => b - a)
   }, [data])
 
   const lastYear = availableYears[0] ?? null
@@ -35,7 +31,6 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
 
   return (
     <div className="flex flex-col gap-10">
-      {/* ── Sticky year selector ──────────────────────────────────────────────── */}
       {availableYears.length > 1 && (
         <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm py-2 border-b border-gray-100 -mx-2 px-2 sm:-mx-6 sm:px-6 lg:-mx-10 lg:px-10 overflow-x-auto">
           <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm w-fit">
@@ -57,7 +52,6 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
         </div>
       )}
 
-      {/* ── Temporal trend chart ───────────────────────────────────────────────── */}
       <PriorityChart
         data={data}
         csvPath={csvPath}
@@ -66,7 +60,6 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
         onStratifierChange={setStratifier}
       />
 
-      {/* ── Gaps analysis chart ────────────────────────────────────────────────── */}
       {stratifier === 'etnia' && (
         <section className="flex flex-col gap-4">
           <div>
@@ -75,7 +68,11 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
               Brecha absoluta y relativa
             </p>
           </div>
-          <PriorityEthnicGapsChart data={data} selectedYear={effectiveYear} />
+          <PriorityEthnicGapsChart
+            data={data}
+            selectedYear={effectiveYear}
+            priority={priorities[0]}
+          />
         </section>
       )}
 
@@ -87,7 +84,11 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
               Brecha absoluta y relativa
             </p>
           </div>
-          <PriorityZoneGapsChart data={data} selectedYear={effectiveYear} />
+          <PriorityZoneGapsChart
+            data={data}
+            selectedYear={effectiveYear}
+            priority={priorities[0]}
+          />
         </section>
       )}
     </div>
