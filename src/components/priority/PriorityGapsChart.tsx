@@ -1,15 +1,19 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { DSGapBarChart } from '@ops-dss/charts/gap-bar-chart'
 import type { PriorityRow } from '@/lib/parquet'
 import { Icon } from '@iconify/react'
-import { app, type IndicatorMeta } from '@/config/general'
+import {
+  app,
+  type GapComparisonMeta,
+  type IndicatorMeta,
+} from '@/config/general'
 
 interface GapRow {
   anio: number
-  rmm_indigena: number
-  rmm_no_indigena: number
+  valor_grupo: number
+  valor_referencia: number
   brecha_absoluta: number
   brecha_relativa: number
   ic_inf_ba: number
@@ -23,41 +27,49 @@ function r(v: number, d: number) {
   return Math.round(v * f) / f
 }
 
-function computeGaps(data: PriorityRow[]): GapRow[] {
-  const smvRows = data.filter(
-    (row) => row.territorio === app.local && row.zona === 'Total',
+function computeGaps(
+  data: PriorityRow[],
+  field: 'etnia' | 'zona',
+  scopeField: 'etnia' | 'zona',
+  scopeValue: string,
+  comparison: GapComparisonMeta,
+): GapRow[] {
+  const rows = data.filter(
+    (row) => row.territorio === app.local && row[scopeField] === scopeValue,
   )
-  const indigenaByYear = new Map<number, number>()
-  const noIndigenaByYear = new Map<number, number>()
 
-  for (const row of smvRows) {
-    if (row.etnia === 'Indígena') indigenaByYear.set(row.anio, row.valor)
-    else if (row.etnia === 'No indígena')
-      noIndigenaByYear.set(row.anio, row.valor)
+  const grupoByYear = new Map<number, number>()
+  const referenciaByYear = new Map<number, number>()
+
+  for (const row of rows) {
+    if (row[field] === comparison.group.value)
+      grupoByYear.set(row.anio, row.valor)
+    else if (row[field] === comparison.reference.value)
+      referenciaByYear.set(row.anio, row.valor)
   }
 
   const years = [
-    ...new Set([...indigenaByYear.keys(), ...noIndigenaByYear.keys()]),
+    ...new Set([...grupoByYear.keys(), ...referenciaByYear.keys()]),
   ].sort((a, b) => a - b)
 
   return years
     .map((anio) => {
-      const rmm_indigena = indigenaByYear.get(anio) ?? NaN
-      const rmm_no_indigena = noIndigenaByYear.get(anio) ?? NaN
+      const valor_grupo = grupoByYear.get(anio) ?? NaN
+      const valor_referencia = referenciaByYear.get(anio) ?? NaN
       if (
-        !Number.isFinite(rmm_indigena) ||
-        !Number.isFinite(rmm_no_indigena) ||
-        rmm_no_indigena <= 0
+        !Number.isFinite(valor_grupo) ||
+        !Number.isFinite(valor_referencia) ||
+        valor_referencia <= 0
       )
         return null
-      const brecha_absoluta = r(rmm_indigena - rmm_no_indigena, 1)
-      const brecha_relativa = r(rmm_indigena / rmm_no_indigena, 2)
+      const brecha_absoluta = r(valor_grupo - valor_referencia, 1)
+      const brecha_relativa = r(valor_grupo / valor_referencia, 2)
       const ba_lo = r(brecha_absoluta * 0.8, 1)
       const ba_hi = r(brecha_absoluta * 1.2, 1)
       return {
         anio,
-        rmm_indigena: r(rmm_indigena, 1),
-        rmm_no_indigena: r(rmm_no_indigena, 1),
+        valor_grupo: r(valor_grupo, 1),
+        valor_referencia: r(valor_referencia, 1),
         brecha_absoluta,
         brecha_relativa,
         ic_inf_ba: Math.min(ba_lo, ba_hi),
@@ -69,57 +81,65 @@ function computeGaps(data: PriorityRow[]): GapRow[] {
     .filter((row): row is GapRow => row !== null)
 }
 
-function interpretacionBA(ba: number, priority: IndicatorMeta): string {
-  if (ba > 0) return priority.gaps?.ethnic?.absolute.above0 ?? ''
-  if (ba < 0) return priority.gaps?.ethnic?.absolute.below0 ?? ''
+function interpretacionBA(ba: number, comparison: GapComparisonMeta): string {
+  if (ba > 0) return comparison.interpretation.absolute.above0
+  if (ba < 0) return comparison.interpretation.absolute.below0
   return 'No se observaron diferencias absolutas relevantes.'
 }
 
-function interpretacionBR(br: number, priority: IndicatorMeta): string {
-  if (br > 1) return priority.gaps?.ethnic?.relative.above1 ?? ''
-  if (br < 1 && br > 0) return priority.gaps?.ethnic?.relative.below1 ?? ''
+function interpretacionBR(br: number, comparison: GapComparisonMeta): string {
+  if (br > 1) return comparison.interpretation.relative.above1
+  if (br < 1 && br > 0) return comparison.interpretation.relative.below1
   return 'No se observaron diferencias relativas.'
 }
 
-function downloadCsvBA(rows: GapRow[], filename = 'brecha-absoluta') {
+function downloadCsvBA(
+  rows: GapRow[],
+  comparison: GapComparisonMeta,
+  filename: string,
+) {
   const header = [
     'anio',
-    'rmm_indigena',
-    'rmm_no_indigena',
+    comparison.group.label,
+    comparison.reference.label,
     'brecha_absoluta',
     'ic_inf_ba',
     'ic_sup_ba',
   ].join(',')
-  const lines = rows.map((r) =>
+  const lines = rows.map((row) =>
     [
-      r.anio,
-      r.rmm_indigena,
-      r.rmm_no_indigena,
-      r.brecha_absoluta,
-      r.ic_inf_ba,
-      r.ic_sup_ba,
+      row.anio,
+      row.valor_grupo,
+      row.valor_referencia,
+      row.brecha_absoluta,
+      row.ic_inf_ba,
+      row.ic_sup_ba,
     ].join(','),
   )
   triggerDownload([header, ...lines].join('\n'), filename)
 }
 
-function downloadCsvBR(rows: GapRow[], filename = 'brecha-relativa') {
+function downloadCsvBR(
+  rows: GapRow[],
+  comparison: GapComparisonMeta,
+  filename: string,
+) {
   const header = [
     'anio',
-    'rmm_indigena',
-    'rmm_no_indigena',
+    comparison.group.label,
+    comparison.reference.label,
     'brecha_relativa',
     'ic_inf_br',
     'ic_sup_br',
   ].join(',')
-  const lines = rows.map((r) =>
+  const lines = rows.map((row) =>
     [
-      r.anio,
-      r.rmm_indigena,
-      r.rmm_no_indigena,
-      r.brecha_relativa,
-      r.ic_inf_br,
-      r.ic_sup_br,
+      row.anio,
+      row.valor_grupo,
+      row.valor_referencia,
+      row.brecha_relativa,
+      row.ic_inf_br,
+      row.ic_sup_br,
     ].join(','),
   )
   triggerDownload([header, ...lines].join('\n'), filename)
@@ -178,17 +198,30 @@ interface Props {
   data: PriorityRow[]
   selectedYear?: number | null
   priority: IndicatorMeta
+  dimension: 'ethnic' | 'zone'
 }
 
-export const PriorityEthnicGapsChart = ({
+export const PriorityGapsChart = ({
   data,
   selectedYear,
   priority,
+  dimension,
 }: Props) => {
-  const gapsData = useMemo(() => computeGaps(data), [data])
+  const spec = priority.gaps?.[dimension]
 
+  const [comparisonId, setComparisonId] = useState<string | null>(null)
   const [viewBA, setViewBA] = useState<ViewMode>('chart')
   const [viewBR, setViewBR] = useState<ViewMode>('chart')
+
+  const comparison =
+    spec?.comparisons.find((c) => c.id === comparisonId) ??
+    spec?.comparisons[0] ??
+    null
+
+  const gapsData = useMemo(() => {
+    if (!spec || !comparison) return []
+    return computeGaps(data, spec.field, spec.scopeField, spec.scopeValue, comparison)
+  }, [data, spec, comparison])
 
   const effectiveYear =
     selectedYear ??
@@ -198,6 +231,14 @@ export const PriorityEthnicGapsChart = ({
     () => gapsData.find((r) => r.anio === effectiveYear) ?? null,
     [gapsData, effectiveYear],
   )
+
+  if (!spec || !comparison || gapsData.length === 0) {
+    return (
+      <p className="text-gray-500 italic py-8 text-center">
+        No hay datos disponibles.
+      </p>
+    )
+  }
 
   const baData = gapsData.map((row) => ({
     anio: row.anio,
@@ -213,23 +254,48 @@ export const PriorityEthnicGapsChart = ({
     ic_sup: row.ic_sup_br,
   }))
 
-  if (gapsData.length === 0) {
-    return (
-      <p className="text-gray-500 italic py-8 text-center">
-        No hay datos disponibles.
-      </p>
-    )
-  }
-
   return (
     <div className="flex flex-col gap-8">
+      {/* ── Comparison toggle ─────────────────────────────────────────────────── */}
+      {spec.comparisons.length > 1 && (
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-600" id="comparison-group-label">
+            Comparación:
+          </span>
+          <div
+            role="group"
+            aria-labelledby="comparison-group-label"
+            className="flex rounded-lg overflow-hidden border border-gray-200 text-sm"
+          >
+            {spec.comparisons.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => setComparisonId(c.id)}
+                aria-pressed={comparison.id === c.id}
+                className={`px-4 py-1.5 transition-colors ${
+                  comparison.id === c.id
+                    ? 'bg-gray-800 text-white'
+                    : 'bg-white text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {c.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Brecha Absoluta ───────────────────────────────────────────────────── */}
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-3 h-3 rounded-sm bg-purple-500" />
+            <span
+              className="inline-block w-3 h-3 rounded-sm"
+              style={{ backgroundColor: comparison.colorAbsolute }}
+            />
             <h3 className="text-sm font-semibold text-gray-700">
-              Brecha absoluta (muertes por 100.000 NV)
+              Brecha absoluta ({spec.unit})
             </h3>
           </div>
           <div className="flex items-center gap-2">
@@ -240,7 +306,9 @@ export const PriorityEthnicGapsChart = ({
             />
             <button
               type="button"
-              onClick={() => downloadCsvBA(gapsData)}
+              onClick={() =>
+                downloadCsvBA(gapsData, comparison, `brecha-absoluta-${comparison.id}`)
+              }
               className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
             >
               <Icon icon="mdi:download" className="size-4 opacity-50" />
@@ -253,7 +321,7 @@ export const PriorityEthnicGapsChart = ({
           <div className="rounded-lg border border-gray-200 px-4 pt-6 pb-2">
             <DSGapBarChart
               data={baData}
-              color="#8b5cf6"
+              color={comparison.colorAbsolute}
               highlightYear={effectiveYear ?? undefined}
               name="Brecha absoluta"
               decimalPlaces={1}
@@ -266,8 +334,12 @@ export const PriorityEthnicGapsChart = ({
               <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
                 <tr>
                   <th className="px-4 py-3 font-medium">Año</th>
-                  <th className="px-4 py-3 font-medium">RMM Indígena</th>
-                  <th className="px-4 py-3 font-medium">RMM No indígena</th>
+                  <th className="px-4 py-3 font-medium">
+                    {comparison.group.label}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {comparison.reference.label}
+                  </th>
                   <th className="px-4 py-3 font-medium">Brecha absoluta</th>
                   <th className="px-4 py-3 font-medium">IC 95%</th>
                 </tr>
@@ -278,7 +350,7 @@ export const PriorityEthnicGapsChart = ({
                     key={row.anio}
                     className={`transition-colors ${
                       row.anio === effectiveYear
-                        ? 'bg-purple-50 font-semibold'
+                        ? 'font-semibold bg-gray-50'
                         : 'bg-white hover:bg-gray-50'
                     }`}
                   >
@@ -286,10 +358,10 @@ export const PriorityEthnicGapsChart = ({
                       {row.anio}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      {row.rmm_indigena.toFixed(1)}
+                      {row.valor_grupo.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      {row.rmm_no_indigena.toFixed(1)}
+                      {row.valor_referencia.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {row.brecha_absoluta.toFixed(1)}
@@ -305,19 +377,31 @@ export const PriorityEthnicGapsChart = ({
         )}
 
         {selectedRow && (
-          <div className="rounded-lg border border-purple-200 p-4 bg-purple-50">
-            <p className="text-xs font-semibold uppercase tracking-wide text-purple-600 mb-1">
+          <div
+            className="rounded-lg border p-4"
+            style={{
+              borderColor: `${comparison.colorAbsolute}55`,
+              backgroundColor: `${comparison.colorAbsolute}0d`,
+            }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wide mb-1"
+              style={{ color: comparison.colorAbsolute }}
+            >
               Brecha absoluta — {effectiveYear}
             </p>
-            <p className="text-3xl font-bold text-purple-700 mb-1">
+            <p
+              className="text-3xl font-bold mb-1"
+              style={{ color: comparison.colorAbsolute }}
+            >
               {selectedRow.brecha_absoluta.toFixed(1)}
             </p>
             <p className="text-xs text-gray-500 mb-3">
               IC 95%: ({selectedRow.ic_inf_ba.toFixed(1)} –{' '}
-              {selectedRow.ic_sup_ba.toFixed(1)}) muertes por 100.000 NV
+              {selectedRow.ic_sup_ba.toFixed(1)}) {spec.unit}
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {interpretacionBA(selectedRow.brecha_absoluta, priority)}
+              {interpretacionBA(selectedRow.brecha_absoluta, comparison)}
             </p>
           </div>
         )}
@@ -327,7 +411,10 @@ export const PriorityEthnicGapsChart = ({
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-3">
-            <span className="inline-block w-3 h-3 rounded-sm bg-cyan-500" />
+            <span
+              className="inline-block w-3 h-3 rounded-sm"
+              style={{ backgroundColor: comparison.colorRelative }}
+            />
             <h3 className="text-sm font-semibold text-gray-700">
               Brecha relativa (razón)
             </h3>
@@ -340,7 +427,9 @@ export const PriorityEthnicGapsChart = ({
             />
             <button
               type="button"
-              onClick={() => downloadCsvBR(gapsData)}
+              onClick={() =>
+                downloadCsvBR(gapsData, comparison, `brecha-relativa-${comparison.id}`)
+              }
               className="flex items-center gap-1.5 px-4 py-1.5 text-sm rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 transition-colors"
             >
               <Icon icon="mdi:download" className="size-4 opacity-50" />
@@ -353,7 +442,7 @@ export const PriorityEthnicGapsChart = ({
           <div className="rounded-lg border border-gray-200 px-4 pt-6 pb-2">
             <DSGapBarChart
               data={brData}
-              color="#06b6d4"
+              color={comparison.colorRelative}
               highlightYear={effectiveYear ?? undefined}
               name="Brecha relativa"
               decimalPlaces={2}
@@ -367,8 +456,12 @@ export const PriorityEthnicGapsChart = ({
               <thead className="bg-gray-50 text-gray-600 uppercase text-xs">
                 <tr>
                   <th className="px-4 py-3 font-medium">Año</th>
-                  <th className="px-4 py-3 font-medium">RMM Indígena</th>
-                  <th className="px-4 py-3 font-medium">RMM No indígena</th>
+                  <th className="px-4 py-3 font-medium">
+                    {comparison.group.label}
+                  </th>
+                  <th className="px-4 py-3 font-medium">
+                    {comparison.reference.label}
+                  </th>
                   <th className="px-4 py-3 font-medium">Brecha relativa</th>
                   <th className="px-4 py-3 font-medium">IC 95%</th>
                 </tr>
@@ -379,7 +472,7 @@ export const PriorityEthnicGapsChart = ({
                     key={row.anio}
                     className={`transition-colors ${
                       row.anio === effectiveYear
-                        ? 'bg-cyan-50 font-semibold'
+                        ? 'font-semibold bg-gray-50'
                         : 'bg-white hover:bg-gray-50'
                     }`}
                   >
@@ -387,10 +480,10 @@ export const PriorityEthnicGapsChart = ({
                       {row.anio}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      {row.rmm_indigena.toFixed(1)}
+                      {row.valor_grupo.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
-                      {row.rmm_no_indigena.toFixed(1)}
+                      {row.valor_referencia.toFixed(1)}
                     </td>
                     <td className="px-4 py-3 text-gray-600">
                       {row.brecha_relativa.toFixed(2)}
@@ -406,11 +499,23 @@ export const PriorityEthnicGapsChart = ({
         )}
 
         {selectedRow && (
-          <div className="rounded-lg border border-cyan-200 p-4 bg-cyan-50">
-            <p className="text-xs font-semibold uppercase tracking-wide text-cyan-600 mb-1">
+          <div
+            className="rounded-lg border p-4"
+            style={{
+              borderColor: `${comparison.colorRelative}55`,
+              backgroundColor: `${comparison.colorRelative}0d`,
+            }}
+          >
+            <p
+              className="text-xs font-semibold uppercase tracking-wide mb-1"
+              style={{ color: comparison.colorRelative }}
+            >
               Brecha relativa — {effectiveYear}
             </p>
-            <p className="text-3xl font-bold text-cyan-700 mb-1">
+            <p
+              className="text-3xl font-bold mb-1"
+              style={{ color: comparison.colorRelative }}
+            >
               {selectedRow.brecha_relativa.toFixed(2)}
             </p>
             <p className="text-xs text-gray-500 mb-3">
@@ -418,7 +523,7 @@ export const PriorityEthnicGapsChart = ({
               {selectedRow.ic_sup_br.toFixed(2)})
             </p>
             <p className="text-sm text-gray-700 leading-relaxed">
-              {interpretacionBR(selectedRow.brecha_relativa, priority)}
+              {interpretacionBR(selectedRow.brecha_relativa, comparison)}
             </p>
           </div>
         )}

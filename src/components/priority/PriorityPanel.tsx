@@ -3,8 +3,7 @@
 import { useState, useMemo } from 'react'
 import { PriorityChart } from './PriorityChart'
 import type { Stratifier } from './PriorityChart'
-import { PriorityEthnicGapsChart } from './PriorityEthnicGapsChart'
-import { PriorityZoneGapsChart } from './PriorityZoneGapsChart'
+import { PriorityGapsChart } from './PriorityGapsChart'
 import type { PriorityRow } from '@/lib/parquet'
 import { app } from '@/config/general'
 import { priorities } from '@/config/general'
@@ -68,10 +67,11 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
               Brecha absoluta y relativa
             </p>
           </div>
-          <PriorityEthnicGapsChart
+          <PriorityGapsChart
             data={data}
             selectedYear={effectiveYear}
             priority={priorities[0]}
+            dimension="ethnic"
           />
         </section>
       )}
@@ -84,10 +84,11 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
               Brecha absoluta y relativa
             </p>
           </div>
-          <PriorityZoneGapsChart
+          <PriorityGapsChart
             data={data}
             selectedYear={effectiveYear}
             priority={priorities[0]}
+            dimension="zone"
           />
         </section>
       )}

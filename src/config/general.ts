@@ -1,6 +1,33 @@
 import { z } from 'astro/zod'
 import raw from '../../app.config.json'
 
+const GapComparison = z.object({
+  id: z.string(),
+  label: z.string(),
+  group: z.object({ value: z.string(), label: z.string() }),
+  reference: z.object({ value: z.string(), label: z.string() }),
+  colorAbsolute: z.string(),
+  colorRelative: z.string(),
+  interpretation: z.object({
+    absolute: z.object({
+      below0: z.string(),
+      above0: z.string(),
+    }),
+    relative: z.object({
+      below1: z.string(),
+      above1: z.string(),
+    }),
+  }),
+})
+
+const GapDimension = z.object({
+  field: z.enum(['etnia', 'zona']),
+  scopeField: z.enum(['etnia', 'zona']),
+  scopeValue: z.string(),
+  unit: z.string(),
+  comparisons: z.array(GapComparison).min(1),
+})
+
 const Indicator = z.object({
   slug: z.string(),
   title: z.string(),
@@ -29,42 +56,8 @@ const Indicator = z.object({
     .optional(),
   gaps: z
     .object({
-      ethnic: z
-        .object({
-          absolute: z.object({
-            below0: z.string(),
-            above0: z.string(),
-          }),
-          relative: z.object({
-            below1: z.string(),
-            above1: z.string(),
-          }),
-        })
-        .optional(),
-      zone: z
-        .object({
-          rural_urban: z.object({
-            absolute: z.object({
-              below0: z.string(),
-              above0: z.string(),
-            }),
-            relative: z.object({
-              below1: z.string(),
-              above1: z.string(),
-            }),
-          }),
-          periurban_urban: z.object({
-            absolute: z.object({
-              below0: z.string(),
-              above0: z.string(),
-            }),
-            relative: z.object({
-              below1: z.string(),
-              above1: z.string(),
-            }),
-          }),
-        })
-        .optional(),
+      ethnic: GapDimension.optional(),
+      zone: GapDimension.optional(),
     })
     .optional(),
 })
@@ -79,6 +72,8 @@ const Config = z.object({
 
 export const app = Config.parse(raw)
 export type IndicatorMeta = z.infer<typeof Indicator>
+export type GapComparisonMeta = z.infer<typeof GapComparison>
+export type GapDimensionMeta = z.infer<typeof GapDimension>
 
 export const indicators = app.indicators.filter((i) => !i.priority)
 export const priorities = app.indicators.filter((i) => i.priority)
