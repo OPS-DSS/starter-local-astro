@@ -47,7 +47,8 @@
           "values": ["total", "indigena", "no indígena"],
           "index": 6
         }
-      ]
+      ],
+      "inequitySource": "Las métricas de desigualdad implementadas se basan en el marco metodológico del Cuantificador de Desigualdades en Salud, desarrollado conjuntamente por la Organización Panamericana de la Salud (OPS/OMS) y el Centro Nacional de Epidemiología, Prevención y Control de Enfermedades del Ministerio de Salud del Perú (CDC-Perú). Disponible en https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud"
     },
     {
       "slug": "traslado",

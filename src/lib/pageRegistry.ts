@@ -89,7 +89,8 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       text,
       data,
       source,
-      csvPath: base(baseUrl, 'maternal_mortality_rate.csv'),
+      csvPath: base(baseUrl, 'mortalidad-materna.csv'),
+      priority: priorities[0],
     }),
   },
   'analisis/mortalidad-materna': {

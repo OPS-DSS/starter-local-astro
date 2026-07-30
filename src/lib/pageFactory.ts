@@ -32,7 +32,7 @@ export interface PageDatasets {
   forestPlotData: ForestPlotDataRow[]
   analyticsData: AnalyticsRow[]
   scatterData: ScatterRow[]
-  maternalMortalityRateData: PriorityRow[]
+  priorityData: PriorityRow[]
   trasladoData: StratifiedRow[]
   frecuenciaTransporteData: StratifiedRow[]
   sobrecargaCuidadosData: StratifiedRow[]
@@ -70,12 +70,12 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     console.error('[loadAllDatasets] scatter:', e)
   }
 
-  let maternalMortalityRateData: PriorityRow[] = []
+  let priorityData: PriorityRow[] = []
   try {
     const rows = await readParquet<PriorityRawRow>(
       dataPath('mortalidad-materna.parquet'),
     )
-    maternalMortalityRateData = filterPriorityRows(rows)
+    priorityData = filterPriorityRows(rows)
   } catch (e) {
     console.error('[loadAllDatasets] mortalidad-materna:', e)
   }
@@ -144,7 +144,7 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
     forestPlotData,
     analyticsData,
     scatterData,
-    maternalMortalityRateData,
+    priorityData,
     trasladoData,
     frecuenciaTransporteData,
     sobrecargaCuidadosData,
@@ -235,7 +235,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
         category: priority.category,
         source: priority.source,
         navbar: false,
-        data: datasets.maternalMortalityRateData,
+        data: datasets.priorityData,
       },
       {
         slug: `determinantes-de-la-salud/${priority.slug}`,

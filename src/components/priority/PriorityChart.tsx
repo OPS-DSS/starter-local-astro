@@ -3,11 +3,11 @@ import { DSLineChart } from '@ops-dss/charts/line-chart'
 import type { PriorityRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
 import { Icon } from '@iconify/react'
+import { app } from '@/config/general'
 
 // ── Aggregate label constants (must match R mock script) ──────────────────────
 const TOTAL_ETNIA = 'Total'
 const TOTAL_ZONA = 'Total'
-const SMV = 'San Martín del Valle'
 
 // ── Stratifier type ───────────────────────────────────────────────────────────
 export type Stratifier = 'total' | 'etnia' | 'zona'
@@ -32,7 +32,7 @@ const TOTAL_COLOR = '#6b7280'
 
 function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
   // Only municipality-level aggregates
-  const smvRows = rows.filter((r) => r.territorio === SMV)
+  const smvRows = rows.filter((r) => r.territorio === app.local)
 
   let filtered: PriorityRow[]
 
@@ -56,7 +56,7 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
   for (const row of filtered) {
     const key =
       stratifier === 'total'
-        ? SMV
+        ? app.local
         : stratifier === 'etnia'
           ? row.etnia
           : row.zona

@@ -6,8 +6,8 @@ import type { Stratifier } from './PriorityChart'
 import { PriorityEthnicGapsChart } from './PriorityEthnicGapsChart'
 import { PriorityZoneGapsChart } from './PriorityZoneGapsChart'
 import type { PriorityRow } from '@/lib/parquet'
+import { app } from '@/config/general'
 
-const SMV = 'San Martín del Valle'
 const TOTAL_ZONA = 'Total'
 const TOTAL_ETNIA = 'Total'
 
@@ -20,7 +20,7 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
   const availableYears = useMemo(() => {
     const smvRows = data.filter(
       (r) =>
-        r.territorio === SMV &&
+        r.territorio === app.local &&
         r.zona === TOTAL_ZONA &&
         r.etnia === TOTAL_ETNIA,
     )
@@ -70,11 +70,9 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
       {stratifier === 'etnia' && (
         <section className="flex flex-col gap-4">
           <div>
-            <h2 className="text-xl font-bold">
-              Análisis de brechas étnicas en mortalidad materna
-            </h2>
+            <h2 className="text-xl font-bold">Análisis de brechas</h2>
             <p className="text-sm text-gray-500 mt-1">
-              Brecha absoluta y relativa entre población indígena y no indígena.
+              Brecha absoluta y relativa
             </p>
           </div>
           <PriorityEthnicGapsChart data={data} selectedYear={effectiveYear} />
@@ -84,11 +82,9 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
       {stratifier === 'zona' && (
         <section className="flex flex-col gap-4">
           <div>
-            <h2 className="text-xl font-bold">
-              Análisis de brechas territoriales en mortalidad materna
-            </h2>
+            <h2 className="text-xl font-bold">Análisis de brechas</h2>
             <p className="text-sm text-gray-500 mt-1">
-              Brecha absoluta y relativa entre zonas geográficas.
+              Brecha absoluta y relativa
             </p>
           </div>
           <PriorityZoneGapsChart data={data} selectedYear={effectiveYear} />

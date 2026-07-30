@@ -17,6 +17,7 @@ const Indicator = z.object({
   axisLabel: z.string(),
   color: z.string(),
   bivariateValue: z.string().optional(),
+  inequitySource: z.string().optional(),
   scheme: z
     .array(
       z.object({
