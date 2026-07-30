@@ -132,94 +132,6 @@ export function filterMaternalMortalityRateRows(
   return result.sort((a, b) => a.anio - b.anio)
 }
 
-/**
- * Row from maternal_mortality_quintiles.parquet (resumen dataframe)
- * Columns: anio[0], quintil_dss[1], tasa_ponderada[2], n[3], total_pob[4],
- *          sd_pond[5], se[6], ic_inf[7], ic_sup[8]
- */
-export type MaternalMortalityQuintilRawRow = unknown[]
-
-export type MaternalMortalityQuintilRow = {
-  anio: number
-  quintil_dss: number
-  tasa_ponderada: number
-  n: number
-  total_pob: number
-  se: number
-  ic_inf: number
-  ic_sup: number
-}
-
-export function filterMaternalMortalityQuintilRows(
-  rows: MaternalMortalityQuintilRawRow[],
-): MaternalMortalityQuintilRow[] {
-  const result: MaternalMortalityQuintilRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    const quintil_dss = Number(row[1])
-    const tasa_ponderada = Number(row[2])
-    const n = Number(row[3])
-    const total_pob = Number(row[4])
-    const se = Number(row[6])
-    const ic_inf = Number(row[7])
-    const ic_sup = Number(row[8])
-    if (!Number.isFinite(anio) || !Number.isFinite(quintil_dss)) continue
-    result.push({
-      anio,
-      quintil_dss,
-      tasa_ponderada,
-      n,
-      total_pob,
-      se,
-      ic_inf,
-      ic_sup,
-    })
-  }
-  return result.sort((a, b) => a.anio - b.anio || a.quintil_dss - b.quintil_dss)
-}
-
-/**
- * Row from maternal_mortality_gaps.parquet (brecha_quintiles dataframe)
- * Columns: anio[0], valor_ref[1], valor_comp[2],
- *          brecha_absoluta[3], ic_inf_abs[4], ic_sup_abs[5],
- *          brecha_relativa[6], ic_inf_rel[7], ic_sup_rel[8]
- */
-export type MaternalMortalityGapsRawRow = unknown[]
-
-export type MaternalMortalityGapsRow = {
-  anio: number
-  valor_ref: number
-  valor_comp: number
-  brecha_absoluta: number
-  ic_inf_abs: number
-  ic_sup_abs: number
-  brecha_relativa: number
-  ic_inf_rel: number
-  ic_sup_rel: number
-}
-
-export function filterMaternalMortalityGapsRows(
-  rows: MaternalMortalityGapsRawRow[],
-): MaternalMortalityGapsRow[] {
-  const result: MaternalMortalityGapsRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    if (!Number.isFinite(anio)) continue
-    result.push({
-      anio,
-      valor_ref: Number(row[1]),
-      valor_comp: Number(row[2]),
-      brecha_absoluta: Number(row[3]),
-      ic_inf_abs: Number(row[4]),
-      ic_sup_abs: Number(row[5]),
-      brecha_relativa: Number(row[6]),
-      ic_inf_rel: Number(row[7]),
-      ic_sup_rel: Number(row[8]),
-    })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
 // ── Maternal mortality analytics: temporal data (MM rate + mock DSS avg) ──────
 // Parquet columns: anio[0], valor[1], traslado[2], embarazadas-empleo-informal[3],
 //   sobrecarga-embarazadas[4], apoyo-embarazadas[5], frecuencia-transporte[6],
@@ -326,31 +238,6 @@ export type ForestPlotDataRow = {
   p_value: number
   n: number
 }
-
-// ── Shared stratified indicator data types ────────────────────────────────────
-//
-// Four parquet formats are used across indicators:
-//
-// Simulation — etnia stratifier (transport_frequency, care_overload_municipal):
-//   iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
-//   Aggregate sentinels: zona="Total", etnia="Total"
-//   → filterEtniaStratifiedRows — keeps NAME_2=="San Martín del Valle" only
-//
-// Simulation — sexo + etnia stratifier (journey_time):
-//   iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
-//   Aggregate sentinels: zona="Total", etnia="Total", sexo="Mujeres" always
-//   → filterJourneyTimeStratifiedRows — keeps NAME_2=="San Martín del Valle" only
-//
-// Simulation — sexo-only stratifier (informal_employment):
-//   iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
-//   Aggregate sentinels: zona="Total", sexo="Total"
-//   → filterSexoOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only
-//
-// Simulation — zona-only stratifier (program_cover):
-//   iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], valor[5]
-//   Aggregate sentinels: zona="Total"
-//   → filterZonaOnlyStratifiedRows — keeps NAME_2=="San Martín del Valle" only;
-//   translates sentinels to legacy chart format ("Total" → "Todas las zonas")
 
 export type StratifiedRawRow = unknown[]
 
@@ -467,7 +354,13 @@ export function filterZonaOnlyStratifiedRows(
     const valor = Number(row[5])
     if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
     const zona = rawZona === 'Total' ? 'Todas las zonas' : rawZona
-    result.push({ anio, valor, zona, sexo: 'Todos/as', grupo_edad: 'Todas las edades' })
+    result.push({
+      anio,
+      valor,
+      zona,
+      sexo: 'Todos/as',
+      grupo_edad: 'Todas las edades',
+    })
   }
   return result.sort((a, b) => a.anio - b.anio)
 }

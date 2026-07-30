@@ -1,9 +1,9 @@
 import type { AstroComponentFactory } from 'astro/runtime/server/index.js'
 
-import MaternalMortalityInequity from '@/components/maternal-mortality/MaternalMortalityInequity.astro'
+import PriorityInequity from '@/components/priority/PriorityInequity.astro'
 import Analytics from '@/components/analytics/Analytics.astro'
 import Welcome from '@/components/Welcome.astro'
-import MaternalMortalitySDoH from '@/components/maternal-mortality/MaternalMortalitySDoH.astro'
+import PrioritySDoH from '@/components/priority/PrioritySDoH.astro'
 import PrioritySelector from '@/components/PrioritySelector.astro'
 import StratifiedIndicator from '@/components/StratifiedIndicator.astro'
 
@@ -78,11 +78,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
 
   // ─── Detail pages ──────────────────────────────────────────────────────────
   'determinantes-de-la-salud/mortalidad-materna': {
-    component: MaternalMortalitySDoH,
+    component: PrioritySDoH,
     resolveProps: ({ title, text }) => ({ title, text }),
   },
   'analisis-de-inequidad/mortalidad-materna': {
-    component: MaternalMortalityInequity,
+    component: PriorityInequity,
     resolveProps: ({ title, text, data, source }, baseUrl) => ({
       title,
       text,
@@ -124,7 +124,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
           Object.fromEntries(
             MOCK_YEARS.map((yr) => [
               yr,
-              base(baseUrl, `mock_bivariate_${ind}_${yr}.geojson`),
+              base(baseUrl, `bivariate-${ind}-${yr}.geojson`),
             ]),
           ),
         ]),
@@ -133,7 +133,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       const maternalGeojsonUrls = Object.fromEntries(
         MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_maternal_mortality_${yr}.geojson`),
+          base(baseUrl, `mortalidad-materna-${yr}.geojson`),
         ]),
       ) as Record<number, string>
 
@@ -148,7 +148,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
                   yr,
                   base(
                     baseUrl,
-                    `mock_bivariate_dss_${ind_x}_${ind_y}_${yr}.geojson`,
+                    `bivariate-dss-${ind_x}-${ind_y}-${yr}.geojson`,
                   ),
                 ]),
               ),
@@ -166,7 +166,7 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
         geojsonUrls,
         maternalGeojsonUrls,
         dssBivariateGeojsonUrls,
-        csvUrl: base(baseUrl, 'mock_scatter_maternal.csv'),
+        csvUrl: base(baseUrl, 'scatter.csv'),
       }
     },
   },
@@ -192,11 +192,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: trasladoData ?? [],
       yAxisLabel: '% mujeres embarazadas',
-      csvPath: base(baseUrl, 'journey_time.csv'),
+      csvPath: base(baseUrl, 'traslado.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_traslado_${yr}.geojson`),
+          base(baseUrl, `traslado-${yr}.geojson`),
         ]),
       ),
     }),
@@ -223,11 +223,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: frecuenciaTransporteData ?? [],
       yAxisLabel: '% población con acceso',
-      csvPath: base(baseUrl, 'transport_frequency.csv'),
+      csvPath: base(baseUrl, 'frecuencia-transporte.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_transporte_${yr}.geojson`),
+          base(baseUrl, `frecuencia-transporte-${yr}.geojson`),
         ]),
       ),
     }),
@@ -254,11 +254,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: sobrecargaCuidadosData ?? [],
       yAxisLabel: '% mujeres embarazadas',
-      csvPath: base(baseUrl, 'care_overload_municipal.csv'),
+      csvPath: base(baseUrl, 'sobrecarga-embarazadas-municipal.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_sobrecarga_${yr}.geojson`),
+          base(baseUrl, `sobrecarga-embarazadas-${yr}.geojson`),
         ]),
       ),
     }),
@@ -285,11 +285,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: empleoInformalData ?? [],
       yAxisLabel: '% personas con empleo informal',
-      csvPath: base(baseUrl, 'informal_employment.csv'),
+      csvPath: base(baseUrl, 'embarazadas-empleo-informal.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_empleo_informal_${yr}.geojson`),
+          base(baseUrl, `embarazadas-empleo-informal-${yr}.geojson`),
         ]),
       ),
     }),
@@ -316,11 +316,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: coberturaProgramaData ?? [],
       yAxisLabel: '% mujeres embarazadas',
-      csvPath: base(baseUrl, 'program_cover.csv'),
+      csvPath: base(baseUrl, 'apoyo-embarazadas.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_cobertura_programa_${yr}.geojson`),
+          base(baseUrl, `apoyo-embarazadas-${yr}.geojson`),
         ]),
       ),
     }),
@@ -347,11 +347,11 @@ export const pageRegistry: Record<string, PageRegistryEntry> = {
       stratifiers: stratifiers ?? [],
       data: apoyoInfantilData ?? [],
       yAxisLabel: '% mujeres embarazadas',
-      csvPath: base(baseUrl, 'infant_care_support.csv'),
+      csvPath: base(baseUrl, 'apoyo-infantil.csv'),
       geojsonUrls: Object.fromEntries(
         STRATIFIED_MOCK_YEARS.map((yr) => [
           yr,
-          base(baseUrl, `mock_cuidar_comunidad_${yr}.geojson`),
+          base(baseUrl, `apoyo-infantil-${yr}.geojson`),
         ]),
       ),
     }),

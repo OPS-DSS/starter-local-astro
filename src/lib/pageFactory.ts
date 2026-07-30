@@ -45,47 +45,47 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
   let forestPlotData: ForestPlotDataRow[] = []
   try {
     const rows = await readParquet<ForestPlotRawRow>(
-      dataPath('mock_forest_plot.parquet'),
+      dataPath('forest-plot.parquet'),
     )
     forestPlotData = filterForestPlotRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] mock_forest_plot:', e)
+    console.error('[loadAllDatasets] forest-plot:', e)
   }
 
   let analyticsMaternalData: AnalyticsMaternalRow[] = []
   try {
     const rows = await readParquet<AnalyticsMaternalRawRow>(
-      dataPath('mock_analytics_maternal.parquet'),
+      dataPath('analytics.parquet'),
     )
     analyticsMaternalData = filterAnalyticsMaternalRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] mock_analytics_maternal:', e)
+    console.error('[loadAllDatasets] analytics:', e)
   }
 
   let scatterMaternalData: ScatterMaternalRow[] = []
   try {
     const rows = await readParquet<ScatterMaternalRawRow>(
-      dataPath('mock_scatter_maternal.parquet'),
+      dataPath('scatter.parquet'),
     )
     scatterMaternalData = filterScatterMaternalRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] mock_scatter_maternal:', e)
+    console.error('[loadAllDatasets] scatter:', e)
   }
 
   let maternalMortalityRateData: MaternalMortalityRateRow[] = []
   try {
     const rows = await readParquet<MaternalMortalityRateRawRow>(
-      dataPath('maternal_mortality_rate.parquet'),
+      dataPath('mortalidad-materna.parquet'),
     )
     maternalMortalityRateData = filterMaternalMortalityRateRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] maternal_mortality_rate:', e)
+    console.error('[loadAllDatasets] mortalidad-materna:', e)
   }
 
   let trasladoData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('journey_time.parquet'),
+      dataPath('traslado.parquet'),
     )
     trasladoData = filterJourneyTimeStratifiedRows(rows)
   } catch (e) {
@@ -95,51 +95,51 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
   let frecuenciaTransporteData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('transport_frequency.parquet'),
+      dataPath('frecuencia-transporte.parquet'),
     )
     frecuenciaTransporteData = filterEtniaStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] frecuencia_transporte:', e)
+    console.error('[loadAllDatasets] frecuencia-transporte:', e)
   }
 
   let sobrecargaCuidadosData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('care_overload_municipal.parquet'),
+      dataPath('sobrecarga-cuidados.parquet'),
     )
     sobrecargaCuidadosData = filterEtniaStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] sobrecarga_cuidados:', e)
+    console.error('[loadAllDatasets] sobrecarga-cuidados:', e)
   }
 
   let empleoInformalData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('informal_employment.parquet'),
+      dataPath('embarazadas-empleo-informal.parquet'),
     )
     empleoInformalData = filterSexoOnlyStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] empleo_informal:', e)
+    console.error('[loadAllDatasets] embarazadas-empleo-informal:', e)
   }
 
   let coberturaProgramaData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('program_cover.parquet'),
+      dataPath('apoyo-embarazadas.parquet'),
     )
     coberturaProgramaData = filterZonaOnlyStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] cobertura_programa:', e)
+    console.error('[loadAllDatasets] apoyo-embarazadas:', e)
   }
 
   let apoyoInfantilData: StratifiedRow[] = []
   try {
     const rows = await readParquet<StratifiedRawRow>(
-      dataPath('infant_care_support.parquet'),
+      dataPath('apoyo-infantil.parquet'),
     )
     apoyoInfantilData = filterEtniaStratifiedRows(rows)
   } catch (e) {
-    console.error('[loadAllDatasets] apoyo_infantil:', e)
+    console.error('[loadAllDatasets] apoyo-infantil:', e)
   }
 
   return {
