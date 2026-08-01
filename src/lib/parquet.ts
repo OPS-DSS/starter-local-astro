@@ -15,7 +15,7 @@ export type DataRow = Record<string, string | number>
 
 /**
  * Reads a parquet file at build time (Node.js / Astro SSG).
- * Pass a path relative to the project root, e.g. 'src/data/foo.parquet'.
+ * Pass a path relative to the project root, e.g. 'public/data/parquet/foo.parquet'.
  */
 export async function readParquet<T = RawRow>(filePath: string): Promise<T[]> {
   const resolvedPath = isAbsolute(filePath)

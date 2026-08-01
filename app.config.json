@@ -261,7 +261,7 @@
     "map": true
   },
   "data": {
-    "path": "src/data"
+    "path": "public/data/parquet"
   },
   "datasets": {
     "analytics": {

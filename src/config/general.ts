@@ -79,7 +79,7 @@ const Config = z.object({
   national: z.string(),
   indicators: z.array(z.union([Indicator])),
   features: z.object({ map: z.boolean().default(false) }),
-  data: z.object({ path: z.string() }).default({ path: 'src/data' }),
+  data: z.object({ path: z.string() }).default({ path: 'public/data/parquet' }),
   datasets: z
     .object({
       analytics: Dataset.optional(),

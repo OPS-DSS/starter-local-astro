@@ -38,6 +38,11 @@ jobs:
       - name: Build with Astro
         run: pnpm run build
 
+      - name: Strip parquet sources from build output
+        # Parquet is read at build time only (Node fs, never fetched by the
+        # browser); this only touches the dist/ copy, not public/data/parquet.
+        run: rm -rf dist/data/parquet
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

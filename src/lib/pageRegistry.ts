@@ -44,7 +44,8 @@ interface PageRegistryEntry {
   resolveProps: PropsResolver
 }
 
-const base = (url: string, path: string) => `${url}/data/${path}`
+const csvUrl = (url: string, path: string) => `${url}/data/csv/${path}`
+const geojsonUrl = (url: string, path: string) => `${url}/data/geojson/${path}`
 
 /** Years present in a dataset — geojson assets are generated per year. */
 const dataYears = (rows: { anio: number }[] = []) => [
@@ -93,7 +94,7 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
           text,
           data,
           source,
-          csvPath: base(baseUrl, `${priority.slug}.csv`),
+          csvPath: csvUrl(baseUrl, `${priority.slug}.csv`),
           priority,
         }),
       },
@@ -114,7 +115,7 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
               Object.fromEntries(
                 years.map((yr) => [
                   yr,
-                  base(baseUrl, `bivariate-${ind}-${yr}.geojson`),
+                  geojsonUrl(baseUrl, `bivariate-${ind}-${yr}.geojson`),
                 ]),
               ),
             ]),
@@ -123,7 +124,7 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
           const priorityGeojsonUrls = Object.fromEntries(
             years.map((yr) => [
               yr,
-              base(baseUrl, `${priority.slug}-${yr}.geojson`),
+              geojsonUrl(baseUrl, `${priority.slug}-${yr}.geojson`),
             ]),
           ) as Record<number, string>
 
@@ -138,7 +139,7 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
                     Object.fromEntries(
                       years.map((yr) => [
                         yr,
-                        base(
+                        geojsonUrl(
                           baseUrl,
                           `bivariate-dss-${ind_x}-${ind_y}-${yr}.geojson`,
                         ),
@@ -164,7 +165,7 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
             geojsonUrls,
             priorityGeojsonUrls,
             dssBivariateGeojsonUrls,
-            csvUrl: scatterCsv ? base(baseUrl, scatterCsv) : undefined,
+            csvUrl: scatterCsv ? csvUrl(baseUrl, scatterCsv) : undefined,
           }
         },
       },
@@ -199,11 +200,11 @@ const indicatorEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
         stratifiers: stratifiers ?? [],
         data: stratifiedData ?? [],
         yAxisLabel: ind.axisLabel,
-        csvPath: base(baseUrl, `${ind.slug}.csv`),
+        csvPath: csvUrl(baseUrl, `${ind.slug}.csv`),
         geojsonUrls: Object.fromEntries(
           dataYears(stratifiedData).map((yr) => [
             yr,
-            base(baseUrl, `${ind.slug}-${yr}.geojson`),
+            geojsonUrl(baseUrl, `${ind.slug}-${yr}.geojson`),
           ]),
         ),
       }),
