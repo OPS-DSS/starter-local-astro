@@ -21,11 +21,29 @@ const GapComparison = z.object({
 })
 
 const GapDimension = z.object({
-  field: z.enum(['etnia', 'zona']),
-  scopeField: z.enum(['etnia', 'zona']),
+  field: z.string(),
+  scopeField: z.string(),
   scopeValue: z.string(),
   unit: z.string(),
   comparisons: z.array(GapComparison).min(1),
+})
+
+// A column of a parquet file: `name` is the field name rows expose to the app,
+// `index` is the column position in the file. `role` marks the columns the
+// loader treats specially (territory filtering, year sorting, value validity).
+const Column = z.object({
+  name: z.string(),
+  type: z.enum(['string', 'number']),
+  index: z.number().int().nonnegative(),
+  role: z.enum(['territory', 'year', 'value']).optional(),
+  values: z.array(z.string()).optional(),
+})
+
+const Scheme = z.array(Column).min(1)
+
+const Dataset = z.object({
+  file: z.string(),
+  scheme: Scheme,
 })
 
 const Indicator = z.object({
@@ -45,15 +63,8 @@ const Indicator = z.object({
   color: z.string(),
   bivariateValue: z.string().optional(),
   inequitySource: z.string().optional(),
-  scheme: z
-    .array(
-      z.object({
-        name: z.string(),
-        type: z.string(),
-        index: z.number(),
-      }),
-    )
-    .optional(),
+  file: z.string().optional(),
+  scheme: Scheme.optional(),
   gaps: z
     .object({
       ethnic: GapDimension.optional(),
@@ -68,12 +79,23 @@ const Config = z.object({
   national: z.string(),
   indicators: z.array(z.union([Indicator])),
   features: z.object({ map: z.boolean().default(false) }),
+  data: z.object({ path: z.string() }).default({ path: 'src/data' }),
+  datasets: z
+    .object({
+      analytics: Dataset.optional(),
+      scatter: Dataset.optional(),
+      forestPlot: Dataset.optional(),
+    })
+    .optional(),
 })
 
 export const app = Config.parse(raw)
 export type IndicatorMeta = z.infer<typeof Indicator>
 export type GapComparisonMeta = z.infer<typeof GapComparison>
 export type GapDimensionMeta = z.infer<typeof GapDimension>
+export type ColumnSpec = z.infer<typeof Column>
+export type DatasetScheme = z.infer<typeof Scheme>
+export type DatasetMeta = z.infer<typeof Dataset>
 
 export const indicators = app.indicators.filter((i) => !i.priority)
 export const priorities = app.indicators.filter((i) => i.priority)

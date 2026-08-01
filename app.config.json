@@ -19,32 +19,36 @@
       "color": "#ef4444",
       "stratifiers": ["zona", "etnia"],
       "bivariateValue": "maternal_value",
+      "file": "mortalidad-materna.parquet",
       "scheme": [
         {
           "name": "territorio",
           "type": "string",
+          "role": "territory",
           "index": 1
         },
         {
           "name": "anio",
           "type": "number",
+          "role": "year",
           "index": 3
         },
         {
           "name": "valor",
           "type": "number",
+          "role": "value",
           "index": 7
         },
         {
           "name": "zona",
           "type": "string",
-          "values": ["total", "urbano", "periurbano", "rural"],
+          "values": ["Total", "urbano", "periurbano", "rural"],
           "index": 5
         },
         {
           "name": "etnia",
           "type": "string",
-          "values": ["total", "indigena", "no indígena"],
+          "values": ["Total", "Indígena", "No indígena"],
           "index": 6
         }
       ],
@@ -133,7 +137,15 @@
       "source": "Registros territoriales de acceso a servicios + mapas de localización de servicios y equipamiento urbano",
       "label": "Tiempo de traslado (>1h al CS)",
       "axisLabel": "% mujeres embarazadas",
-      "color": "#6366f1"
+      "color": "#6366f1",
+      "file": "traslado.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "zona", "type": "string", "index": 5 },
+        { "name": "etnia", "type": "string", "index": 6 },
+        { "name": "valor", "type": "number", "role": "value", "index": 7 }
+      ]
     },
     {
       "slug": "embarazadas-empleo-informal",
@@ -147,7 +159,15 @@
       "source": "Encuesta nacional de hogares + encuesta local de condiciones de vida",
       "label": "Empleo informal",
       "axisLabel": "% personas con empleo informal",
-      "color": "#8b5cf6"
+      "color": "#8b5cf6",
+      "file": "embarazadas-empleo-informal.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "sexo", "type": "string", "index": 4 },
+        { "name": "zona", "type": "string", "index": 5 },
+        { "name": "valor", "type": "number", "role": "value", "index": 6 }
+      ]
     },
     {
       "slug": "sobrecarga-embarazadas",
@@ -161,7 +181,15 @@
       "source": "Encuesta local de condiciones de vida + registros sociales municipales",
       "label": "Sobrecarga de cuidados",
       "axisLabel": "% mujeres embarazadas",
-      "color": "#f59e0b"
+      "color": "#f59e0b",
+      "file": "sobrecarga-embarazadas.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "zona", "type": "string", "index": 4 },
+        { "name": "etnia", "type": "string", "index": 5 },
+        { "name": "valor", "type": "number", "role": "value", "index": 6 }
+      ]
     },
     {
       "slug": "apoyo-embarazadas",
@@ -175,7 +203,14 @@
       "source": "Base de datos del programa municipal de apoyo a mujeres embarazadas",
       "label": "Cobertura programa social",
       "axisLabel": "% mujeres embarazadas",
-      "color": "#10b981"
+      "color": "#10b981",
+      "file": "apoyo-embarazadas.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "zona", "type": "string", "index": 4 },
+        { "name": "valor", "type": "number", "role": "value", "index": 5 }
+      ]
     },
     {
       "slug": "frecuencia-transporte",
@@ -189,7 +224,15 @@
       "source": "Registros del sector transporte sobre recorridos, frecuencias y horarios",
       "label": "Transporte subsidiado",
       "axisLabel": "% población con acceso",
-      "color": "#3b82f6"
+      "color": "#3b82f6",
+      "file": "frecuencia-transporte.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "zona", "type": "string", "index": 4 },
+        { "name": "etnia", "type": "string", "index": 5 },
+        { "name": "valor", "type": "number", "role": "value", "index": 6 }
+      ]
     },
     {
       "slug": "apoyo-infantil",
@@ -203,7 +246,15 @@
       "source": "Registros administrativos del sistema municipal de cuidados / Programa “Cuidar en Comunidad”",
       "label": "Cuidar en Comunidad",
       "axisLabel": "% mujeres embarazadas",
-      "color": "#ec4899"
+      "color": "#ec4899",
+      "file": "apoyo-infantil.parquet",
+      "scheme": [
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "anio", "type": "number", "role": "year", "index": 3 },
+        { "name": "zona", "type": "string", "index": 4 },
+        { "name": "etnia", "type": "string", "index": 5 },
+        { "name": "valor", "type": "number", "role": "value", "index": 6 }
+      ]
     }
   ],
   "features": {
@@ -211,5 +262,48 @@
   },
   "data": {
     "path": "src/data"
+  },
+  "datasets": {
+    "analytics": {
+      "file": "analytics.parquet",
+      "scheme": [
+        { "name": "anio", "type": "number", "role": "year", "index": 0 },
+        { "name": "valor", "type": "number", "role": "value", "index": 1 },
+        { "name": "traslado", "type": "number", "index": 2 },
+        { "name": "embarazadas-empleo-informal", "type": "number", "index": 3 },
+        { "name": "sobrecarga-embarazadas", "type": "number", "index": 4 },
+        { "name": "apoyo-embarazadas", "type": "number", "index": 5 },
+        { "name": "frecuencia-transporte", "type": "number", "index": 6 },
+        { "name": "apoyo-infantil", "type": "number", "index": 7 }
+      ]
+    },
+    "scatter": {
+      "file": "scatter.parquet",
+      "scheme": [
+        { "name": "anio", "type": "number", "role": "year", "index": 0 },
+        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        { "name": "valor", "type": "number", "role": "value", "index": 2 },
+        { "name": "traslado", "type": "number", "index": 3 },
+        { "name": "embarazadas-empleo-informal", "type": "number", "index": 4 },
+        { "name": "sobrecarga-embarazadas", "type": "number", "index": 5 },
+        { "name": "apoyo-embarazadas", "type": "number", "index": 6 },
+        { "name": "frecuencia-transporte", "type": "number", "index": 7 },
+        { "name": "apoyo-infantil", "type": "number", "index": 8 },
+        { "name": "nacimientos", "type": "number", "index": 9 }
+      ]
+    },
+    "forestPlot": {
+      "file": "forest-plot.parquet",
+      "scheme": [
+        { "name": "anio", "type": "number", "role": "year", "index": 0 },
+        { "name": "indicador", "type": "string", "index": 1 },
+        { "name": "label", "type": "string", "index": 2 },
+        { "name": "correlacion", "type": "number", "role": "value", "index": 3 },
+        { "name": "ci_lower", "type": "number", "index": 4 },
+        { "name": "ci_upper", "type": "number", "index": 5 },
+        { "name": "p_value", "type": "number", "index": 6 },
+        { "name": "n", "type": "number", "index": 7 }
+      ]
+    }
   }
 }

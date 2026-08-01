@@ -6,33 +6,24 @@ import type { IndicatorStratifier } from '@/config/general'
 import { ExpandablePanel } from './ExpandablePanel'
 import { Icon } from '@iconify/react'
 
-// ── Canonical aggregate labels ────────────────────────────────────────────────
-// Legacy format (Excel mocks): sexo/grupo_edad/zona
-const TOTAL_SEXO = 'Todos/as'
-const TOTAL_EDAD = 'Todas las edades'
-const TOTAL_ZONA_LEGACY = 'Todas las zonas'
-// Simulation format (etnia-based): zona/etnia
-const TOTAL_ETNIA = 'Total'
-const TOTAL_ZONA_SIM = 'Total'
+// ── Canonical aggregate label ─────────────────────────────────────────────────
+// Every stratifier column marks its aggregate rows with this sentinel.
+const TOTAL = 'Total'
 
 // ── Colour palettes ───────────────────────────────────────────────────────────
-const SEX_COLORS: Record<string, string> = {
+const SERIES_COLORS: Record<string, string> = {
   Hombres: '#3b82f6',
   Mujeres: '#ec4899',
-}
-const ZONA_COLORS: Record<string, string> = {
   urbano: '#22c55e',
   periurbano: '#f59e0b',
   rural: '#ef4444',
   Urbano: '#22c55e',
   Periurbano: '#f59e0b',
   Rural: '#ef4444',
-}
-const ETNIA_COLORS: Record<string, string> = {
   Indígena: '#8b5cf6',
   'No indígena': '#06b6d4',
 }
-const AGE_COLORS = [
+const FALLBACK_COLORS = [
   '#3b82f6',
   '#10b981',
   '#f59e0b',
@@ -47,70 +38,28 @@ const TOTAL_COLOR = '#6b7280'
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
 /**
- * Detect whether the data uses the simulation format (etnia/Total sentinels)
- * or the legacy Excel format (sexo/Todos/as sentinels).
+ * Keep only the rows that vary along `stratifier` (or the fully aggregated
+ * rows for the 'total' view): the selected stratifier column must not be at
+ * its Total sentinel, while every other configured stratifier column must be.
  */
-function isSimFormat(rows: StratifiedRow[]): boolean {
-  return rows.length > 0 && rows[0].etnia !== undefined
-}
-
-function pivotData(rows: StratifiedRow[], stratifier: IndicatorStratifier) {
-  let filtered: StratifiedRow[]
-  const sim = isSimFormat(rows)
-
-  if (stratifier === 'total') {
-    filtered = sim
-      ? rows.filter((r) => r.etnia === TOTAL_ETNIA && r.zona === TOTAL_ZONA_SIM)
-      : rows.filter(
-          (r) =>
-            r.sexo === TOTAL_SEXO &&
-            r.grupo_edad === TOTAL_EDAD &&
-            r.zona === TOTAL_ZONA_LEGACY,
-        )
-  } else if (stratifier === 'etnia') {
-    filtered = rows.filter(
-      (r) => r.zona === TOTAL_ZONA_SIM && r.etnia !== TOTAL_ETNIA,
-    )
-  } else if (stratifier === 'sexo') {
-    filtered = rows.filter(
-      (r) =>
-        r.grupo_edad === TOTAL_EDAD &&
-        r.zona === TOTAL_ZONA_LEGACY &&
-        r.sexo !== TOTAL_SEXO,
-    )
-  } else if (stratifier === 'grupo_edad') {
-    filtered = rows.filter(
-      (r) =>
-        r.sexo === TOTAL_SEXO &&
-        r.zona === TOTAL_ZONA_LEGACY &&
-        r.grupo_edad !== TOTAL_EDAD,
-    )
-  } else {
-    // zona
-    filtered = sim
-      ? rows.filter((r) => r.etnia === TOTAL_ETNIA && r.zona !== TOTAL_ZONA_SIM)
-      : rows.filter(
-          (r) =>
-            r.sexo === TOTAL_SEXO &&
-            r.grupo_edad === TOTAL_EDAD &&
-            r.zona !== TOTAL_ZONA_LEGACY,
-        )
-  }
+function pivotData(
+  rows: StratifiedRow[],
+  stratifier: IndicatorStratifier,
+  stratifiers: IndicatorStratifier[],
+) {
+  const filtered = rows.filter((r) =>
+    stratifiers.every((s) => {
+      const value = r[s]
+      if (value === undefined) return true
+      return s === stratifier ? value !== TOTAL : value === TOTAL
+    }),
+  )
 
   const byYear = new Map<number, Record<string, number>>()
   const keySet = new Set<string>()
 
   for (const row of filtered) {
-    const key =
-      stratifier === 'total'
-        ? 'Total'
-        : stratifier === 'etnia'
-          ? (row.etnia ?? '')
-          : stratifier === 'sexo'
-            ? (row.sexo ?? '')
-            : stratifier === 'grupo_edad'
-              ? (row.grupo_edad ?? '')
-              : row.zona
+    const key = stratifier === 'total' ? TOTAL : String(row[stratifier] ?? '')
 
     keySet.add(key)
     if (!byYear.has(row.anio)) byYear.set(row.anio, { anio: row.anio })
@@ -135,13 +84,7 @@ function pivotData(rows: StratifiedRow[], stratifier: IndicatorStratifier) {
     color:
       stratifier === 'total'
         ? TOTAL_COLOR
-        : stratifier === 'etnia'
-          ? (ETNIA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
-          : stratifier === 'sexo'
-            ? (SEX_COLORS[key] ?? '#8b5cf6')
-            : stratifier === 'zona'
-              ? (ZONA_COLORS[key] ?? AGE_COLORS[i % AGE_COLORS.length])
-              : AGE_COLORS[i % AGE_COLORS.length],
+        : (SERIES_COLORS[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]),
   }))
 
   return { chartData, lines, keys }
@@ -223,8 +166,8 @@ export const StratifiedLineChart = ({
   }
 
   const { chartData, lines, keys } = useMemo(
-    () => pivotData(data, stratifier),
-    [data, stratifier],
+    () => pivotData(data, stratifier, stratifiers ?? []),
+    [data, stratifier, stratifiers],
   )
 
   const hasMap = geojsonUrls && Object.keys(geojsonUrls).length > 0

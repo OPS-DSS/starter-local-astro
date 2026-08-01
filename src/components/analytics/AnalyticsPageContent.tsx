@@ -4,7 +4,7 @@ import { DSScatterChart } from '@ops-dss/charts/scatter-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import { AnalyticsDualChart } from './AnalyticsDualChart'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
-import { indicators } from '@/config/general'
+import { app, indicators } from '@/config/general'
 import type { IndicatorMeta } from '@/config/general'
 import type {
   ForestPlotDataRow,
@@ -137,7 +137,7 @@ export const AnalyticsPageContent = ({
   csvUrl,
 }: AnalyticsPageContentProps) => {
   const [selectedIndicator, setSelectedIndicator] =
-    useState<AnalyticsIndicatorKey>('traslado')
+    useState<AnalyticsIndicatorKey>(indicators[0]?.slug ?? '')
 
   const [isBivariate, setIsBivariate] = useState(true)
   // null = no DSS-vs-DSS mode; a key = show bivariate of selectedIndicator × selectedDssIndicator
@@ -411,7 +411,7 @@ export const AnalyticsPageContent = ({
                   vs {priority.axisLabel}
                 </h2>
                 <p className="text-sm text-gray-500 mt-1">
-                  Cada punto es un barrio de San Martín del Valle (
+                  Cada punto es un barrio de {app.local} (
                   {effectiveYear !== null
                     ? `año ${effectiveYear}`
                     : 'último año disponible'}

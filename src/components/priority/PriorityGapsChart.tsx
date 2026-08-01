@@ -29,8 +29,8 @@ function r(v: number, d: number) {
 
 function computeGaps(
   data: PriorityRow[],
-  field: 'etnia' | 'zona',
-  scopeField: 'etnia' | 'zona',
+  field: string,
+  scopeField: string,
   scopeValue: string,
   comparison: GapComparisonMeta,
 ): GapRow[] {

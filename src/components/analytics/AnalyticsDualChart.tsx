@@ -18,7 +18,7 @@ interface AnalyticsDualChartProps {
 
 export const AnalyticsDualChart = ({
   data,
-  selectedIndicator = 'traslado',
+  selectedIndicator = indicators[0]?.slug ?? '',
   selectedYear,
   isFullscreen = false,
   priority,
@@ -40,16 +40,16 @@ export const AnalyticsDualChart = ({
     valor: row.valor,
   }))
   const indicatorData: LineChartData[] = data.flatMap((row) => {
-    const raw = row[selectedIndicator]
+    const raw = Number(row[selectedIndicator])
 
-    return raw == null
-      ? []
-      : [
+    return Number.isFinite(raw)
+      ? [
           {
             anio: row.anio,
             [selectedIndicator]: raw * 100,
           },
         ]
+      : []
   })
 
   return (

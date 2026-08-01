@@ -1,28 +1,18 @@
-import {
-  readParquet,
-  dataPath,
-  filterPriorityRows,
-  filterForestPlotRows,
-  filterAnalyticsRows,
-  filterScatterRows,
-  filterJourneyTimeStratifiedRows,
-  filterSexoOnlyStratifiedRows,
-  filterZonaOnlyStratifiedRows,
-  filterEtniaStratifiedRows,
-} from './parquet'
-import { priorities, indicators } from '@/config/general'
-import type { IndicatorMeta, IndicatorStratifier } from '@/config/general'
+import { loadDataset } from './parquet'
+import { app, priorities, indicators } from '@/config/general'
+import type {
+  IndicatorMeta,
+  IndicatorStratifier,
+  DatasetScheme,
+} from '@/config/general'
 
 import type {
-  PriorityRawRow,
+  DataRow,
+  MapRowsOptions,
   PriorityRow,
-  ForestPlotRawRow,
   ForestPlotDataRow,
-  AnalyticsRawRow,
   AnalyticsRow,
-  ScatterRawRow,
   ScatterRow,
-  StratifiedRawRow,
   StratifiedRow,
 } from './parquet'
 
@@ -32,125 +22,64 @@ export interface PageDatasets {
   forestPlotData: ForestPlotDataRow[]
   analyticsData: AnalyticsRow[]
   scatterData: ScatterRow[]
-  priorityData: PriorityRow[]
-  trasladoData: StratifiedRow[]
-  frecuenciaTransporteData: StratifiedRow[]
-  sobrecargaCuidadosData: StratifiedRow[]
-  empleoInformalData: StratifiedRow[]
-  coberturaProgramaData: StratifiedRow[]
-  apoyoInfantilData: StratifiedRow[]
+  /** Priority indicator data, keyed by indicator slug. */
+  priorityData: Record<string, PriorityRow[]>
+  /** Stratified indicator data, keyed by indicator slug. */
+  stratifiedData: Record<string, StratifiedRow[]>
+}
+
+async function tryLoad<T extends DataRow>(
+  name: string,
+  file: string | undefined,
+  scheme: DatasetScheme | undefined,
+  options?: MapRowsOptions,
+): Promise<T[]> {
+  if (!file || !scheme) return []
+  try {
+    return await loadDataset<T>(file, scheme, options)
+  } catch (e) {
+    console.error(`[loadAllDatasets] ${name}:`, e)
+    return []
+  }
 }
 
 export async function loadAllDatasets(): Promise<PageDatasets> {
-  let forestPlotData: ForestPlotDataRow[] = []
-  try {
-    const rows = await readParquet<ForestPlotRawRow>(
-      dataPath('forest-plot.parquet'),
+  // Priority indicators keep rows for every territory so charts can compare
+  // the municipality against its barrios; the rest keep only local rows.
+  const priorityData: Record<string, PriorityRow[]> = {}
+  for (const p of priorities) {
+    priorityData[p.slug] = await tryLoad<PriorityRow>(p.slug, p.file, p.scheme)
+  }
+
+  const stratifiedData: Record<string, StratifiedRow[]> = {}
+  for (const ind of indicators) {
+    stratifiedData[ind.slug] = await tryLoad<StratifiedRow>(
+      ind.slug,
+      ind.file,
+      ind.scheme,
+      { territory: app.local },
     )
-    forestPlotData = filterForestPlotRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] forest-plot:', e)
   }
 
-  let analyticsData: AnalyticsRow[] = []
-  try {
-    const rows = await readParquet<AnalyticsRawRow>(
-      dataPath('analytics.parquet'),
-    )
-    analyticsData = filterAnalyticsRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] analytics:', e)
-  }
-
-  let scatterData: ScatterRow[] = []
-  try {
-    const rows = await readParquet<ScatterRawRow>(dataPath('scatter.parquet'))
-    scatterData = filterScatterRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] scatter:', e)
-  }
-
-  let priorityData: PriorityRow[] = []
-  try {
-    const rows = await readParquet<PriorityRawRow>(
-      dataPath('mortalidad-materna.parquet'),
-    )
-    priorityData = filterPriorityRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] mortalidad-materna:', e)
-  }
-
-  let trasladoData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('traslado.parquet'),
-    )
-    trasladoData = filterJourneyTimeStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] traslado:', e)
-  }
-
-  let frecuenciaTransporteData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('frecuencia-transporte.parquet'),
-    )
-    frecuenciaTransporteData = filterEtniaStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] frecuencia-transporte:', e)
-  }
-
-  let sobrecargaCuidadosData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('sobrecarga-embarazadas.parquet'),
-    )
-    sobrecargaCuidadosData = filterEtniaStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] sobrecarga-embarazadas:', e)
-  }
-
-  let empleoInformalData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('embarazadas-empleo-informal.parquet'),
-    )
-    empleoInformalData = filterSexoOnlyStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] embarazadas-empleo-informal:', e)
-  }
-
-  let coberturaProgramaData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('apoyo-embarazadas.parquet'),
-    )
-    coberturaProgramaData = filterZonaOnlyStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] apoyo-embarazadas:', e)
-  }
-
-  let apoyoInfantilData: StratifiedRow[] = []
-  try {
-    const rows = await readParquet<StratifiedRawRow>(
-      dataPath('apoyo-infantil.parquet'),
-    )
-    apoyoInfantilData = filterEtniaStratifiedRows(rows)
-  } catch (e) {
-    console.error('[loadAllDatasets] apoyo-infantil:', e)
-  }
-
+  const { analytics, scatter, forestPlot } = app.datasets ?? {}
   return {
-    forestPlotData,
-    analyticsData,
-    scatterData,
+    forestPlotData: await tryLoad<ForestPlotDataRow>(
+      'forestPlot',
+      forestPlot?.file,
+      forestPlot?.scheme,
+    ),
+    analyticsData: await tryLoad<AnalyticsRow>(
+      'analytics',
+      analytics?.file,
+      analytics?.scheme,
+    ),
+    scatterData: await tryLoad<ScatterRow>(
+      'scatter',
+      scatter?.file,
+      scatter?.scheme,
+    ),
     priorityData,
-    trasladoData,
-    frecuenciaTransporteData,
-    sobrecargaCuidadosData,
-    empleoInformalData,
-    coberturaProgramaData,
-    apoyoInfantilData,
+    stratifiedData,
   }
 }
 
@@ -159,6 +88,7 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
 export interface PageDefinition {
   slug: string | undefined
   title: string
+  text?: string
   date: string
   navbar: boolean
   source?: string
@@ -166,12 +96,7 @@ export interface PageDefinition {
   forestPlotData?: ForestPlotDataRow[]
   analyticsData?: AnalyticsRow[]
   scatterData?: ScatterRow[]
-  trasladoData?: StratifiedRow[]
-  frecuenciaTransporteData?: StratifiedRow[]
-  sobrecargaCuidadosData?: StratifiedRow[]
-  empleoInformalData?: StratifiedRow[]
-  coberturaProgramaData?: StratifiedRow[]
-  apoyoInfantilData?: StratifiedRow[]
+  stratifiedData?: StratifiedRow[]
   dimension?: string
   subdimensions?: string[]
   description?: string
@@ -211,18 +136,6 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
       date: '2026-01-01',
       navbar: true,
     },
-    {
-      slug: 'analisis/mortalidad-materna',
-      title: 'Análisis de Mortalidad Materna',
-      description: 'Indicadores de análisis de datos y visualización.',
-      date: '2026-01-01',
-      category: 'Tendencia',
-      navbar: false,
-      priority: false,
-      forestPlotData: datasets.forestPlotData,
-      analyticsData: datasets.analyticsData,
-      scatterData: datasets.scatterData,
-    },
   ]
 
   const priorityPages: PageDefinition[] = priorities.flatMap(
@@ -235,7 +148,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
         category: priority.category,
         source: priority.source,
         navbar: false,
-        data: datasets.priorityData,
+        data: datasets.priorityData[priority.slug],
       },
       {
         slug: `determinantes-de-la-salud/${priority.slug}`,
@@ -245,6 +158,18 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
         source: priority.source,
         category: priority.category,
         navbar: false,
+      },
+      {
+        slug: `analisis/${priority.slug}`,
+        title: `Análisis de ${priority.label}`,
+        description: 'Indicadores de análisis de datos y visualización.',
+        date: priority.date,
+        category: 'Tendencia',
+        navbar: false,
+        priority: false,
+        forestPlotData: datasets.forestPlotData,
+        analyticsData: datasets.analyticsData,
+        scatterData: datasets.scatterData,
       },
     ],
   )
@@ -259,22 +184,7 @@ export function buildPages(datasets: PageDatasets): PageDefinition[] {
     navbar: false,
     stratifiers: ind.stratifiers,
     source: ind.source,
-    ...(ind.slug === 'traslado' ? { trasladoData: datasets.trasladoData } : {}),
-    ...(ind.slug === 'frecuencia-transporte'
-      ? { frecuenciaTransporteData: datasets.frecuenciaTransporteData }
-      : {}),
-    ...(ind.slug === 'sobrecarga-embarazadas'
-      ? { sobrecargaCuidadosData: datasets.sobrecargaCuidadosData }
-      : {}),
-    ...(ind.slug === 'embarazadas-empleo-informal'
-      ? { empleoInformalData: datasets.empleoInformalData }
-      : {}),
-    ...(ind.slug === 'apoyo-embarazadas'
-      ? { coberturaProgramaData: datasets.coberturaProgramaData }
-      : {}),
-    ...(ind.slug === 'apoyo-infantil'
-      ? { apoyoInfantilData: datasets.apoyoInfantilData }
-      : {}),
+    stratifiedData: datasets.stratifiedData[ind.slug],
   }))
 
   return [...staticPages, ...indicatorPages, ...priorityPages]

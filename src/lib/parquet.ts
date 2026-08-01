@@ -1,17 +1,23 @@
 import { asyncBufferFromFile, parquetRead } from 'hyparquet'
 import { resolve, isAbsolute } from 'node:path'
+import { app } from '@/config/general'
+import type { DatasetScheme } from '@/config/general'
 
 export function dataPath(filename: string) {
-  return resolve(process.cwd(), 'src/data', filename)
+  return resolve(process.cwd(), app.data.path, filename)
 }
+
+/** A raw parquet row as returned by hyparquet: cells addressed by position. */
+export type RawRow = unknown[]
+
+/** A mapped row: cells addressed by the field names configured in the scheme. */
+export type DataRow = Record<string, string | number>
 
 /**
  * Reads a parquet file at build time (Node.js / Astro SSG).
  * Pass a path relative to the project root, e.g. 'src/data/foo.parquet'.
  */
-export async function readParquet<T = Record<string, unknown>>(
-  filePath: string,
-): Promise<T[]> {
+export async function readParquet<T = RawRow>(filePath: string): Promise<T[]> {
   const resolvedPath = isAbsolute(filePath)
     ? filePath
     : resolve(process.cwd(), filePath)
@@ -21,187 +27,120 @@ export async function readParquet<T = Record<string, unknown>>(
     try {
       parquetRead({
         file,
-        onComplete: (rows) => {
-          try {
-            if (!rows || rows.length === 0) {
-              resolve([] as unknown as T[])
-              return
-            }
-            resolve(rows as unknown as T[])
-          } catch (err) {
-            reject(err)
-          }
-        },
+        onComplete: (rows) => resolve((rows ?? []) as unknown as T[]),
       })
     } catch (err) {
       reject(err)
     }
   })
+}
+
+export interface MapRowsOptions {
+  /**
+   * Keep only rows whose territory-role column equals this value
+   * (e.g. app.local to keep municipality-level rows). When omitted,
+   * rows for every territory are kept.
+   */
+  territory?: string
 }
 
 /**
- * Reads a parquet file and returns row objects with named keys.
- * Uses parquet schema to map column indices to field names.
+ * Maps raw parquet rows to named objects using a scheme from app.config.json.
+ * The scheme drives everything: which columns are read, at which position,
+ * under which name, and with which type.
+ *
+ * Column roles:
+ * - `territory` — used for the optional territory filter.
+ * - `year` / `value` — rows where these are missing or non-numeric are
+ *   dropped (e.g. years before a programme existed); when a year column
+ *   exists, rows are sorted by it.
  */
-export async function readParquetAsObjects<T = Record<string, unknown>>(
-  filePath: string,
-): Promise<T[]> {
-  const resolvedPath = isAbsolute(filePath)
-    ? filePath
-    : resolve(process.cwd(), filePath)
+export function mapRows<T extends DataRow = DataRow>(
+  rows: RawRow[],
+  scheme: DatasetScheme,
+  { territory }: MapRowsOptions = {},
+): T[] {
+  const territoryCol = scheme.find((c) => c.role === 'territory')
+  const yearCol = scheme.find((c) => c.role === 'year')
+  const valueCol = scheme.find((c) => c.role === 'value')
 
-  const file = await asyncBufferFromFile(resolvedPath)
-  return new Promise<T[]>((resolve, reject) => {
-    try {
-      // First pass: read metadata to get column names
-      let columnNames: string[] = []
-      parquetRead({
-        file,
-        onComplete: (rows) => {
-          try {
-            if (!rows || rows.length === 0) {
-              resolve([] as unknown as T[])
-              return
-            }
-            // If rows are already objects, return as-is
-            if (!Array.isArray(rows[0])) {
-              resolve(rows as unknown as T[])
-              return
-            }
-            // Get column names from metadata if available
-            if (columnNames.length === 0) {
-              // Fallback: generate indexed column names
-              const numCols = (rows[0] as unknown[]).length
-              columnNames = Array.from({ length: numCols }, (_, i) => `col${i}`)
-            }
-            // Convert each row array to a named object
-            const objects = rows.map((row) => {
-              const rowArr = row as unknown[]
-              const obj: Record<string, unknown> = {}
-              for (let i = 0; i < columnNames.length; i++) {
-                obj[columnNames[i]] = rowArr[i]
-              }
-              return obj as T
-            })
-            resolve(objects)
-          } catch (err) {
-            reject(err)
-          }
-        },
-        columns: undefined, // read all columns
-      })
-    } catch (err) {
-      reject(err)
+  const result: T[] = []
+  for (const raw of rows) {
+    if (
+      territory &&
+      territoryCol &&
+      String(raw[territoryCol.index]) !== territory
+    )
+      continue
+
+    const row: DataRow = {}
+    let valid = true
+    for (const col of scheme) {
+      const cell = raw[col.index]
+      if (col.type === 'number') {
+        const num = cell == null ? NaN : Number(cell)
+        if (!Number.isFinite(num) && (col === yearCol || col === valueCol)) {
+          valid = false
+          break
+        }
+        row[col.name] = num
+      } else {
+        row[col.name] = cell == null ? '' : String(cell)
+      }
     }
-  })
+    if (valid) result.push(row as T)
+  }
+
+  if (yearCol) {
+    result.sort((a, b) => Number(a[yearCol.name]) - Number(b[yearCol.name]))
+  }
+  return result
 }
 
-export type PriorityRawRow = unknown[]
+/** Reads a parquet file from the configured data directory and maps its rows. */
+export async function loadDataset<T extends DataRow = DataRow>(
+  file: string,
+  scheme: DatasetScheme,
+  options?: MapRowsOptions,
+): Promise<T[]> {
+  const rows = await readParquet<RawRow>(dataPath(file))
+  return mapRows<T>(rows, scheme, options)
+}
 
+// ─── Canonical row shapes ─────────────────────────────────────────────────────
+// These describe the field names the chart components expect. The scheme in
+// app.config.json decides which parquet column feeds each field; the names
+// below are the template's internal vocabulary and must match the `name`
+// entries used in the config schemes.
+
+/** Priority indicator rows: kept for every territory so charts can compare. */
 export type PriorityRow = {
   territorio: string
   anio: number
-  etnia: string
-  zona: string
   valor: number
-}
+} & DataRow
 
-export function filterPriorityRows(rows: PriorityRawRow[]): PriorityRow[] {
-  const result: PriorityRow[] = []
-  for (const row of rows) {
-    const territorio = String(row[1])
-    const anio = Number(row[3])
-    const zona = String(row[5])
-    const etnia = String(row[6])
-    const valor = Number(row[7])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ territorio, anio, etnia, zona, valor })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
+/** Stratified indicator rows: year/value plus any configured stratifiers. */
+export type StratifiedRow = {
+  anio: number
+  valor: number
+} & DataRow
 
-export type AnalyticsRawRow = unknown[]
-
+/** Wide-format rows keyed by indicator slug (analytics/scatter datasets). */
 export type AnalyticsRow = {
   anio: number
   valor: number
-  traslado: number
-  'embarazadas-empleo-informal': number
-  'sobrecarga-embarazadas': number
-  'apoyo-embarazadas': number
-  'frecuencia-transporte': number
-  'apoyo-infantil': number
-}
+} & DataRow
 
-// Indicator slugs used as data-row keys across the analytics dashboard.
-export type AnalyticsIndicatorKey = Exclude<
-  keyof AnalyticsRow,
-  'anio' | 'valor'
->
-
-export function filterAnalyticsRows(rows: AnalyticsRawRow[]): AnalyticsRow[] {
-  const result: AnalyticsRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    const valor = Number(row[1])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({
-      anio,
-      valor,
-      traslado: row[2] == null ? NaN : Number(row[2]),
-      'embarazadas-empleo-informal': row[3] == null ? NaN : Number(row[3]),
-      'sobrecarga-embarazadas': row[4] == null ? NaN : Number(row[4]),
-      'apoyo-embarazadas': row[5] == null ? NaN : Number(row[5]),
-      'frecuencia-transporte': row[6] == null ? NaN : Number(row[6]),
-      'apoyo-infantil': row[7] == null ? NaN : Number(row[7]),
-    })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-export type ScatterRawRow = unknown[]
+/** Indicator slugs used as data-row keys across the analytics dashboard. */
+export type AnalyticsIndicatorKey = string
 
 export type ScatterRow = {
   anio: number
   territorio: string
   valor: number
-  traslado: number
-  'embarazadas-empleo-informal': number
-  'sobrecarga-embarazadas': number
-  'apoyo-embarazadas': number
-  'frecuencia-transporte': number
-  'apoyo-infantil': number
   nacimientos: number
-}
-
-export function filterScatterRows(rows: ScatterRawRow[]): ScatterRow[] {
-  const result: ScatterRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    const territorio = String(row[1])
-    const valor = Number(row[2])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({
-      anio,
-      territorio,
-      valor,
-      traslado: row[3] == null ? NaN : Number(row[3]),
-      'embarazadas-empleo-informal': row[4] == null ? NaN : Number(row[4]),
-      'sobrecarga-embarazadas': row[5] == null ? NaN : Number(row[5]),
-      'apoyo-embarazadas': row[6] == null ? NaN : Number(row[6]),
-      'frecuencia-transporte': row[7] == null ? NaN : Number(row[7]),
-      'apoyo-infantil': row[8] == null ? NaN : Number(row[8]),
-      nacimientos: row[9] == null ? NaN : Number(row[9]),
-    })
-  }
-  return result
-}
-
-// ── Forest plot / Correlation data types ─────────────────────────────────────
-// Parquet columns (by index):
-//   anio[0], indicador[1], label[2], correlacion[3], ci_lower[4],
-//   ci_upper[5], p_value[6], n[7]
-export type ForestPlotRawRow = unknown[]
+} & DataRow
 
 export type ForestPlotDataRow = {
   anio: number
@@ -212,165 +151,4 @@ export type ForestPlotDataRow = {
   ci_upper: number
   p_value: number
   n: number
-}
-
-export type StratifiedRawRow = unknown[]
-
-/** Unified row type — legacy fields (sexo, grupo_edad) are optional. */
-export type StratifiedRow = {
-  anio: number
-  valor: number
-  zona: string
-  sexo?: string
-  grupo_edad?: string
-  etnia?: string
-}
-
-/** Legacy filter: anio[0], valor[1], sexo[2], grupo_edad[3], zona[4] */
-export function filterStratifiedRows(
-  rows: StratifiedRawRow[],
-): StratifiedRow[] {
-  const result: StratifiedRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    const valor = Number(row[1])
-    const sexo = String(row[2])
-    const grupo_edad = String(row[3])
-    const zona = String(row[4] ?? 'Todas las zonas')
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ anio, valor, zona, sexo, grupo_edad })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-/**
- * Simulation-format filter: iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], etnia[5], valor[6]
- * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
- * Skips NA rows (e.g. years before a programme existed).
- */
-export function filterEtniaStratifiedRows(
-  rows: StratifiedRawRow[],
-): StratifiedRow[] {
-  const result: StratifiedRow[] = []
-  for (const row of rows) {
-    if (String(row[1]) !== 'San Martín del Valle') continue
-    const anio = Number(row[3])
-    const zona = String(row[4])
-    const etnia = String(row[5])
-    if (row[6] == null) continue
-    const valor = Number(row[6])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ anio, valor, zona, etnia })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-/**
- * Simulation-format filter for journey_time (sexo + etnia stratifiers).
- * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], etnia[6], valor[7]
- * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
- */
-export function filterJourneyTimeStratifiedRows(
-  rows: StratifiedRawRow[],
-): StratifiedRow[] {
-  const result: StratifiedRow[] = []
-  for (const row of rows) {
-    if (String(row[1]) !== 'San Martín del Valle') continue
-    const anio = Number(row[3])
-    const zona = String(row[5])
-    const etnia = String(row[6])
-    const valor = Number(row[7])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    result.push({ anio, valor, zona, etnia })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-/**
- * Simulation-format filter for informal_employment (sexo-only stratifier).
- * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], sexo[4], zona[5], valor[6]
- * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
- * Translates sentinels to legacy chart format: "Total" → "Todos/as" / "Todas las zonas".
- */
-export function filterSexoOnlyStratifiedRows(
-  rows: StratifiedRawRow[],
-): StratifiedRow[] {
-  const result: StratifiedRow[] = []
-  for (const row of rows) {
-    if (String(row[1]) !== 'San Martín del Valle') continue
-    const anio = Number(row[3])
-    const rawSexo = String(row[4])
-    const rawZona = String(row[5])
-    const valor = Number(row[6])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    const sexo = rawSexo === 'Total' ? 'Todos/as' : rawSexo
-    const zona = rawZona === 'Total' ? 'Todas las zonas' : rawZona
-    result.push({ anio, valor, zona, sexo, grupo_edad: 'Todas las edades' })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-/**
- * Simulation-format filter for zona-only indicators (program_cover).
- * Columns: iso3[0], Territorio[1], cod_local[2], anio[3], zona[4], valor[5]
- * Keeps only Territorio == "San Martín del Valle" (global/municipio rows).
- * Skips NA rows (2016-2018, when programme did not exist).
- * Translates "Total" → "Todas las zonas" for the legacy chart path.
- */
-export function filterZonaOnlyStratifiedRows(
-  rows: StratifiedRawRow[],
-): StratifiedRow[] {
-  const result: StratifiedRow[] = []
-  for (const row of rows) {
-    if (String(row[1]) !== 'San Martín del Valle') continue
-    const anio = Number(row[3])
-    const rawZona = String(row[4])
-    if (row[5] == null) continue
-    const valor = Number(row[5])
-    if (!Number.isFinite(anio) || !Number.isFinite(valor)) continue
-    const zona = rawZona === 'Total' ? 'Todas las zonas' : rawZona
-    result.push({
-      anio,
-      valor,
-      zona,
-      sexo: 'Todos/as',
-      grupo_edad: 'Todas las edades',
-    })
-  }
-  return result.sort((a, b) => a.anio - b.anio)
-}
-
-// Backward-compatible aliases
-export type TrasladoRawRow = StratifiedRawRow
-export type TrasladoRow = StratifiedRow
-export const filterTrasladoRows = filterJourneyTimeStratifiedRows
-
-export function filterForestPlotRows(
-  rows: ForestPlotRawRow[],
-): ForestPlotDataRow[] {
-  const result: ForestPlotDataRow[] = []
-  for (const row of rows) {
-    const anio = Number(row[0])
-    const indicador = String(row[1])
-    const label = String(row[2])
-    const correlacion = Number(row[3])
-    if (
-      !Number.isFinite(anio) ||
-      !indicador ||
-      !label ||
-      !Number.isFinite(correlacion)
-    )
-      continue
-    result.push({
-      anio,
-      indicador,
-      label,
-      correlacion,
-      ci_lower: Number(row[4]),
-      ci_upper: Number(row[5]),
-      p_value: Number(row[6]),
-      n: Number(row[7]),
-    })
-  }
-  return result
-}
+} & DataRow

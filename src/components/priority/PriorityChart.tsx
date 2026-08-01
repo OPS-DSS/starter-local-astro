@@ -57,9 +57,7 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
     const key =
       stratifier === 'total'
         ? app.local
-        : stratifier === 'etnia'
-          ? row.etnia
-          : row.zona
+        : String(stratifier === 'etnia' ? row.etnia : row.zona)
 
     keySet.add(key)
     if (!byYear.has(row.anio)) byYear.set(row.anio, {})
