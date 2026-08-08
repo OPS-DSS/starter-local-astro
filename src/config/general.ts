@@ -37,6 +37,10 @@ const Column = z.object({
   index: z.number().int().nonnegative(),
   role: z.enum(['territory', 'year', 'value']).optional(),
   values: z.array(z.string()).optional(),
+  // Sentinel value marking aggregate/unstratified rows for this column.
+  aggregate: z.string().optional(),
+  // Display color per value (keys match `values`).
+  colors: z.record(z.string(), z.string()).optional(),
 })
 
 const Scheme = z.array(Column).min(1)
@@ -61,6 +65,8 @@ const Indicator = z.object({
   label: z.string(),
   axisLabel: z.string(),
   color: z.string(),
+  // Line color for the unstratified ('total') series in stratified charts.
+  totalColor: z.string().optional(),
   bivariateValue: z.string().optional(),
   inequitySource: z.string().optional(),
   file: z.string().optional(),

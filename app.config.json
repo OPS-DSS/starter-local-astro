@@ -17,6 +17,7 @@
       "label": "Razón de Mortalidad Materna",
       "axisLabel": "RMM (por 100.000 nacidos vivos)",
       "color": "#ef4444",
+      "totalColor": "#6b7280",
       "stratifiers": ["zona", "etnia"],
       "bivariateValue": "maternal_value",
       "file": "mortalidad-materna.parquet",
@@ -42,13 +43,24 @@
         {
           "name": "zona",
           "type": "string",
-          "values": ["Total", "urbano", "periurbano", "rural"],
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
           "index": 5
         },
         {
           "name": "etnia",
           "type": "string",
-          "values": ["Total", "Indígena", "No indígena"],
+          "values": ["Indígena", "No indígena"],
+          "aggregate": "Total",
+          "colors": {
+            "Indígena": "#8b5cf6",
+            "No indígena": "#06b6d4"
+          },
           "index": 6
         }
       ],
@@ -140,7 +152,12 @@
       "color": "#6366f1",
       "file": "traslado.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "zona", "type": "string", "index": 5 },
         { "name": "etnia", "type": "string", "index": 6 },
@@ -162,7 +179,12 @@
       "color": "#8b5cf6",
       "file": "embarazadas-empleo-informal.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "sexo", "type": "string", "index": 4 },
         { "name": "zona", "type": "string", "index": 5 },
@@ -184,7 +206,12 @@
       "color": "#f59e0b",
       "file": "sobrecarga-embarazadas.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "zona", "type": "string", "index": 4 },
         { "name": "etnia", "type": "string", "index": 5 },
@@ -206,7 +233,12 @@
       "color": "#10b981",
       "file": "apoyo-embarazadas.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "zona", "type": "string", "index": 4 },
         { "name": "valor", "type": "number", "role": "value", "index": 5 }
@@ -227,7 +259,12 @@
       "color": "#3b82f6",
       "file": "frecuencia-transporte.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "zona", "type": "string", "index": 4 },
         { "name": "etnia", "type": "string", "index": 5 },
@@ -249,7 +286,12 @@
       "color": "#ec4899",
       "file": "apoyo-infantil.parquet",
       "scheme": [
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
         { "name": "zona", "type": "string", "index": 4 },
         { "name": "etnia", "type": "string", "index": 5 },
@@ -281,7 +323,12 @@
       "file": "scatter.parquet",
       "scheme": [
         { "name": "anio", "type": "number", "role": "year", "index": 0 },
-        { "name": "territorio", "type": "string", "role": "territory", "index": 1 },
+        {
+          "name": "territorio",
+          "type": "string",
+          "role": "territory",
+          "index": 1
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 2 },
         { "name": "traslado", "type": "number", "index": 3 },
         { "name": "embarazadas-empleo-informal", "type": "number", "index": 4 },
@@ -298,7 +345,12 @@
         { "name": "anio", "type": "number", "role": "year", "index": 0 },
         { "name": "indicador", "type": "string", "index": 1 },
         { "name": "label", "type": "string", "index": 2 },
-        { "name": "correlacion", "type": "number", "role": "value", "index": 3 },
+        {
+          "name": "correlacion",
+          "type": "number",
+          "role": "value",
+          "index": 3
+        },
         { "name": "ci_lower", "type": "number", "index": 4 },
         { "name": "ci_upper", "type": "number", "index": 5 },
         { "name": "p_value", "type": "number", "index": 6 },

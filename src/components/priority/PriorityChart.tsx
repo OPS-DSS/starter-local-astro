@@ -4,33 +4,29 @@ import type { PriorityRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
 import { Icon } from '@iconify/react'
 import { app } from '@/config/general'
-
-// ── Aggregate label constants (must match R mock script) ──────────────────────
-const TOTAL_ETNIA = 'Total'
-const TOTAL_ZONA = 'Total'
+import type { IndicatorMeta } from '@/config/general'
 
 // ── Stratifier type ───────────────────────────────────────────────────────────
 export type Stratifier = 'total' | 'etnia' | 'zona'
 
-// ── Colour palettes ───────────────────────────────────────────────────────────
-const ETNIA_COLORS: Record<string, string> = {
-  Indígena: '#8b5cf6',
-  'No indígena': '#06b6d4',
-}
-const ZONA_COLORS: Record<string, string> = {
-  urbano: '#22c55e',
-  periurbano: '#f59e0b',
-  rural: '#ef4444',
-}
-
-// Explicit ordering for consistent legend/table display across renders
-const ZONA_ORDER = ['urbano', 'periurbano', 'rural']
-const ETNIA_ORDER = ['Indígena', 'No indígena']
-const TOTAL_COLOR = '#6b7280'
+const TOTAL_LABEL = 'Total'
+const DEFAULT_COLOR = '#6b7280'
 
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
-function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
+function pivotData(
+  rows: PriorityRow[],
+  stratifier: Stratifier,
+  priority: IndicatorMeta,
+) {
+  const scheme = priority.scheme ?? []
+  const zonaColumn = scheme.find((c) => c.name === 'zona')
+  const etniaColumn = scheme.find((c) => c.name === 'etnia')
+
+  // Sentinel values marking aggregate (unstratified) rows for each column.
+  const totalZona = zonaColumn?.aggregate ?? TOTAL_LABEL
+  const totalEtnia = etniaColumn?.aggregate ?? TOTAL_LABEL
+
   // Only municipality-level aggregates
   const smvRows = rows.filter((r) => r.territorio === app.local)
 
@@ -38,15 +34,15 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
 
   if (stratifier === 'total') {
     filtered = smvRows.filter(
-      (r) => r.etnia === TOTAL_ETNIA && r.zona === TOTAL_ZONA,
+      (r) => r.etnia === totalEtnia && r.zona === totalZona,
     )
   } else if (stratifier === 'etnia') {
     filtered = smvRows.filter(
-      (r) => r.zona === TOTAL_ZONA && r.etnia !== TOTAL_ETNIA,
+      (r) => r.zona === totalZona && r.etnia !== totalEtnia,
     )
   } else {
     filtered = smvRows.filter(
-      (r) => r.etnia === TOTAL_ETNIA && r.zona !== TOTAL_ZONA,
+      (r) => r.etnia === totalEtnia && r.zona !== totalZona,
     )
   }
 
@@ -68,12 +64,15 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
     .sort(([a], [b]) => a - b)
     .map(([anio, vals]) => ({ anio, ...vals }))
 
-  const orderArray =
+  // Value order and colors come from the active stratifier column's config.
+  const activeColumn =
     stratifier === 'zona'
-      ? ZONA_ORDER
+      ? zonaColumn
       : stratifier === 'etnia'
-        ? ETNIA_ORDER
-        : null
+        ? etniaColumn
+        : undefined
+  const orderArray = activeColumn?.values ?? null
+  const colors = activeColumn?.colors ?? {}
 
   const keys = Array.from(keySet).sort((a, b) => {
     if (orderArray) return orderArray.indexOf(a) - orderArray.indexOf(b)
@@ -85,10 +84,8 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
     name: key,
     color:
       stratifier === 'total'
-        ? TOTAL_COLOR
-        : stratifier === 'zona'
-          ? (ZONA_COLORS[key] ?? '#6b7280')
-          : (ETNIA_COLORS[key] ?? '#6b7280'),
+        ? (priority.totalColor ?? DEFAULT_COLOR)
+        : (colors[key] ?? DEFAULT_COLOR),
   }))
 
   return { chartData, lines, keys }
@@ -98,20 +95,16 @@ function pivotData(rows: PriorityRow[], stratifier: Stratifier) {
 
 interface PriorityChartProps {
   data: PriorityRow[]
+  priority: IndicatorMeta
   csvPath?: string
   highlightYear?: number
   stratifier: Stratifier
   onStratifierChange: (s: Stratifier) => void
 }
 
-const STRATIFIER_OPTIONS: { value: Stratifier; label: string }[] = [
-  { value: 'total', label: 'Total' },
-  { value: 'etnia', label: 'Etnia' },
-  { value: 'zona', label: 'Zona' },
-]
-
 export const PriorityChart = ({
   data,
+  priority,
   csvPath,
   highlightYear,
   stratifier,
@@ -120,9 +113,18 @@ export const PriorityChart = ({
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
   const { chartData, lines, keys } = useMemo(
-    () => pivotData(data, stratifier),
-    [data, stratifier],
+    () => pivotData(data, stratifier, priority),
+    [data, stratifier, priority],
   )
+
+  // 'total' (no stratification) is always available; other options come from config.
+  const stratifierOptions: { value: Stratifier; label: string }[] = [
+    { value: 'total', label: TOTAL_LABEL },
+    ...((priority.stratifiers ?? []) as Stratifier[]).map((s) => ({
+      value: s,
+      label: s.charAt(0).toUpperCase() + s.slice(1),
+    })),
+  ]
 
   if (!data || data.length === 0) {
     return (
@@ -163,7 +165,7 @@ export const PriorityChart = ({
 
           {/* ── Stratifier selector ──────────────────────────────────────────────── */}
           <div className="flex rounded-lg overflow-hidden border border-gray-200 text-sm">
-            {STRATIFIER_OPTIONS.map(({ value, label }) => (
+            {stratifierOptions.map(({ value, label }) => (
               <button
                 key={value}
                 type="button"

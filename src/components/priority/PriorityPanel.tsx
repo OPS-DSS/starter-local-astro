@@ -53,6 +53,7 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
 
       <PriorityChart
         data={data}
+        priority={priorities[0]}
         csvPath={csvPath}
         highlightYear={effectiveYear ?? undefined}
         stratifier={stratifier}
