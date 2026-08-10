@@ -36,6 +36,8 @@ const Column = z.object({
   type: z.enum(['string', 'number']),
   index: z.number().int().nonnegative(),
   role: z.enum(['territory', 'year', 'value']).optional(),
+  // Display label for this column when offered as a stratifier option.
+  label: z.string().optional(),
   values: z.array(z.string()).optional(),
   // Sentinel value marking aggregate/unstratified rows for this column.
   aggregate: z.string().optional(),

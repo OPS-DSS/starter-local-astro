@@ -1,7 +1,7 @@
 ---
 import { StratifiedLineChart } from './StratifiedLineChart'
 import type { StratifiedRow } from '@/lib/parquet'
-import type { IndicatorStratifier } from '@/config/general'
+import type { IndicatorStratifier, IndicatorMeta } from '@/config/general'
 
 interface Props {
   title: string
@@ -9,6 +9,7 @@ interface Props {
   subdimensions: string[]
   text: string
   data: StratifiedRow[]
+  indicator: IndicatorMeta
   stratifiers?: IndicatorStratifier[]
   yAxisLabel?: string
   csvPath?: string
@@ -22,6 +23,7 @@ const {
   subdimensions = [],
   text,
   data,
+  indicator,
   stratifiers,
   yAxisLabel,
   csvPath,
@@ -58,6 +60,7 @@ const {
     <StratifiedLineChart
       client:only="react"
       data={data}
+      indicator={indicator}
       stratifiers={stratifiers}
       yAxisLabel={yAxisLabel}
       csvPath={csvPath}

@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
 import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
-import type { IndicatorStratifier } from '@/config/general'
+import type { IndicatorStratifier, IndicatorMeta } from '@/config/general'
 import { ExpandablePanel } from './ExpandablePanel'
 import { Icon } from '@iconify/react'
 
@@ -10,19 +10,10 @@ import { Icon } from '@iconify/react'
 // Every stratifier column marks its aggregate rows with this sentinel.
 const TOTAL = 'Total'
 
-// ── Colour palettes ───────────────────────────────────────────────────────────
-const SERIES_COLORS: Record<string, string> = {
-  Hombres: '#3b82f6',
-  Mujeres: '#ec4899',
-  urbano: '#22c55e',
-  periurbano: '#f59e0b',
-  rural: '#ef4444',
-  Urbano: '#22c55e',
-  Periurbano: '#f59e0b',
-  Rural: '#ef4444',
-  Indígena: '#8b5cf6',
-  'No indígena': '#06b6d4',
-}
+// ── Colour fallbacks ──────────────────────────────────────────────────────────
+// Used only when the indicator's app.config.json scheme doesn't define a
+// color for a given stratifier value.
+const DEFAULT_TOTAL_COLOR = '#6b7280'
 const FALLBACK_COLORS = [
   '#3b82f6',
   '#10b981',
@@ -33,7 +24,6 @@ const FALLBACK_COLORS = [
   '#f97316',
   '#6366f1',
 ]
-const TOTAL_COLOR = '#6b7280'
 
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
@@ -46,6 +36,7 @@ function pivotData(
   rows: StratifiedRow[],
   stratifier: IndicatorStratifier,
   stratifiers: IndicatorStratifier[],
+  indicator: IndicatorMeta,
 ) {
   const filtered = rows.filter((r) =>
     stratifiers.every((s) => {
@@ -78,13 +69,16 @@ function pivotData(
     return a.localeCompare(b, 'es')
   })
 
+  const activeColumn = indicator.scheme?.find((c) => c.name === stratifier)
+  const colors = activeColumn?.colors ?? {}
+
   const lines = keys.map((key, i) => ({
     dataKey: key,
     name: key,
     color:
       stratifier === 'total'
-        ? TOTAL_COLOR
-        : (SERIES_COLORS[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]),
+        ? (indicator.totalColor ?? DEFAULT_TOTAL_COLOR)
+        : (colors[key] ?? FALLBACK_COLORS[i % FALLBACK_COLORS.length]),
   }))
 
   return { chartData, lines, keys }
@@ -94,6 +88,7 @@ function pivotData(
 
 interface StratifiedLineChartProps {
   data: StratifiedRow[]
+  indicator: IndicatorMeta
   stratifiers?: IndicatorStratifier[]
   yAxisLabel?: string
   csvPath?: string
@@ -102,6 +97,7 @@ interface StratifiedLineChartProps {
 
 export const StratifiedLineChart = ({
   data,
+  indicator,
   stratifiers,
   yAxisLabel = 'Valor',
   csvPath,
@@ -166,8 +162,8 @@ export const StratifiedLineChart = ({
   }
 
   const { chartData, lines, keys } = useMemo(
-    () => pivotData(data, stratifier, stratifiers ?? []),
-    [data, stratifier, stratifiers],
+    () => pivotData(data, stratifier, stratifiers ?? [], indicator),
+    [data, stratifier, stratifiers, indicator],
   )
 
   const hasMap = geojsonUrls && Object.keys(geojsonUrls).length > 0
@@ -180,24 +176,17 @@ export const StratifiedLineChart = ({
     )
   }
 
-  const ALL_STRATIFIER_OPTIONS: {
-    value: IndicatorStratifier
-    label: string
-  }[] = [
-    { value: 'total', label: 'Total' },
-    { value: 'zona', label: 'Zona' },
-    { value: 'etnia', label: 'Etnia' },
-    { value: 'sexo', label: 'Sexo' },
-    { value: 'grupo_edad', label: 'Grupo de Edad' },
-  ]
-
-  const STRATIFIER_OPTIONS = stratifiers
-    ? ALL_STRATIFIER_OPTIONS.filter(
-        (opt) =>
-          opt.value === 'total' ||
-          (stratifiers as string[]).includes(opt.value),
-      )
-    : ALL_STRATIFIER_OPTIONS
+  // Stratifier options come from the indicator's configured stratifiers;
+  // labels come from each column's `label` in app.config.json, falling back
+  // to the raw field name if a label isn't configured.
+  const STRATIFIER_OPTIONS: { value: IndicatorStratifier; label: string }[] =
+    [
+      { value: 'total', label: 'Total' },
+      ...(stratifiers ?? []).map((s) => ({
+        value: s,
+        label: indicator.scheme?.find((c) => c.name === s)?.label ?? s,
+      })),
+    ]
 
   return (
     <div style={{ width: '100%', margin: '0 auto' }}>

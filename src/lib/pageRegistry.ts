@@ -199,6 +199,7 @@ const indicatorEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
         subdimensions: subdimensions ?? [],
         stratifiers: stratifiers ?? [],
         data: stratifiedData ?? [],
+        indicator: ind,
         yAxisLabel: ind.axisLabel,
         csvPath: csvUrl(baseUrl, `${ind.slug}.csv`),
         geojsonUrls: Object.fromEntries(

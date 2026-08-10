@@ -43,6 +43,7 @@
         {
           "name": "zona",
           "type": "string",
+          "label": "Zona",
           "values": ["urbano", "periurbano", "rural"],
           "aggregate": "Total",
           "colors": {
@@ -55,6 +56,7 @@
         {
           "name": "etnia",
           "type": "string",
+          "label": "Etnia",
           "values": ["Indígena", "No indígena"],
           "aggregate": "Total",
           "colors": {
@@ -159,8 +161,31 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "zona", "type": "string", "index": 5 },
-        { "name": "etnia", "type": "string", "index": 6 },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
+          "index": 5
+        },
+        {
+          "name": "etnia",
+          "type": "string",
+          "label": "Etnia",
+          "values": ["Indígena", "No indígena"],
+          "aggregate": "Total",
+          "colors": {
+            "Indígena": "#8b5cf6",
+            "No indígena": "#06b6d4"
+          },
+          "index": 6
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 7 }
       ]
     },
@@ -186,8 +211,31 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "sexo", "type": "string", "index": 4 },
-        { "name": "zona", "type": "string", "index": 5 },
+        {
+          "name": "sexo",
+          "type": "string",
+          "label": "Sexo",
+          "values": ["Hombres", "Mujeres"],
+          "aggregate": "Total",
+          "colors": {
+            "Hombres": "#3b82f6",
+            "Mujeres": "#ec4899"
+          },
+          "index": 4
+        },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
+          "index": 5
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 6 }
       ]
     },
@@ -213,8 +261,31 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "zona", "type": "string", "index": 4 },
-        { "name": "etnia", "type": "string", "index": 5 },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
+          "index": 4
+        },
+        {
+          "name": "etnia",
+          "type": "string",
+          "label": "Etnia",
+          "values": ["Indígena", "No indígena"],
+          "aggregate": "Total",
+          "colors": {
+            "Indígena": "#8b5cf6",
+            "No indígena": "#06b6d4"
+          },
+          "index": 5
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 6 }
       ]
     },
@@ -240,7 +311,19 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "zona", "type": "string", "index": 4 },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
+          "index": 4
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 5 }
       ]
     },
@@ -266,8 +349,31 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "zona", "type": "string", "index": 4 },
-        { "name": "etnia", "type": "string", "index": 5 },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["Urbano", "Periurbano", "Rural"],
+          "aggregate": "Total",
+          "colors": {
+            "Urbano": "#22c55e",
+            "Periurbano": "#f59e0b",
+            "Rural": "#ef4444"
+          },
+          "index": 4
+        },
+        {
+          "name": "etnia",
+          "type": "string",
+          "label": "Etnia",
+          "values": ["Indígena", "No indígena"],
+          "aggregate": "Total",
+          "colors": {
+            "Indígena": "#8b5cf6",
+            "No indígena": "#06b6d4"
+          },
+          "index": 5
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 6 }
       ]
     },
@@ -293,8 +399,31 @@
           "index": 1
         },
         { "name": "anio", "type": "number", "role": "year", "index": 3 },
-        { "name": "zona", "type": "string", "index": 4 },
-        { "name": "etnia", "type": "string", "index": 5 },
+        {
+          "name": "zona",
+          "type": "string",
+          "label": "Zona",
+          "values": ["urbano", "periurbano", "rural"],
+          "aggregate": "Total",
+          "colors": {
+            "urbano": "#22c55e",
+            "periurbano": "#f59e0b",
+            "rural": "#ef4444"
+          },
+          "index": 4
+        },
+        {
+          "name": "etnia",
+          "type": "string",
+          "label": "Etnia",
+          "values": ["Indígena", "No indígena"],
+          "aggregate": "Total",
+          "colors": {
+            "Indígena": "#8b5cf6",
+            "No indígena": "#06b6d4"
+          },
+          "index": 5
+        },
         { "name": "valor", "type": "number", "role": "value", "index": 6 }
       ]
     }
