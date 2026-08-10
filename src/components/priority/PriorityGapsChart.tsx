@@ -8,6 +8,7 @@ import {
   app,
   type GapComparisonMeta,
   type IndicatorMeta,
+  type IndicatorStratifier,
 } from '@/config/general'
 
 interface GapRow {
@@ -198,7 +199,8 @@ interface Props {
   data: PriorityRow[]
   selectedYear?: number | null
   priority: IndicatorMeta
-  dimension: 'ethnic' | 'zone'
+  // Which configured stratifier's gap analysis to show, e.g. 'etnia', 'zona', 'sexo'.
+  dimension: IndicatorStratifier
 }
 
 export const PriorityGapsChart = ({

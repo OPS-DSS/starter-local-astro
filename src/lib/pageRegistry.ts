@@ -109,51 +109,56 @@ const priorityEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
         ) => {
           const years = dataYears(analyticsData)
 
-          const geojsonUrls = Object.fromEntries(
-            indicatorSlugs.map((ind) => [
-              ind,
-              Object.fromEntries(
+          const geojsonUrls = app.features.map
+            ? (Object.fromEntries(
+                indicatorSlugs.map((ind) => [
+                  ind,
+                  Object.fromEntries(
+                    years.map((yr) => [
+                      yr,
+                      geojsonUrl(baseUrl, `bivariate-${ind}-${yr}.geojson`),
+                    ]),
+                  ),
+                ]),
+              ) as Record<string, Record<number, string>>)
+            : undefined
+
+          const priorityGeojsonUrls = app.features.map
+            ? (Object.fromEntries(
                 years.map((yr) => [
                   yr,
-                  geojsonUrl(baseUrl, `bivariate-${ind}-${yr}.geojson`),
+                  geojsonUrl(baseUrl, `${priority.slug}-${yr}.geojson`),
                 ]),
-              ),
-            ]),
-          ) as Record<string, Record<number, string>>
+              ) as Record<number, string>)
+            : undefined
 
-          const priorityGeojsonUrls = Object.fromEntries(
-            years.map((yr) => [
-              yr,
-              geojsonUrl(baseUrl, `${priority.slug}-${yr}.geojson`),
-            ]),
-          ) as Record<number, string>
-
-          const dssBivariateGeojsonUrls = Object.fromEntries(
-            indicatorSlugs.map((ind_x) => [
-              ind_x,
-              Object.fromEntries(
-                indicatorSlugs
-                  .filter((ind_y) => ind_y !== ind_x)
-                  .map((ind_y) => [
-                    ind_y,
-                    Object.fromEntries(
-                      years.map((yr) => [
-                        yr,
-                        geojsonUrl(
-                          baseUrl,
-                          `bivariate-dss-${ind_x}-${ind_y}-${yr}.geojson`,
+          const dssBivariateGeojsonUrls = app.features.map
+            ? Object.fromEntries(
+                indicatorSlugs.map((ind_x) => [
+                  ind_x,
+                  Object.fromEntries(
+                    indicatorSlugs
+                      .filter((ind_y) => ind_y !== ind_x)
+                      .map((ind_y) => [
+                        ind_y,
+                        Object.fromEntries(
+                          years.map((yr) => [
+                            yr,
+                            geojsonUrl(
+                              baseUrl,
+                              `bivariate-dss-${ind_x}-${ind_y}-${yr}.geojson`,
+                            ),
+                          ]),
                         ),
                       ]),
-                    ),
-                  ]),
-              ),
-            ]),
-          )
+                  ),
+                ]),
+              )
+            : undefined
 
-          const scatterCsv = app.datasets?.scatter?.file.replace(
-            /\.parquet$/,
-            '.csv',
-          )
+          const scatterCsv = app.features.scatter
+            ? app.datasets?.scatter?.file.replace(/\.parquet$/, '.csv')
+            : undefined
 
           return {
             priority,
@@ -202,12 +207,14 @@ const indicatorEntries: Record<string, PageRegistryEntry> = Object.fromEntries(
         indicator: ind,
         yAxisLabel: ind.axisLabel,
         csvPath: csvUrl(baseUrl, `${ind.slug}.csv`),
-        geojsonUrls: Object.fromEntries(
-          dataYears(stratifiedData).map((yr) => [
-            yr,
-            geojsonUrl(baseUrl, `${ind.slug}-${yr}.geojson`),
-          ]),
-        ),
+        geojsonUrls: app.features.map
+          ? Object.fromEntries(
+              dataYears(stratifiedData).map((yr) => [
+                yr,
+                geojsonUrl(baseUrl, `${ind.slug}-${yr}.geojson`),
+              ]),
+            )
+          : undefined,
       }),
     },
   ]),

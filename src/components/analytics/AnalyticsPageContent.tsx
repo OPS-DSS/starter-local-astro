@@ -1,7 +1,6 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, lazy, Suspense } from 'react'
 import { DSForestPlot } from '@ops-dss/charts/forest-plot'
 import { DSScatterChart } from '@ops-dss/charts/scatter-chart'
-import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import { AnalyticsDualChart } from './AnalyticsDualChart'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
 import { app, indicators } from '@/config/general'
@@ -14,6 +13,14 @@ import type {
 } from '@/lib/parquet'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
+
+// Loaded on demand — only imported when app.features.map is enabled, so
+// deployments without geolocation data never fetch the map bundle.
+const DSChoroplethMap = lazy(() =>
+  import('@ops-dss/charts/choropleth-map').then((m) => ({
+    default: m.DSChoroplethMap,
+  })),
+)
 
 const indicatorsBySlug = Object.fromEntries(
   indicators.map((i) => [i.slug, i]),
@@ -150,14 +157,16 @@ export const AnalyticsPageContent = ({
 
   // ── Year selection ──────────────────────────────────────────────────────────
 
-  // Derive available years from scatter data (sorted descending for display)
+  // Derive available years from whichever datasets are loaded (sorted
+  // descending for display) — scatter alone isn't a reliable source since
+  // it's gated behind its own feature flag and may be empty.
   const availableYears = useMemo(() => {
-    if (!scatterData || scatterData.length === 0) return []
-    const years = [...new Set(scatterData.map((r) => r.anio))].sort(
-      (a, b) => b - a,
-    )
-    return years
-  }, [scatterData])
+    const years = new Set<number>()
+    for (const r of analyticsData ?? []) years.add(r.anio)
+    for (const r of scatterData ?? []) years.add(r.anio)
+    for (const r of forestPlotData ?? []) years.add(r.anio)
+    return [...years].sort((a, b) => b - a)
+  }, [analyticsData, scatterData, forestPlotData])
 
   const lastYear = availableYears[0] ?? null
 
@@ -429,6 +438,7 @@ export const AnalyticsPageContent = ({
           )}
 
           {/* ── Map section ── */}
+          {app.features.map && (
           <ExpandablePanel className="relative border rounded-lg p-4 flex flex-col gap-4">
             {(isFullscreen) => (
               <>
@@ -577,22 +587,37 @@ export const AnalyticsPageContent = ({
                 {/* Map view */}
                 {view === 'map' && (
                   <>
-                    <DSChoroplethMap
-                      geojsonUrl={activeGeojsonUrl}
-                      center={[2.3, -75.7]}
-                      zoom={8}
-                      height={isFullscreen ? 'calc(100vh - 280px)' : '30em'}
-                      nameProperty="Territorio"
-                      valueProperty="value"
-                      valueName={mapValueName}
-                      secondaryValueProperty={
-                        isDssBivariate || isBivariate
-                          ? priority.bivariateValue
-                          : undefined
+                    <Suspense
+                      fallback={
+                        <div
+                          className="flex items-center justify-center text-gray-400 text-sm"
+                          style={{
+                            height: isFullscreen
+                              ? 'calc(100vh - 280px)'
+                              : '30em',
+                          }}
+                        >
+                          Cargando mapa…
+                        </div>
                       }
-                      secondaryValueName={mapSecondaryValueName}
-                      valueFormatter={mapValueFormatter}
-                    />
+                    >
+                      <DSChoroplethMap
+                        geojsonUrl={activeGeojsonUrl}
+                        center={[2.3, -75.7]}
+                        zoom={8}
+                        height={isFullscreen ? 'calc(100vh - 280px)' : '30em'}
+                        nameProperty="Territorio"
+                        valueProperty="value"
+                        valueName={mapValueName}
+                        secondaryValueProperty={
+                          isDssBivariate || isBivariate
+                            ? priority.bivariateValue
+                            : undefined
+                        }
+                        secondaryValueName={mapSecondaryValueName}
+                        valueFormatter={mapValueFormatter}
+                      />
+                    </Suspense>
 
                     {/* Legend */}
                     <div className="flex flex-col gap-2 text-sm">
@@ -706,6 +731,7 @@ export const AnalyticsPageContent = ({
               </>
             )}
           </ExpandablePanel>
+          )}
         </div>
       </div>
     </div>

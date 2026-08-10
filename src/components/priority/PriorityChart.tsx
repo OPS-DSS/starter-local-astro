@@ -4,56 +4,43 @@ import type { PriorityRow } from '@/lib/parquet'
 import { ExpandablePanel } from '@/components/ExpandablePanel'
 import { Icon } from '@iconify/react'
 import { app } from '@/config/general'
-import type { IndicatorMeta } from '@/config/general'
-
-// ── Stratifier type ───────────────────────────────────────────────────────────
-export type Stratifier = 'total' | 'etnia' | 'zona'
+import type { IndicatorMeta, IndicatorStratifier } from '@/config/general'
 
 const TOTAL_LABEL = 'Total'
 const DEFAULT_COLOR = '#6b7280'
 
 // ── Data pivot ────────────────────────────────────────────────────────────────
 
+/**
+ * Keep only the rows that vary along `stratifier` (or the fully aggregated
+ * rows for the 'total' view): the selected stratifier column must not be at
+ * its aggregate sentinel, while every other configured stratifier column must be.
+ */
 function pivotData(
   rows: PriorityRow[],
-  stratifier: Stratifier,
+  stratifier: IndicatorStratifier,
+  stratifiers: IndicatorStratifier[],
   priority: IndicatorMeta,
 ) {
   const scheme = priority.scheme ?? []
-  const zonaColumn = scheme.find((c) => c.name === 'zona')
-  const etniaColumn = scheme.find((c) => c.name === 'etnia')
-
-  // Sentinel values marking aggregate (unstratified) rows for each column.
-  const totalZona = zonaColumn?.aggregate ?? TOTAL_LABEL
-  const totalEtnia = etniaColumn?.aggregate ?? TOTAL_LABEL
 
   // Only municipality-level aggregates
   const smvRows = rows.filter((r) => r.territorio === app.local)
 
-  let filtered: PriorityRow[]
-
-  if (stratifier === 'total') {
-    filtered = smvRows.filter(
-      (r) => r.etnia === totalEtnia && r.zona === totalZona,
-    )
-  } else if (stratifier === 'etnia') {
-    filtered = smvRows.filter(
-      (r) => r.zona === totalZona && r.etnia !== totalEtnia,
-    )
-  } else {
-    filtered = smvRows.filter(
-      (r) => r.etnia === totalEtnia && r.zona !== totalZona,
-    )
-  }
+  const filtered = smvRows.filter((r) =>
+    stratifiers.every((s) => {
+      const value = r[s]
+      if (value === undefined) return true
+      const total = scheme.find((c) => c.name === s)?.aggregate ?? TOTAL_LABEL
+      return s === stratifier ? value !== total : value === total
+    }),
+  )
 
   const byYear = new Map<number, Record<string, number>>()
   const keySet = new Set<string>()
 
   for (const row of filtered) {
-    const key =
-      stratifier === 'total'
-        ? app.local
-        : String(stratifier === 'etnia' ? row.etnia : row.zona)
+    const key = stratifier === 'total' ? app.local : String(row[stratifier])
 
     keySet.add(key)
     if (!byYear.has(row.anio)) byYear.set(row.anio, {})
@@ -65,12 +52,7 @@ function pivotData(
     .map(([anio, vals]) => ({ anio, ...vals }))
 
   // Value order and colors come from the active stratifier column's config.
-  const activeColumn =
-    stratifier === 'zona'
-      ? zonaColumn
-      : stratifier === 'etnia'
-        ? etniaColumn
-        : undefined
+  const activeColumn = scheme.find((c) => c.name === stratifier)
   const orderArray = activeColumn?.values ?? null
   const colors = activeColumn?.colors ?? {}
 
@@ -98,8 +80,8 @@ interface PriorityChartProps {
   priority: IndicatorMeta
   csvPath?: string
   highlightYear?: number
-  stratifier: Stratifier
-  onStratifierChange: (s: Stratifier) => void
+  stratifier: IndicatorStratifier
+  onStratifierChange: (s: IndicatorStratifier) => void
 }
 
 export const PriorityChart = ({
@@ -112,17 +94,20 @@ export const PriorityChart = ({
 }: PriorityChartProps) => {
   const [view, setView] = useState<'chart' | 'table'>('chart')
 
+  const stratifiers = (priority.stratifiers ?? []) as IndicatorStratifier[]
+
   const { chartData, lines, keys } = useMemo(
-    () => pivotData(data, stratifier, priority),
-    [data, stratifier, priority],
+    () => pivotData(data, stratifier, stratifiers, priority),
+    [data, stratifier, stratifiers, priority],
   )
 
-  // 'total' (no stratification) is always available; other options come from config.
-  const stratifierOptions: { value: Stratifier; label: string }[] = [
+  // 'total' (no stratification) is always available; other options, order,
+  // and labels come from the indicator's configured stratifiers/scheme.
+  const stratifierOptions: { value: IndicatorStratifier; label: string }[] = [
     { value: 'total', label: TOTAL_LABEL },
-    ...((priority.stratifiers ?? []) as Stratifier[]).map((s) => ({
+    ...stratifiers.map((s) => ({
       value: s,
-      label: s.charAt(0).toUpperCase() + s.slice(1),
+      label: priority.scheme?.find((c) => c.name === s)?.label ?? s,
     })),
   ]
 
@@ -209,7 +194,7 @@ export const PriorityChart = ({
                   isFullscreen ? Math.max(300, window.innerHeight - 200) : 400
                 }
                 xAxisLabel="Año"
-                yAxisLabel="Tasa (×100.000 NV)"
+                yAxisLabel={priority.axisLabel}
                 yAxisDomain={[0, 100]}
                 highlightX={highlightYear}
               />

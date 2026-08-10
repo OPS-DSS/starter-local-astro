@@ -68,7 +68,7 @@
       ],
       "inequitySource": "Las métricas de desigualdad implementadas se basan en el marco metodológico del Cuantificador de Desigualdades en Salud, desarrollado conjuntamente por la Organización Panamericana de la Salud (OPS/OMS) y el Centro Nacional de Epidemiología, Prevención y Control de Enfermedades del Ministerio de Salud del Perú (CDC-Perú). Disponible en https://opendata.paho.org/es/ods3/cuantificador-desigualdades-salud",
       "gaps": {
-        "ethnic": {
+        "etnia": {
           "field": "etnia",
           "scopeField": "zona",
           "scopeValue": "Total",
@@ -94,7 +94,7 @@
             }
           ]
         },
-        "zone": {
+        "zona": {
           "field": "zona",
           "scopeField": "etnia",
           "scopeValue": "Total",
@@ -429,7 +429,8 @@
     }
   ],
   "features": {
-    "map": true
+    "map": true,
+    "scatter": true
   },
   "data": {
     "path": "public/data/parquet"

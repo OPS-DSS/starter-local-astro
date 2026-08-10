@@ -2,11 +2,11 @@
 
 import { useState, useMemo } from 'react'
 import { PriorityChart } from './PriorityChart'
-import type { Stratifier } from './PriorityChart'
 import { PriorityGapsChart } from './PriorityGapsChart'
 import type { PriorityRow } from '@/lib/parquet'
 import { app } from '@/config/general'
 import { priorities } from '@/config/general'
+import type { IndicatorStratifier } from '@/config/general'
 
 interface PriorityPanelProps {
   data: PriorityRow[]
@@ -14,19 +14,32 @@ interface PriorityPanelProps {
 }
 
 export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
+  const priority = priorities[0]
+  const stratifierFields = priority.stratifiers ?? []
+
+  // The unstratified ("total") view: every configured stratifier column must
+  // sit at its aggregate sentinel value (or be absent from the row).
   const availableYears = useMemo(() => {
-    const rows = data.filter(
-      (r) =>
-        r.territorio === app.local && r.zona === 'Total' && r.etnia === 'Total',
-    )
+    const rows = data.filter((r) => {
+      if (r.territorio !== app.local) return false
+      return stratifierFields.every((s) => {
+        const value = r[s]
+        if (value === undefined) return true
+        const total =
+          priority.scheme?.find((c) => c.name === s)?.aggregate ?? 'Total'
+        return value === total
+      })
+    })
     return [...new Set(rows.map((r) => r.anio))].sort((a, b) => b - a)
-  }, [data])
+  }, [data, priority, stratifierFields])
 
   const lastYear = availableYears[0] ?? null
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const effectiveYear = selectedYear ?? lastYear
 
-  const [stratifier, setStratifier] = useState<Stratifier>('total')
+  const [stratifier, setStratifier] = useState<IndicatorStratifier>('total')
+
+  const gapsSpec = stratifier !== 'total' ? priority.gaps?.[stratifier] : undefined
 
   return (
     <div className="flex flex-col gap-10">
@@ -53,14 +66,14 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
 
       <PriorityChart
         data={data}
-        priority={priorities[0]}
+        priority={priority}
         csvPath={csvPath}
         highlightYear={effectiveYear ?? undefined}
         stratifier={stratifier}
         onStratifierChange={setStratifier}
       />
 
-      {stratifier === 'etnia' && (
+      {gapsSpec && (
         <section className="flex flex-col gap-4">
           <div>
             <h2 className="text-xl font-bold">Análisis de brechas</h2>
@@ -71,25 +84,8 @@ export const PriorityPanel = ({ data, csvPath }: PriorityPanelProps) => {
           <PriorityGapsChart
             data={data}
             selectedYear={effectiveYear}
-            priority={priorities[0]}
-            dimension="ethnic"
-          />
-        </section>
-      )}
-
-      {stratifier === 'zona' && (
-        <section className="flex flex-col gap-4">
-          <div>
-            <h2 className="text-xl font-bold">Análisis de brechas</h2>
-            <p className="text-sm text-gray-500 mt-1">
-              Brecha absoluta y relativa
-            </p>
-          </div>
-          <PriorityGapsChart
-            data={data}
-            selectedYear={effectiveYear}
-            priority={priorities[0]}
-            dimension="zone"
+            priority={priority}
+            dimension={stratifier}
           />
         </section>
       )}

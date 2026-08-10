@@ -1,10 +1,18 @@
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, lazy, Suspense } from 'react'
 import { DSLineChart } from '@ops-dss/charts/line-chart'
-import { DSChoroplethMap } from '@ops-dss/charts/choropleth-map'
 import type { StratifiedRow } from '@/lib/parquet'
+import { app } from '@/config/general'
 import type { IndicatorStratifier, IndicatorMeta } from '@/config/general'
 import { ExpandablePanel } from './ExpandablePanel'
 import { Icon } from '@iconify/react'
+
+// Loaded on demand — only imported when app.features.map is enabled, so
+// deployments without geolocation data never fetch the map bundle.
+const DSChoroplethMap = lazy(() =>
+  import('@ops-dss/charts/choropleth-map').then((m) => ({
+    default: m.DSChoroplethMap,
+  })),
+)
 
 // ── Canonical aggregate label ─────────────────────────────────────────────────
 // Every stratifier column marks its aggregate rows with this sentinel.
@@ -166,7 +174,8 @@ export const StratifiedLineChart = ({
     [data, stratifier, stratifiers, indicator],
   )
 
-  const hasMap = geojsonUrls && Object.keys(geojsonUrls).length > 0
+  const hasMap =
+    app.features.map && geojsonUrls && Object.keys(geojsonUrls).length > 0
 
   if (!data || data.length === 0) {
     return (
@@ -372,16 +381,29 @@ export const StratifiedLineChart = ({
             >
               {(isFullscreen) => (
                 <>
-                  <DSChoroplethMap
-                    geojsonUrl={activeGeojsonUrl}
-                    center={[2.3, -75.7]}
-                    zoom={8}
-                    height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
-                    nameProperty="Territorio"
-                    valueProperty="value"
-                    valueName={yAxisLabel}
-                    valueFormatter={(v) => (v * 100).toFixed(1) + '%'}
-                  />
+                  <Suspense
+                    fallback={
+                      <div
+                        className="flex items-center justify-center text-gray-400 text-sm"
+                        style={{
+                          height: isFullscreen ? 'calc(100vh - 180px)' : '30em',
+                        }}
+                      >
+                        Cargando mapa…
+                      </div>
+                    }
+                  >
+                    <DSChoroplethMap
+                      geojsonUrl={activeGeojsonUrl}
+                      center={[2.3, -75.7]}
+                      zoom={8}
+                      height={isFullscreen ? 'calc(100vh - 180px)' : '30em'}
+                      nameProperty="Territorio"
+                      valueProperty="value"
+                      valueName={yAxisLabel}
+                      valueFormatter={(v) => (v * 100).toFixed(1) + '%'}
+                    />
+                  </Suspense>
                   <div className="flex flex-col gap-2 text-sm">
                     <span className="font-medium text-gray-700">Leyenda:</span>
                     <div className="flex flex-wrap gap-x-6 gap-y-2 items-center">

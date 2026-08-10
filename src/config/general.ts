@@ -73,12 +73,9 @@ const Indicator = z.object({
   inequitySource: z.string().optional(),
   file: z.string().optional(),
   scheme: Scheme.optional(),
-  gaps: z
-    .object({
-      ethnic: GapDimension.optional(),
-      zone: GapDimension.optional(),
-    })
-    .optional(),
+  // Keyed by stratifier field name (matching an entry in `stratifiers`), e.g.
+  // `{ etnia: {...}, zona: {...}, sexo: {...} }`.
+  gaps: z.record(z.string(), GapDimension).optional(),
 })
 
 const Config = z.object({
@@ -86,7 +83,10 @@ const Config = z.object({
   subnational: z.string(),
   national: z.string(),
   indicators: z.array(z.union([Indicator])),
-  features: z.object({ map: z.boolean().default(false) }),
+  features: z.object({
+    map: z.boolean().default(false),
+    scatter: z.boolean().default(false),
+  }),
   data: z.object({ path: z.string() }).default({ path: 'public/data/parquet' }),
   datasets: z
     .object({
@@ -111,7 +111,7 @@ export const priorities = app.indicators.filter((i) => i.priority)
 export const indicatorSlugs = indicators.map((i) => i.slug)
 
 const stratifiers = [
-  ...new Set(indicators.flatMap((i) => i.stratifiers || [])),
+  ...new Set(app.indicators.flatMap((i) => i.stratifiers || [])),
 ] as const
 
 export type IndicatorStratifier = (typeof stratifiers)[number]

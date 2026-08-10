@@ -73,11 +73,9 @@ export async function loadAllDatasets(): Promise<PageDatasets> {
       analytics?.file,
       analytics?.scheme,
     ),
-    scatterData: await tryLoad<ScatterRow>(
-      'scatter',
-      scatter?.file,
-      scatter?.scheme,
-    ),
+    scatterData: app.features.scatter
+      ? await tryLoad<ScatterRow>('scatter', scatter?.file, scatter?.scheme)
+      : [],
     priorityData,
     stratifiedData,
   }
