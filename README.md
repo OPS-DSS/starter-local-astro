@@ -50,6 +50,12 @@ npm run dev
 npm run build
 ```
 
+## CI/CD
+
+**Important:** This repository includes two workflows used only for the internal maintenance of the template. After creating a new repository from this template, delete `.github/workflows/publish-to-npm.yml` and `.github/workflows/sync-to-monorepo.yml`. Keep `.github/workflows/deploy-pages.yml`, as it is used to publish the implementation to GitHub Pages.
+
+**Importante:** Este repositorio incluye dos workflows utilizados únicamente para el mantenimiento interno de la plantilla. Después de crear un nuevo repositorio usando esta plantilla, elimina `.github/workflows/publish-to-npm.yml` y `.github/workflows/sync-to-monorepo.yml`. Mantén `.github/workflows/deploy-pages.yml`, ya que este se utiliza para publicar la implementación en GitHub Pages.
+
 ## Contributing
 
 Thank you for your interest in contributing! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
