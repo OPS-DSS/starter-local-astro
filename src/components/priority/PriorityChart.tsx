@@ -24,7 +24,10 @@ function pivotData(
 ) {
   const scheme = priority.scheme ?? []
 
-  const filtered = rows.filter((r) =>
+  // Only municipality-level aggregates
+  const smvRows = rows.filter((r) => r.territorio === app.local)
+
+  const filtered = smvRows.filter((r) =>
     stratifiers.every((s) => {
       const value = r[s]
       if (value === undefined) return true
